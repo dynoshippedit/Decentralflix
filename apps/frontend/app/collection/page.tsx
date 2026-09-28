@@ -73,7 +73,7 @@ export default function MyCollectionPage() {
           <div className="text-6xl mb-4">🎟️</div>
           <h2 className="text-2xl mb-3">Your Owned Tickets</h2>
           <p className="text-white/60 max-w-md mx-auto">
-            Permanent access. No subscriptions. No ads. Your tickets are the key to the film and to the only reviews that matter — those from people who actually own it.
+            Permanent access. No subscription required. No ads. Your tickets are the key to the film and to the only reviews that matter — those from people who actually own it.
           </p>
           <a href="/crowdfund" className="text-sm text-emerald-400 hover:underline mt-2 inline-block">Back or launch new crowdfund campaigns →</a>
           <a href="/dashboard" className="ml-4 text-sm text-emerald-400 hover:underline mt-2 inline-block">Full Dashboard → Library, Credits, Campaigns, Earnings, Quick Launch</a>

@@ -16,7 +16,7 @@ const TECH_STACK = [
 
 const METRICS = [
   { value: '2M+', label: 'Concurrent viewers capacity' },
-  { value: '70%', label: 'Creator payout — instant, on-chain' },
+  { value: '75%', label: 'Creator payout — instant, on-chain' },
   { value: '$0.05', label: 'Cost per NFT mint (Arbitrum L2)' },
   { value: '$0', label: 'Video egress fees (Cloudflare R2)' },
   { value: 'Forever', label: 'Access duration — permanent' },
@@ -38,7 +38,7 @@ export default function DemoPage() {
             <span className="text-white/40">Forever.</span>
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-snug">
-            The censorship-resistant Netflix. Creators get 70% instantly. Viewers own their access permanently.
+            The censorship-resistant Netflix. Creators get 75% instantly. Viewers own their access permanently.
             No middlemen. No bans. Built for the influencer era.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
@@ -70,7 +70,7 @@ export default function DemoPage() {
             <h2 className="text-3xl font-semibold tracking-tight mb-4">We can't delete anyone.</h2>
             <ul className="space-y-3 text-white/60">
               <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Content stored on Filecoin — no single entity controls it</li>
-              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Creators receive 70% immediately, on-chain, no invoices</li>
+              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Creators receive 75% immediately, on-chain, no invoices</li>
               <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Access is an NFT — immutable, transferable, permanent</li>
               <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Viewers buy once, own forever</li>
             </ul>
@@ -101,7 +101,7 @@ export default function DemoPage() {
             <div className="text-2xl font-semibold tracking-tight mb-2">Independent Filmmakers</div>
             <div className="text-white/40 text-sm mb-4">Direct-to-audience distribution</div>
             <p className="text-white/60 text-sm leading-relaxed">
-              Sell permanent access to your film. Keep 70%. No middlemen, no algorithms, no gatekeepers.
+              Sell permanent access to your film. Keep 75%. No middlemen, no algorithms, no gatekeepers.
               Infrastructure engineered to survive a viral spike — Cloudflare R2 primary delivery, IPFS/Filecoin backup.
             </p>
           </div>
@@ -163,7 +163,7 @@ export default function DemoPage() {
           <div className="text-xs text-white/30 tracking-widest mb-8">PLATFORM ECONOMICS</div>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <div className="text-3xl font-semibold mb-2">70%</div>
+              <div className="text-3xl font-semibold mb-2">75%</div>
               <div className="text-white/50 text-sm">To creator, instantly, on-chain. No invoices. No net-30.</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">

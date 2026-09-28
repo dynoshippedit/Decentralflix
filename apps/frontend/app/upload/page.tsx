@@ -59,7 +59,7 @@ export default function UploadPage() {
           <div className="text-5xl mb-6">🎬</div>
           <h1 className="text-4xl font-semibold tracking-tight mb-3">Upload Your Film</h1>
           <p className="text-white/60 mb-8 leading-relaxed">
-            Sign in with email, Google, or Apple to start uploading. You'll receive 70% of every sale directly to you.
+            Sign in with email, Google, or Apple to start uploading. You'll receive 75% of every sale directly to you.
           </p>
           <button
             onClick={login}
@@ -99,7 +99,7 @@ export default function UploadPage() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-5xl font-semibold tracking-tight mb-2">Upload Your Film</h1>
-          <p className="text-white/50">70% of every sale goes directly to you. Instantly.</p>
+          <p className="text-white/50">75% of every sale goes directly to you. Instantly.</p>
         </div>
 
         {/* Step indicator */}
@@ -279,7 +279,7 @@ export default function UploadPage() {
             )}
 
             <div className="text-white/60 text-sm leading-relaxed">
-              Set your access prices. You receive 70% of every sale, paid instantly to you.
+              Set your access prices. You receive 75% of every sale, paid instantly to you.
             </div>
 
             {[
@@ -363,7 +363,7 @@ export default function UploadPage() {
 
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 text-sm text-emerald-300">
               Your film will be published to the DecentralFlix catalog. Permanent access becomes available for purchase immediately.
-              You will receive 70% of every sale, paid directly to you.
+              You will receive 75% of every sale, paid directly to you.
             </div>
 
             <div className="flex gap-3">

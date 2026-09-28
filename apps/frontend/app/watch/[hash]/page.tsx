@@ -34,7 +34,7 @@ export default function WatchPage() {
           <div className="text-6xl mb-6">🔒</div>
           <h1 className="text-3xl font-semibold tracking-tight mb-3">{title}</h1>
           <p className="text-white/50 mb-8 leading-relaxed">
-            Get permanent access to watch this film. One-time purchase — own it forever. No subscriptions.
+            Get permanent access to watch this film. One-time purchase — own it forever. No subscription required.
           </p>
           {demoFilm && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8 text-left">

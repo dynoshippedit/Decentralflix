@@ -463,7 +463,7 @@ export default function DashboardPage() {
           <div className="bg-zinc-950 border border-emerald-500/20 rounded-3xl p-8">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <div className="text-emerald-400 text-xs tracking-[3.5px]">INSTANT • 70% TO CREATORS</div>
+                <div className="text-emerald-400 text-xs tracking-[3.5px]">INSTANT • 75% TO CREATORS</div>
                 <h3 className="text-4xl font-semibold tracking-[-1.5px] mt-1">Creator Earnings</h3>
               </div>
               <button onClick={refreshCreator} className="text-xs px-4 py-1.5 border border-emerald-500/40 rounded-full text-emerald-400">REFRESH PAYOUTS</button>

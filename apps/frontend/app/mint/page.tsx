@@ -213,7 +213,7 @@ function MintPageInner() {
           ) : (
             <>
               <h1 className="text-5xl font-semibold tracking-tight mb-3">Get Permanent Access</h1>
-              <p className="text-white/60">Buy once. Own forever. No subscriptions.</p>
+              <p className="text-white/60">Buy once. Own forever. No subscription required.</p>
             </>
           )}
         </div>

@@ -250,9 +250,9 @@ export async function getFilmOwners(filmHash: string): Promise<FilmOwner[]> {
     result = data.tickets.map(t => ({ address: t.owner, tier: t.tier, tokenId: t.tokenId }));
   } else if (!INDEXER_URL) {
     result = [
-      { address: '0xDemo1000000000000000000000000000000000001', tier: 'BASIC', tokenId: '1' },
-      { address: '0xDemo2000000000000000000000000000000000002', tier: 'DELUXE', tokenId: '2' },
-      { address: '0xDemo3000000000000000000000000000000000003', tier: 'PRODUCER', tokenId: '3' },
+      { address: '0xDEAD000000000000000000000000000000000001', tier: 'BASIC', tokenId: '1' },
+      { address: '0xDEAD000000000000000000000000000000000002', tier: 'DELUXE', tokenId: '2' },
+      { address: '0xDEAD000000000000000000000000000000000003', tier: 'PRODUCER', tokenId: '3' },
     ];
   } else {
     result = [];
@@ -289,8 +289,8 @@ export async function getFilmReviews(filmHash: string): Promise<FilmReview[]> {
     result = data.reviews.map(r => ({ ...r, timestamp: parseInt(r.timestamp) }));
   } else if (!INDEXER_URL) {
     result = [
-      { reviewer: '0xDemo1', rating: 5, text: 'Absolutely stunning work.', timestamp: Date.now() / 1000 - 3600 },
-      { reviewer: '0xDemo2', rating: 4, text: 'Powerful storytelling.', timestamp: Date.now() / 1000 - 7200 },
+      { reviewer: '0xDEAD0000000000000000000000000000000000A1', rating: 5, text: 'Absolutely stunning work.', timestamp: Date.now() / 1000 - 3600 },
+      { reviewer: '0xDEAD0000000000000000000000000000000000B2', rating: 4, text: 'Powerful storytelling.', timestamp: Date.now() / 1000 - 7200 },
     ];
   } else {
     result = [];

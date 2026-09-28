@@ -6,6 +6,7 @@ import { usePrivy } from '@privy-io/react-auth';
 
 const NAV_LINKS = [
   { href: '/catalog', label: 'Browse' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/upload', label: 'Upload' },
   { href: '/collection', label: 'My Films' },
   { href: '/dashboard', label: 'Dashboard' },
