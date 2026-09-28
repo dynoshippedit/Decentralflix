@@ -41,6 +41,12 @@
       </div>
 
       <div class="field">
+        <label for="f-genres">Genres</label>
+        <input type="text" id="f-genres" placeholder="documentary, indie">
+        <div class="hint">Comma-separated. Powers the browse filters.</div>
+      </div>
+
+      <div class="field">
         <label for="f-email">Filmmaker email</label>
         <input type="email" id="f-email" name="filmmaker_email" required placeholder="you@yourstudio.com">
       </div>
@@ -129,11 +135,16 @@
           .split(",").map(function (t) { return t.trim(); })
           .filter(function (t) { return t.length > 0; });
 
+        var genres = document.getElementById("f-genres").value
+          .split(",").map(function (g) { return g.trim(); })
+          .filter(function (g) { return g.length > 0; });
+
         var meta = {
           title: title,
           description: document.getElementById("f-description").value.trim(),
           price_usd_cents: priceCents,
           territories: territories,
+          genres: genres,
           download_allowed: document.getElementById("f-download").checked,
           cleared_music_attested: true,
           filmmaker_email: email

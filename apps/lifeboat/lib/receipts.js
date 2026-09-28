@@ -23,11 +23,13 @@ const KEY_PATH = path.join(__dirname, '..', 'data', 'receipt-key.pem');
 // Human-readable terms whose sha256 becomes receipts[].terms_hash.
 // Bump the version string if the terms ever change.
 const TERMS = [
-  'decentralflix-lifeboat receipt terms v1',
+  'decentralflix-lifeboat receipt terms v2',
   'This receipt is a SIGNED ENTITLEMENT, not a token.',
   'It is bound to one buyer email hash and one film id.',
   'It is NEVER transferable, NEVER cashable, and has no cash value.',
   'It evidences a streaming/download license grant; it is not ownership of the file.',
+  'A permanent DRM-free download, where offered, is yours to keep (license wording',
+  'pending counsel review); it is NOT a transfer of copyright.',
 ].join('\n');
 
 const TERMS_HASH = crypto.createHash('sha256').update(TERMS, 'utf8').digest('hex');

@@ -1,5 +1,5 @@
 'use strict';
-// Decentralflix Lifeboat backend — M1.
+// Decentralflix Lifeboat backend — M2 (extends M1).
 // Zero-dependency Node.js service: node:http, node:crypto, node:fs (+ path, url).
 // No npm install. No database. JSON-file persistence under ./data/.
 //
@@ -15,6 +15,7 @@ const store = require('./lib/store');
 const receipts = require('./lib/receipts');
 const cdn = require('./lib/cdn');
 const stripe = require('./lib/stripe');
+const passLib = require('./lib/pass');
 
 const PORT = parseInt(process.env.PORT || '8080', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -204,11 +205,23 @@ function validateFilmMeta(meta) {
     return 'territories must be a non-empty array';
   if (meta.territories.some((t) => typeof t !== 'string' || t.trim() === ''))
     return 'territories must be non-empty strings';
+  if (meta.genres !== undefined) {
+    if (!Array.isArray(meta.genres) || meta.genres.some((g) => typeof g !== 'string' || g.trim() === ''))
+      return 'genres must be an array of non-empty strings';
+  }
   // Music-rights rule: the filmmaker must attest cleared music; reject otherwise.
   if (meta.cleared_music_attested !== true)
     return 'cleared_music_attested must be true (music rights must be cleared)';
   if (!isEmail(meta.filmmaker_email)) return 'filmmaker_email must be a valid email';
   return null;
+}
+
+// Resolves a film's filmmaker_email to a public profile link when the
+// filmmaker has created an account; null when no account exists yet.
+function filmmakerRef(email) {
+  const fmk = store.all('filmmakers')
+    .find((f) => f.email === String(email || '').trim().toLowerCase()) || null;
+  return fmk ? { filmmaker_id: fmk.filmmaker_id, display_name: fmk.display_name } : null;
 }
 
 function publicFilm(film) {
@@ -217,11 +230,16 @@ function publicFilm(film) {
     title: film.title,
     price_usd_cents: film.price_usd_cents,
     download_allowed: film.download_allowed,
+    genres: Array.isArray(film.genres) ? film.genres : [],
+    filmmaker: filmmakerRef(film.filmmaker_email),
   };
 }
 
 function fullFilm(film) {
-  return Object.assign({}, film, { playback_url: CDN.getPlaybackUrl(film) });
+  return Object.assign({}, film, {
+    playback_url: CDN.getPlaybackUrl(film),
+    filmmaker: filmmakerRef(film.filmmaker_email),
+  });
 }
 
 // Creates an entitlement AND its signed receipt (receipts are signed
@@ -324,6 +342,7 @@ async function importFilm(req, res) {
     download_allowed: Boolean(meta.download_allowed),
     cleared_music_attested: true,
     filmmaker_email: meta.filmmaker_email.trim().toLowerCase(),
+    genres: Array.isArray(meta.genres) ? meta.genres.map((g) => g.trim()) : [],
     master_bytes: masterData.length,
     original_filename: path.basename(masterFilename),
     created_at: nowIso(),
@@ -465,6 +484,42 @@ async function stripeWebhook(req, res) {
       }
     }
   }
+  // M2: Collector Pass subscription lifecycle (only reachable with keys set).
+  // REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk).
+  if (event && event.type === 'customer.subscription.created') {
+    const md = (event.data && event.data.object && event.data.object.metadata) || {};
+    if (md.product === 'collector_pass' && isEmail(md.buyer_email)) {
+      const email = md.buyer_email.trim().toLowerCase();
+      let p = passLib.getPassByEmail(email);
+      if (!p) p = passLib.createPass({ email, testMode: false });
+      store.update('passes', p.pass_id, {
+        stripe_subscription_id: (event.data.object && event.data.object.id) || null,
+        status: 'active',
+        test_mode: false,
+      });
+    }
+  }
+  if (event && event.type === 'invoice.payment_succeeded') {
+    const md = (event.data && event.data.object && event.data.object.metadata) || {};
+    if (md.product === 'collector_pass' && isEmail(md.buyer_email)) {
+      const p = passLib.getPassByEmail(md.buyer_email);
+      if (p && p.status === 'active') {
+        passLib.issueCredits({
+          pass_id: p.pass_id,
+          credits: passLib.CREDITS_PER_BILLING_PERIOD,
+          reason: 'subscription_renewal',
+          stripe_invoice_id: (event.data.object && event.data.object.id) || null,
+        });
+      }
+    }
+  }
+  if (event && event.type === 'customer.subscription.deleted') {
+    const md = (event.data && event.data.object && event.data.object.metadata) || {};
+    if (md.product === 'collector_pass' && isEmail(md.buyer_email)) {
+      const p = passLib.getPassByEmail(md.buyer_email);
+      if (p) store.update('passes', p.pass_id, { status: 'canceled' });
+    }
+  }
   return sendJson(res, 200, { received: true });
 }
 
@@ -505,13 +560,252 @@ function downloadFilm(req, res, filmId) {
 }
 
 // ---------------------------------------------------------------------------
+// M2 route handlers
+// ---------------------------------------------------------------------------
+// Collector Pass: REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk).
+// Credits are NON-TRANSFERABLE and NON-CASHABLE — enforced in lib/pass.js.
+
+async function passCheckout(req, res) {
+  // Real Stripe subscription checkout — the shape exists in lib/stripe.js but
+  // there are no keys, so this always throws "not configured".
+  try {
+    await stripe.createSubscriptionCheckout();
+    return sendError(res, 500, 'unexpected: checkout did not throw');
+  } catch (err) {
+    return sendError(res, 503, err.message, { legal_notice: passLib.LEGAL_NOTICE });
+  }
+}
+
+async function passTestSubscribe(req, res) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
+  const email = body.email.trim().toLowerCase();
+  let p = passLib.getPassByEmail(email);
+  if (!p) {
+    p = passLib.createPass({ email, testMode: true });
+  } else if (p.status !== 'active') {
+    store.update('passes', p.pass_id, { status: 'active' });
+    p = passLib.getPass(p.pass_id);
+  }
+  const grant = passLib.issueCredits({
+    pass_id: p.pass_id,
+    credits: passLib.CREDITS_PER_BILLING_PERIOD,
+    reason: 'test_grant',
+  });
+  return sendJson(res, 201, {
+    test_mode: true,
+    note: 'TEST-ONLY simulated Collector Pass subscription — no money moved, Stripe not involved',
+    legal_notice: passLib.LEGAL_NOTICE,
+    pass: p,
+    credit_grant: grant,
+    balance: passLib.balance(p.pass_id),
+  });
+}
+
+function passDetail(req, res, passId) {
+  const p = passLib.getPass(passId);
+  if (!p) return sendError(res, 404, 'pass not found');
+  return sendJson(res, 200, {
+    pass: p,
+    balance: passLib.balance(passId),
+    ledger: passLib.ledger(passId),
+    legal_notice: passLib.LEGAL_NOTICE,
+  });
+}
+
+async function passRedeem(req, res, passId) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  const film = body.film_id ? store.get('films', body.film_id) : null;
+  if (!film) return sendError(res, 404, 'film not found');
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!isEmail(email)) {
+    return sendError(res, 400, 'email must be a valid email', { legal_notice: passLib.LEGAL_NOTICE });
+  }
+  // CRITICAL: ownership is checked BEFORE any credit is debited. A duplicate
+  // redemption must never consume a credit.
+  if (alreadyEntitled(film.film_id, email)) {
+    return sendJson(res, 200, {
+      pass_id: passId,
+      film_id: film.film_id,
+      entitlement: null,
+      already_owned: true,
+      redemption: null,
+      balance: passLib.balance(passId),
+      license_term: 'permanent', // NOT copyright ownership — wording pending counsel review
+      legal_notice: passLib.LEGAL_NOTICE,
+    });
+  }
+  let redemption;
+  try {
+    redemption = passLib.redeemCredit({ pass_id: passId, film_id: film.film_id, email });
+  } catch (err) {
+    return sendError(res, err.status || 500, err.message, { legal_notice: passLib.LEGAL_NOTICE });
+  }
+  // A redeemed film takes the same entitlement path as a purchase,
+  // so it grants a permanent DRM-free download (yours to keep — wording
+  // pending counsel review; NOT copyright ownership).
+  const { entitlement } = grantEntitlement({ film, email, source: 'pass_redemption' });
+  return sendJson(res, 201, {
+    pass_id: passId,
+    film_id: film.film_id,
+    entitlement,
+    already_owned: false,
+    redemption,
+    balance: passLib.balance(passId),
+    license_term: 'permanent', // NOT copyright ownership — wording pending counsel review
+    legal_notice: passLib.LEGAL_NOTICE,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// M2: filmmaker onboarding — guided steps: account, Stripe Connect (stub),
+// payout details, catalog import (reuses M1 import), audience invite (reuses
+// M1 buyer-claim CSV). No raw bank details are ever accepted: payouts go
+// through Stripe Connect only.
+
+async function createFilmmaker(req, res) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
+  if (typeof body.display_name !== 'string' || body.display_name.trim() === '') {
+    return sendError(res, 400, 'display_name is required');
+  }
+  const email = body.email.trim().toLowerCase();
+  const existing = store.all('filmmakers').find((f) => f.email === email);
+  if (existing) return sendJson(res, 200, existing);
+  const filmmaker = {
+    filmmaker_id: 'fmk_' + crypto.randomBytes(6).toString('hex'),
+    email,
+    display_name: body.display_name.trim(),
+    stripe_connect_account_id: null,
+    connect_status: 'not_started', // not_started | active (via webhook, once keys exist)
+    payout_method: null, // only 'stripe_connect' is accepted
+    payout_status: 'not_started',
+    created_at: nowIso(),
+  };
+  store.insert('filmmakers', filmmaker);
+  return sendJson(res, 201, filmmaker);
+}
+
+function getFilmmaker(req, res, filmmakerId) {
+  const f = store.get('filmmakers', filmmakerId);
+  if (!f) return sendError(res, 404, 'filmmaker not found');
+  return sendJson(res, 200, f);
+}
+
+async function updateFilmmaker(req, res, filmmakerId) {
+  const f = store.get('filmmakers', filmmakerId);
+  if (!f) return sendError(res, 404, 'filmmaker not found');
+  const body = await readJson(req, res);
+  if (body === null) return;
+  // Hard rule: this server never touches raw bank details.
+  if (body.account_number || body.routing_number || body.bank_account || body.iban) {
+    return sendError(res, 400, 'do not send bank details to this server — payouts are handled through Stripe Connect');
+  }
+  const patch = {};
+  if (typeof body.display_name === 'string' && body.display_name.trim() !== '') {
+    patch.display_name = body.display_name.trim();
+  }
+  if (body.payout_method !== undefined) {
+    if (body.payout_method !== 'stripe_connect') {
+      return sendError(res, 400, "payout_method must be 'stripe_connect'");
+    }
+    patch.payout_method = 'stripe_connect';
+    patch.payout_status = stripe.isConfigured() ? 'pending_onboarding' : 'stub_pending_keys';
+  }
+  return sendJson(res, 200, store.update('filmmakers', filmmakerId, patch));
+}
+
+function filmmakerConnect(req, res, filmmakerId) {
+  const f = store.get('filmmakers', filmmakerId);
+  if (!f) return sendError(res, 404, 'filmmaker not found');
+  // Stripe Connect onboarding-link shape lives in lib/stripe.js; without keys
+  // this is deliberately unusable.
+  return sendError(res, 503, "Stripe Connect not configured — needs Dino's keys", {
+    legal_notice: passLib.LEGAL_NOTICE,
+  });
+}
+
+function filmmakerOnboarding(req, res, filmmakerId) {
+  const f = store.get('filmmakers', filmmakerId);
+  if (!f) return sendError(res, 404, 'filmmaker not found');
+  const films = store.all('films').filter((fl) => fl.filmmaker_email === f.email);
+  const filmIds = new Set(films.map((fl) => fl.film_id));
+  const audience = store
+    .all('entitlements')
+    .some((e) => filmIds.has(e.film_id) && (e.source === 'import' || e.source === 'claim'));
+  const steps = [
+    { id: 'account', label: 'Account setup', done: true },
+    { id: 'connect', label: 'Stripe Connect (test-mode shape)', done: f.connect_status === 'active' },
+    { id: 'payout', label: 'Payout details', done: f.payout_status !== 'not_started' },
+    { id: 'catalog', label: 'Catalog import', done: films.length > 0 },
+    { id: 'audience', label: 'Audience invite', done: audience },
+  ];
+  return sendJson(res, 200, { filmmaker: f, steps, complete: steps.every((s) => s.done) });
+}
+
+function filmmakerProfile(req, res, filmmakerId) {
+  const f = store.get('filmmakers', filmmakerId);
+  if (!f) return sendError(res, 404, 'filmmaker not found');
+  const films = store.all('films').filter((fl) => fl.filmmaker_email === f.email).map(publicFilm);
+  return sendJson(res, 200, {
+    filmmaker_id: f.filmmaker_id,
+    display_name: f.display_name,
+    films,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// M2: buyer library — purchase history + permanent-license view (NOT copyright ownership).
+// (No buyer auth in M2 scope; the email in the path selects the library.
+//  Flagged in README as a pre-launch hardening item.)
+
+function buyerLibrary(req, res, emailParam) {
+  let email;
+  try {
+    email = decodeURIComponent(emailParam).trim().toLowerCase();
+  } catch {
+    return sendError(res, 400, 'invalid email');
+  }
+  if (!isEmail(email)) return sendError(res, 400, 'invalid email');
+  const items = store
+    .all('entitlements')
+    .filter((e) => e.email === email)
+    .map((e) => {
+      const film = store.get('films', e.film_id);
+      const rec = e.receipt_id ? store.get('receipts', e.receipt_id) : null;
+      return {
+        entitlement: e,
+        film: film ? Object.assign(publicFilm(film), { playback_url: CDN.getPlaybackUrl(film) }) : null,
+        receipt: rec ? rec.receipt : null,
+        signature: rec ? rec.signature : null,
+        license_term: 'permanent', // NOT copyright ownership — wording pending counsel review
+      };
+    });
+  return sendJson(res, 200, { email, films_owned: items.length, items });
+}
+
+
+// ---------------------------------------------------------------------------
 // router
 // ---------------------------------------------------------------------------
 
 async function handleApi(req, res, url, seg, method) {
   // seg: path segments after /api
   if (seg[0] === 'films' && seg.length === 1 && method === 'GET') {
-    return sendJson(res, 200, store.all('films').map(publicFilm));
+    // M2: ?q= searches title+description, ?genre= filters by genre tag.
+    let films = store.all('films');
+    const q = (url.searchParams.get('q') || '').trim().toLowerCase();
+    const genre = (url.searchParams.get('genre') || '').trim().toLowerCase();
+    if (q) {
+      films = films.filter((f) => ((f.title || '') + ' ' + (f.description || '')).toLowerCase().includes(q));
+    }
+    if (genre) {
+      films = films.filter((f) => (f.genres || []).some((g) => String(g).toLowerCase() === genre));
+    }
+    return sendJson(res, 200, films.map(publicFilm));
   }
   if (seg[0] === 'films' && seg[1] === 'import' && seg.length === 2 && method === 'POST') {
     return importFilm(req, res);
@@ -559,6 +853,9 @@ async function handleApi(req, res, url, seg, method) {
       public_key: receipts.getPublicKeyBase64(),
     });
   }
+  if (seg[0] === 'receipts' && seg[1] === 'terms' && seg.length === 2 && method === 'GET') {
+    return sendJson(res, 200, { terms: receipts.TERMS, terms_hash: receipts.TERMS_HASH });
+  }
   if (seg[0] === 'receipts' && seg[1] === 'verify' && seg.length === 2 && method === 'POST') {
     const body = await readJson(req, res);
     if (body === null) return;
@@ -576,10 +873,46 @@ async function handleApi(req, res, url, seg, method) {
     }
     return sendJson(res, 200, { valid: receipts.verify(receipt, signature) });
   }
+  // M2: Collector Pass — REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk).
+  if (seg[0] === 'passes' && seg[1] === 'test' && seg.length === 2 && method === 'POST') {
+    return passTestSubscribe(req, res);
+  }
+  if (seg[0] === 'passes' && seg[1] === 'checkout' && seg.length === 2 && method === 'POST') {
+    return passCheckout(req, res);
+  }
+  if (seg[0] === 'passes' && seg.length === 2 && method === 'GET') {
+    return passDetail(req, res, seg[1]);
+  }
+  if (seg[0] === 'passes' && seg[2] === 'redeem' && seg.length === 3 && method === 'POST') {
+    return passRedeem(req, res, seg[1]);
+  }
+  // M2: filmmaker onboarding.
+  if (seg[0] === 'filmmakers' && seg.length === 1 && method === 'POST') {
+    return createFilmmaker(req, res);
+  }
+  if (seg[0] === 'filmmakers' && seg.length === 2 && method === 'GET') {
+    return getFilmmaker(req, res, seg[1]);
+  }
+  if (seg[0] === 'filmmakers' && seg.length === 2 && method === 'PATCH') {
+    return updateFilmmaker(req, res, seg[1]);
+  }
+  if (seg[0] === 'filmmakers' && seg[2] === 'connect' && seg.length === 3 && method === 'POST') {
+    return filmmakerConnect(req, res, seg[1]);
+  }
+  if (seg[0] === 'filmmakers' && seg[2] === 'onboarding' && seg.length === 3 && method === 'GET') {
+    return filmmakerOnboarding(req, res, seg[1]);
+  }
+  if (seg[0] === 'filmmakers' && seg[2] === 'profile' && seg.length === 3 && method === 'GET') {
+    return filmmakerProfile(req, res, seg[1]);
+  }
+  // M2: buyer library (purchase history).
+  if (seg[0] === 'buyers' && seg[2] === 'library' && seg.length === 3 && method === 'GET') {
+    return buyerLibrary(req, res, seg[1]);
+  }
   if (seg[0] === 'health' && seg.length === 1 && method === 'GET') {
     return sendJson(res, 200, {
       service: 'decentralflix-lifeboat',
-      milestone: 'M1',
+      milestone: 'M2',
       cdn: CDN.constructor.name,
       stripe_configured: stripe.isConfigured(),
     });
@@ -605,5 +938,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`decentralflix-lifeboat M1 listening on http://${HOST}:${PORT} (cdn=${CDN.constructor.name})`);
+  console.log(`decentralflix-lifeboat M2 listening on http://${HOST}:${PORT} (cdn=${CDN.constructor.name})`);
 });

@@ -1,15 +1,16 @@
 'use strict';
-// Stripe integration for the Decentralflix Lifeboat — STUBBED for M1.
+// Stripe integration for the Decentralflix Lifeboat — STUBBED for M1/M2.
 //
-// +--------------------------------------------------------------------------
-// | MONEY-TRANSMISSION WARNING: top-ups route through a Stripe-managed flow;
-// | needs lawyer's read before launch.
-// |
-// | This file contains the REAL call structure (checkout session creation and
-// | webhook signature verification) but every live Stripe call throws until
-// | Dino provides keys. Do NOT wire real charges without counsel reviewing
-// | the money-transmission / marketplace-facilitator exposure first.
-// +--------------------------------------------------------------------------
+// +--------------------------------------------------------------------------+
+// | MONEY-TRANSMISSION WARNING: top-ups route through a Stripe-managed flow;  |
+// | needs lawyer's read before launch.                                       |
+// |                                                                          |
+// | This file contains the REAL call structure (checkout session creation    |
+// | for one-off purchases AND recurring Collector Pass subscriptions, plus   |
+// | webhook signature verification) but every live Stripe call throws until  |
+// | Dino provides keys. Do NOT wire real charges without counsel reviewing   |
+// | the money-transmission / marketplace-facilitator exposure first.         |
+// +--------------------------------------------------------------------------+
 
 const crypto = require('node:crypto');
 
@@ -43,11 +44,48 @@ function buildCheckoutSessionParams({ film, buyerEmail, successUrl, cancelUrl })
   };
 }
 
+// Pure function: the exact parameter shape for the COLLECTOR PASS recurring
+// subscription ($9.99/mo -> 1 non-transferable, non-cashable credit per month).
+// REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk).
+function buildSubscriptionCheckoutParams({ buyerEmail, successUrl, cancelUrl }) {
+  return {
+    mode: 'subscription',
+    customer_email: buyerEmail,
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: 999, // $9.99 / month — Collector Pass
+          recurring: { interval: 'month' },
+          product_data: {
+            name: 'Decentralflix Collector Pass',
+            description:
+              'Monthly credit redeemable for one film. Credits are non-transferable and non-cashable. REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk).',
+            metadata: { product: 'collector_pass' },
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: { product: 'collector_pass', buyer_email: buyerEmail },
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+  };
+}
+
 // STUB: throws until Dino provides keys. When activated, this becomes:
 //   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 //   return stripe.checkout.sessions.create(buildCheckoutSessionParams(args));
 async function createCheckoutSession(/* args */) {
   throw new Error("Stripe not configured — needs Dino's keys");
+}
+
+// STUB: recurring-subscription variant. Same rule: throws until keys exist AND
+// counsel has reviewed the money-transmission exposure.
+async function createSubscriptionCheckout(/* args */) {
+  throw new Error(
+    "Stripe not configured — needs Dino's keys. Collector Pass REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk)."
+  );
 }
 
 // Verifies a Stripe webhook signature header against the raw request body,
@@ -88,6 +126,8 @@ function verifyWebhookSignature(rawBody, signatureHeader, secret) {
 module.exports = {
   isConfigured,
   buildCheckoutSessionParams,
+  buildSubscriptionCheckoutParams,
   createCheckoutSession,
+  createSubscriptionCheckout,
   verifyWebhookSignature,
 };

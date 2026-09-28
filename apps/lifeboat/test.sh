@@ -236,6 +236,263 @@ code=$(curl -s -o "$TMPD/wh.json" -w "%{http_code}" -X POST "$BASE/api/webhooks/
   -H 'Content-Type: application/json' -d '{"type":"checkout.session.completed"}')
 [ "$code" = "503" ] && pass "stripe webhook without secret → 503 not configured" || fail "webhook 503" "http=$code"
 
+# === M2 tests =====================================================================
+PUBKEY=$(jget "$TMPD/pubkey.json" public_key)
+# Unique buyer email per run: data/ persists across runs, so pass tests must not
+# collide with a previous run's entitlements.
+PBEMAIL="passbuyer-$(date +%s)-$RANDOM@example.com"
+
+# --- M2: genre import + search/genre filters ------------------------------------------
+META3='{"title":"Zebra Migration Documentary","description":"a film about zebra crossings of the savanna","price_usd_cents":799,"territories":["US"],"download_allowed":true,"cleared_music_attested":true,"filmmaker_email":"filmmaker@example.com","genres":["documentary","indie"]}'
+code=$(curl -s -o "$TMPD/import3.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META3")
+FILM3=$(jget "$TMPD/import3.json" film_id)
+[ "$code" = "201" ] && [ -n "$FILM3" ] && pass "M2: import film with genres returns 201" || fail "M2: import film with genres" "http=$code"
+
+code=$(curl -s -o "$TMPD/search.json" -w "%{http_code}" "$BASE/api/films?q=zebra")
+[ "$code" = "200" ] && grep -q "$FILM3" "$TMPD/search.json" && pass "M2: search q=zebra finds the film" || fail "M2: search q" "http=$code"
+code=$(curl -s -o "$TMPD/search2.json" -w "%{http_code}" "$BASE/api/films?q=nomatchxyz123")
+[ "$code" = "200" ] && ! grep -q "$FILM3" "$TMPD/search2.json" && pass "M2: search q=nomatch returns no film" || fail "M2: search no-match" "http=$code"
+code=$(curl -s -o "$TMPD/genre.json" -w "%{http_code}" "$BASE/api/films?genre=documentary")
+[ "$code" = "200" ] && grep -q "$FILM3" "$TMPD/genre.json" && pass "M2: genre=documentary filter finds the film" || fail "M2: genre filter" "http=$code"
+code=$(curl -s -o "$TMPD/genre2.json" -w "%{http_code}" "$BASE/api/films?genre=horror")
+[ "$code" = "200" ] && ! grep -q "$FILM3" "$TMPD/genre2.json" && pass "M2: genre=horror filter excludes the film" || fail "M2: genre exclusion" "http=$code"
+
+# --- M2: filmmaker onboarding ----------------------------------------------------------
+code=$(curl -s -o "$TMPD/fmk.json" -w "%{http_code}" -X POST "$BASE/api/filmmakers" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"filmmaker@example.com","display_name":"Test Filmmaker"}')
+FMK=$(jget "$TMPD/fmk.json" filmmaker_id)
+{ [ "$code" = "201" ] || [ "$code" = "200" ]; } && [ -n "$FMK" ] && pass "M2: filmmaker account created ($FMK)" || fail "M2: create filmmaker" "http=$code"
+
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/filmmakers" \
+  -H 'Content-Type: application/json' -d '{"email":"not-an-email","display_name":"X"}')
+[ "$code" = "400" ] && pass "M2: filmmaker account requires valid email" || fail "M2: filmmaker email validation" "http=$code"
+
+code=$(curl -s -o "$TMPD/fmkget.json" -w "%{http_code}" "$BASE/api/filmmakers/$FMK")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/fmkget.json" display_name)" = "Test Filmmaker" ] \
+  && pass "M2: GET filmmaker returns profile" || fail "M2: get filmmaker" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/filmmakers/fmk_nope")
+[ "$code" = "404" ] && pass "M2: unknown filmmaker returns 404" || fail "M2: filmmaker 404" "http=$code"
+
+code=$(curl -s -o "$TMPD/fmkpatch.json" -w "%{http_code}" -X PATCH "$BASE/api/filmmakers/$FMK" \
+  -H 'Content-Type: application/json' -d '{"display_name":"Renamed Filmmaker"}')
+[ "$code" = "200" ] && [ "$(jget "$TMPD/fmkpatch.json" display_name)" = "Renamed Filmmaker" ] \
+  && pass "M2: PATCH filmmaker updates display_name" || fail "M2: patch filmmaker" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$BASE/api/filmmakers/$FMK" \
+  -H 'Content-Type: application/json' -d '{"account_number":"123456"}')
+[ "$code" = "400" ] && pass "M2: raw bank details rejected (400)" || fail "M2: bank details rejection" "http=$code"
+code=$(curl -s -o "$TMPD/fmkpay.json" -w "%{http_code}" -X PATCH "$BASE/api/filmmakers/$FMK" \
+  -H 'Content-Type: application/json' -d '{"payout_method":"stripe_connect"}')
+[ "$code" = "200" ] && [ "$(jget "$TMPD/fmkpay.json" payout_method)" = "stripe_connect" ] \
+  && pass "M2: payout_method=stripe_connect accepted" || fail "M2: payout method" "http=$code"
+
+code=$(curl -s -o "$TMPD/fmkconn.json" -w "%{http_code}" -X POST "$BASE/api/filmmakers/$FMK/connect")
+[ "$code" = "503" ] && grep -q "REQUIRES LEGAL REVIEW" "$TMPD/fmkconn.json" \
+  && pass "M2: Connect without keys returns 503 + legal warning" || fail "M2: connect 503" "http=$code"
+
+code=$(curl -s -o "$TMPD/fmkonb.json" -w "%{http_code}" "$BASE/api/filmmakers/$FMK/onboarding")
+ONB=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const s = Object.fromEntries(j.steps.map((x) => [x.id, x.done]));
+  console.log(j.steps.length + ":" + s.account + ":" + s.payout + ":" + s.catalog + ":" + s.audience + ":" + s.connect + ":" + j.complete);
+' "$TMPD/fmkonb.json")
+[ "$code" = "200" ] && [ "$ONB" = "5:true:true:true:true:false:false" ] \
+  && pass "M2: onboarding checklist (connect pending keys, complete=false)" || fail "M2: onboarding checklist" "http=$code $ONB"
+
+code=$(curl -s -o "$TMPD/fmkprof.json" -w "%{http_code}" "$BASE/api/filmmakers/$FMK/profile")
+[ "$code" = "200" ] && grep -q "$FILM1" "$TMPD/fmkprof.json" && grep -q "$FILM3" "$TMPD/fmkprof.json" \
+  && [ "$(jget "$TMPD/fmkprof.json" display_name)" = "Renamed Filmmaker" ] \
+  && pass "M2: public profile lists filmmaker films" || fail "M2: filmmaker profile" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/filmmakers/fmk_nope/profile")
+[ "$code" = "404" ] && pass "M2: unknown filmmaker profile returns 404" || fail "M2: filmmaker profile 404" "http=$code"
+
+code=$(curl -s -o "$TMPD/film1full.json" -w "%{http_code}" "$BASE/api/films/$FILM1")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/film1full.json" filmmaker.filmmaker_id)" = "$FMK" ] \
+  && pass "M2: film detail links to filmmaker profile" || fail "M2: film filmmaker link" "http=$code"
+
+# --- M2: Collector Pass (test mode) -------------------------------------------------------
+code=$(curl -s -o "$TMPD/pass.json" -w "%{http_code}" -X POST "$BASE/api/passes/test" \
+  -H 'Content-Type: application/json' -d "{\"email\":\"$PBEMAIL\"}")
+PASSID=$(jget "$TMPD/pass.json" pass.pass_id)
+[ "$code" = "201" ] && [ "$(jget "$TMPD/pass.json" balance)" = "1" ] \
+  && [ "$(jget "$TMPD/pass.json" test_mode)" = "true" ] \
+  && pass "M2: test pass subscription grants 1 credit" || fail "M2: pass subscribe" "http=$code"
+grep -q "REQUIRES LEGAL REVIEW BEFORE LAUNCH" "$TMPD/pass.json" \
+  && pass "M2: pass responses carry the legal-review warning" || fail "M2: pass legal warning"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/test" \
+  -H 'Content-Type: application/json' -d '{"email":"not-an-email"}')
+[ "$code" = "400" ] && pass "M2: pass subscribe validates email" || fail "M2: pass email validation" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/passes/pass_nope")
+[ "$code" = "404" ] && pass "M2: unknown pass returns 404" || fail "M2: pass 404" "http=$code"
+
+code=$(curl -s -o "$TMPD/passdetail.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+LEDGER1=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const ok = j.ledger.every((e) => e.transferable === false && e.cash_value_usd_cents === 0);
+  console.log(j.balance + ":" + j.ledger.length + ":" + ok);
+' "$TMPD/passdetail.json")
+[ "$code" = "200" ] && [ "$LEDGER1" = "1:1:true" ] \
+  && pass "M2: grant ledger entry is non-transferable + non-cashable" || fail "M2: ledger grant" "http=$code $LEDGER1"
+
+code=$(curl -s -o "$TMPD/passco.json" -w "%{http_code}" -X POST "$BASE/api/passes/checkout" \
+  -H 'Content-Type: application/json' -d '{}')
+[ "$code" = "503" ] && grep -q "REQUIRES LEGAL REVIEW" "$TMPD/passco.json" \
+  && pass "M2: real pass checkout without keys returns 503 + legal warning" || fail "M2: pass checkout 503" "http=$code"
+
+# non-transferability: a different email cannot spend this pass's credits
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"thief@example.com\"}")
+[ "$code" = "403" ] && pass "M2: redemption by non-holder email rejected (403)" || fail "M2: non-transferable redeem" "http=$code"
+code=$(curl -s -o "$TMPD/passbal.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+[ "$(jget "$TMPD/passbal.json" balance)" = "1" ] \
+  && pass "M2: balance unchanged after rejected redemption" || fail "M2: balance after 403"
+
+# redeem for real
+code=$(curl -s -o "$TMPD/redeem.json" -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"$PBEMAIL\"}")
+[ "$code" = "201" ] && [ "$(jget "$TMPD/redeem.json" already_owned)" = "false" ] \
+  && [ "$(jget "$TMPD/redeem.json" balance)" = "0" ] \
+  && [ "$(jget "$TMPD/redeem.json" license_term)" = "permanent" ] \
+  && [ "$(jget "$TMPD/redeem.json" redemption.delta)" = "-1" ] \
+  && pass "M2: credit redemption grants permanent license (balance 0)" || fail "M2: redeem" "http=$code"
+
+code=$(curl -s -o "$TMPD/passdetail2.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+LEDGER2=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const ok = j.ledger.every((e) => e.transferable === false && e.cash_value_usd_cents === 0);
+  const deltas = j.ledger.map((e) => e.delta).sort().join(",");
+  console.log(j.balance + ":" + j.ledger.length + ":" + ok + ":" + deltas);
+' "$TMPD/passdetail2.json")
+[ "$LEDGER2" = "0:2:true:-1,1" ] \
+  && pass "M2: ledger shows +1 grant and -1 redemption, all non-transferable" || fail "M2: ledger after redeem" "$LEDGER2"
+
+# duplicate redemption: must NOT spend a credit
+code=$(curl -s -o "$TMPD/redeem2.json" -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"$PBEMAIL\"}")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/redeem2.json" already_owned)" = "true" ] \
+  && pass "M2: duplicate redemption returns already_owned (200)" || fail "M2: duplicate redeem" "http=$code"
+code=$(curl -s -o "$TMPD/passdetail3.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+LEDGER3=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  console.log(j.balance + ":" + j.ledger.length);
+' "$TMPD/passdetail3.json")
+[ "$LEDGER3" = "0:2" ] \
+  && pass "M2: duplicate redemption spent no credit (balance 0, 2 ledger entries)" || fail "M2: no credit lost" "$LEDGER3"
+
+# insufficient credit: a different film with zero balance
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\",\"email\":\"$PBEMAIL\"}")
+[ "$code" = "409" ] && pass "M2: redemption with zero balance rejected (409)" || fail "M2: insufficient credit" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\",\"email\":\"nope\"}")
+[ "$code" = "400" ] && pass "M2: redeem validates email (400)" || fail "M2: redeem email validation" "http=$code"
+
+# --- M2: buyer library (purchase history) ----------------------------------------------------
+code=$(curl -s -o "$TMPD/lib.json" -w "%{http_code}" "$BASE/api/buyers/$PBEMAIL/library")
+LIBCHECK=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const it = j.items[0] || {};
+  const ent = it.entitlement || {};
+  console.log(j.films_owned + ":" + ent.film_id + ":" + it.license_term + ":" + !!(it.receipt && it.signature) + ":" + ent.source);
+' "$TMPD/lib.json")
+[ "$code" = "200" ] && [ "$LIBCHECK" = "1:$FILM1:permanent:true:pass_redemption" ] \
+  && pass "M2: library shows redeemed film, permanent license, signed receipt" || fail "M2: buyer library" "http=$code $LIBCHECK"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/buyers/not-an-email/library")
+[ "$code" = "400" ] && pass "M2: library validates email (400)" || fail "M2: library email validation" "http=$code"
+
+# --- M2: receipt terms (feasibility-corrected wording) ------------------------------------------
+code=$(curl -s -o "$TMPD/terms.json" -w "%{http_code}" "$BASE/api/receipts/terms")
+TERMSCHECK=$(node -e '
+  const t = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const lib = JSON.parse(require("fs").readFileSync(process.argv[2], "utf8"));
+  const rh = lib.items[0].receipt.terms_hash;
+  console.log(t.terms.includes("yours to keep") + ":" + t.terms.includes("NOT a transfer of copyright") + ":" + (t.terms_hash === rh));
+' "$TMPD/terms.json" "$TMPD/lib.json")
+[ "$code" = "200" ] && [ "$TERMSCHECK" = "true:true:true" ] \
+  && pass "M2: receipt terms v2 (yours-to-keep, no copyright transfer, hash matches)" || fail "M2: receipt terms" "$TERMSCHECK"
+
+# --- M2: pure-JS Ed25519 (lib + browser build) vs node:crypto -----------------------------------
+node -e '
+  const crypto = require("node:crypto");
+  const ed = require("./lib/ed25519");
+  const pub = require("./public/ed25519.js");
+  const sha512 = async (d) => Uint8Array.from(crypto.createHash("sha512").update(Buffer.from(d)).digest());
+  (async () => {
+    for (let i = 0; i < 4; i++) {
+      const kp = crypto.generateKeyPairSync("ed25519");
+      const other = crypto.generateKeyPairSync("ed25519");
+      const msg = Uint8Array.from(crypto.randomBytes(48));
+      const sig = Uint8Array.from(crypto.sign(null, msg, kp.privateKey));
+      const raw = ed.parseSpkiDerPublicKey(kp.publicKey.export({ type: "spki", format: "der" }));
+      const rawOther = ed.parseSpkiDerPublicKey(other.publicKey.export({ type: "spki", format: "der" }));
+      const tampered = Uint8Array.from(msg); tampered[0] ^= 1;
+      const checks = [
+        await ed.verify(raw, sig, msg, sha512),
+        await pub.verify(raw, sig, msg, sha512),
+        !(await ed.verify(raw, sig, tampered, sha512)),
+        !(await pub.verify(raw, sig, tampered, sha512)),
+        !(await ed.verify(rawOther, sig, msg, sha512)),
+        !(await pub.verify(rawOther, sig, msg, sha512)),
+        !(await ed.verify(raw, Uint8Array.from([1, 2, 3]), msg, sha512)),
+        !(await pub.verify(raw, Uint8Array.from([1, 2, 3]), msg, sha512)),
+      ];
+      if (!checks.every(Boolean)) { console.log("ED25519_FAIL vector " + i); process.exit(1); }
+    }
+    console.log("ED25519_OK 4 vectors x lib+browser (valid/tampered/wrong-key/malformed)");
+  })().catch((e) => { console.error("ED25519_ERR " + (e && e.message)); process.exit(1); });
+' > "$TMPD/ed25519.txt" 2>&1
+[ $? -eq 0 ] && grep -q "ED25519_OK" "$TMPD/ed25519.txt" \
+  && pass "M2: pure-JS Ed25519 (lib + browser) matches node:crypto on 4 vectors" || fail "M2: ed25519 vectors" "$(cat "$TMPD/ed25519.txt")"
+
+# --- M2: Stripe webhook signature verification (unit, no keys needed) ---------------------------
+node -e '
+  const crypto = require("node:crypto");
+  const stripe = require("./lib/stripe");
+  const secret = "whsec_test_unit";
+  const payload = JSON.stringify({ type: "customer.subscription.created", id: "evt_1" });
+  const t = Math.floor(Date.now() / 1000);
+  const sig = crypto.createHmac("sha256", secret).update(t + "." + payload, "utf8").digest("hex");
+  const ev = stripe.verifyWebhookSignature(payload, "t=" + t + ",v1=" + sig, secret);
+  if (!ev || ev.type !== "customer.subscription.created") { console.log("HOOK_FAIL parse"); process.exit(1); }
+  let threw = 0;
+  try { stripe.verifyWebhookSignature(payload, "t=" + t + ",v1=deadbeef", secret); } catch (e) { threw++; }
+  const oldT = t - 600;
+  const oldSig = crypto.createHmac("sha256", secret).update(oldT + "." + payload, "utf8").digest("hex");
+  try { stripe.verifyWebhookSignature(payload, "t=" + oldT + ",v1=" + oldSig, secret); } catch (e) { threw++; }
+  try { stripe.verifyWebhookSignature(payload, "t=" + t + ",v1=" + sig, ""); } catch (e) { threw++; }
+  if (threw !== 3) { console.log("HOOK_FAIL throws=" + threw); process.exit(1); }
+  console.log("HOOK_OK");
+' > "$TMPD/hook.txt" 2>&1
+[ $? -eq 0 ] && grep -q "HOOK_OK" "$TMPD/hook.txt" \
+  && pass "M2: webhook signature verifies valid, rejects bad/stale/missing secret" || fail "M2: webhook sig" "$(cat "$TMPD/hook.txt")"
+
+# --- M2: offline receipt verifier CLI ---------------------------------------------------------------
+node tools/verify-receipt.js --pubkey "$PUBKEY" "$TMPD/verify-body.json" > "$TMPD/cli1.txt" 2>&1
+[ $? -eq 0 ] && grep -q "^VALID" "$TMPD/cli1.txt" \
+  && pass "M2: CLI verifies valid receipt offline (--pubkey)" || fail "M2: CLI valid" "$(cat "$TMPD/cli1.txt")"
+node tools/verify-receipt.js --pubkey "$PUBKEY" "$TMPD/tamper-body.json" > "$TMPD/cli2.txt" 2>&1
+[ $? -eq 1 ] && grep -q "INVALID" "$TMPD/cli2.txt" \
+  && pass "M2: CLI rejects tampered receipt" || fail "M2: CLI tamper" "$(cat "$TMPD/cli2.txt")"
+WRONGPUB=$(node -e 'const c=require("node:crypto");const kp=c.generateKeyPairSync("ed25519");console.log(kp.publicKey.export({type:"spki",format:"der"}).toString("base64"))')
+node tools/verify-receipt.js --pubkey "$WRONGPUB" "$TMPD/verify-body.json" > "$TMPD/cli3.txt" 2>&1
+[ $? -eq 1 ] && grep -q "INVALID" "$TMPD/cli3.txt" \
+  && pass "M2: CLI rejects wrong-key receipt" || fail "M2: CLI wrong key" "$(cat "$TMPD/cli3.txt")"
+node -e '
+  const fs = require("fs");
+  const o = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  o.signature = "AAAA";
+  fs.writeFileSync(process.argv[2], JSON.stringify(o));
+' "$TMPD/verify-body.json" "$TMPD/malformed.json"
+node tools/verify-receipt.js --pubkey "$PUBKEY" "$TMPD/malformed.json" > "$TMPD/cli4.txt" 2>&1
+[ $? -eq 1 ] && grep -q "INVALID" "$TMPD/cli4.txt" \
+  && pass "M2: CLI rejects malformed signature" || fail "M2: CLI malformed" "$(cat "$TMPD/cli4.txt")"
+node tools/verify-receipt.js --server "$BASE" "$TMPD/verify-body.json" > "$TMPD/cli5.txt" 2>&1
+[ $? -eq 0 ] && grep -q "^VALID" "$TMPD/cli5.txt" \
+  && pass "M2: CLI verifies via --server pubkey fetch" || fail "M2: CLI server mode" "$(cat "$TMPD/cli5.txt")"
+
+# === end M2 tests ===============================================================
+
 # --- summary -----------------------------------------------------------------------------------
 echo "----------------------------------------"
 echo "RESULT: PASS=$PASS FAIL=$FAIL"

@@ -28,6 +28,7 @@
             <li><span class="k">Price</span> <strong id="film-price"></strong></li>
             <li><span class="k">Offer</span> <span id="film-offer"></span></li>
             <li><span class="k">Territories</span> <span id="film-terr"></span></li>
+            <li id="film-maker-row" hidden><span class="k">Filmmaker</span> <a id="film-maker" href="#"></a></li>
           </ul>
 
           <div id="buy-box" class="panel">
@@ -45,7 +46,7 @@
           </div>
 
           <div id="dl-box" class="panel" hidden>
-            <p style="margin-top:0">This title is yours to keep.</p>
+            <p style="margin-top:0">This title includes a permanent DRM-free download &mdash; yours to keep. <em>(License wording pending counsel review; not copyright ownership.)</em></p>
             <a class="btn secondary" id="download-link" href="#">Download</a>
           </div>
         </div>
@@ -84,6 +85,14 @@
 
           var terr = film.territories && film.territories.length ? film.territories.join(", ") : "Worldwide";
           document.getElementById("film-terr").textContent = terr;
+
+          if (film.filmmaker && film.filmmaker.filmmaker_id) {
+            var mrow = document.getElementById("film-maker-row");
+            mrow.hidden = false;
+            var ma = document.getElementById("film-maker");
+            ma.textContent = film.filmmaker.display_name;
+            ma.href = "filmmaker.html?id=" + encodeURIComponent(film.filmmaker.filmmaker_id);
+          }
 
           var streamUrl = film.playback_url || D.api("/api/films/" + encodeURIComponent(filmId) + "/stream");
           document.getElementById("player").src = streamUrl;

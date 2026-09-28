@@ -8,8 +8,13 @@
 
   var NAV = [
     ["index.html", "Catalog"],
+    ["browse.html", "Browse"],
+    ["pass.html", "Collector Pass"],
+    ["library.html", "My Library"],
+    ["verify.html", "Verify receipt"],
     ["import.html", "Import"],
     ["claim.html", "Claim a purchase"],
+    ["onboard.html", "Filmmaker onboarding"],
     ["dashboard.html", "Dashboard"]
   ];
 
@@ -25,12 +30,16 @@
     return "$" + (n / 100).toFixed(2);
   }
 
-  // California AB 2426 label rule:
-  // "Buy \u2014 yours to keep" ONLY when download_allowed is true;
-  // otherwise the offer is "License to stream".
+  // California AB 2426 label rule (feasibility-corrected 2026-09-28):
+  // "Buy \u2014 permanent DRM-free download, yours to keep" ONLY when download_allowed;
+  // otherwise the offer is "License to stream". A permanent download is NOT
+  // copyright ownership; this wording is pending counsel review.
   function offerLabel(downloadAllowed) {
-    return downloadAllowed ? "Buy \u2014 yours to keep" : "License to stream";
+    return downloadAllowed ? "Buy \u2014 permanent DRM-free download, yours to keep" : "License to stream";
   }
+
+  // Collector Pass legal banner, required on every pass-related surface.
+  var PASS_LEGAL = "REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk)";
 
   function api(path) {
     return API_BASE + path;
@@ -76,6 +85,21 @@
     });
   }
 
+  function patchJSON(path, body) {
+    return fetch(api(path), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body == null ? {} : body)
+    }).then(function (res) {
+      if (!res.ok) {
+        return readErrorText(res).then(function (msg) {
+          throw new Error("PATCH " + path + " \u2192 " + res.status + " " + msg);
+        });
+      }
+      return res.json();
+    });
+  }
+
   function queryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
@@ -105,14 +129,42 @@
     if (el) el.hidden = true;
   }
 
+  // Shared film card (AB 2426 label rule enforced here, like index.html).
+  function filmCard(film) {
+    var label = offerLabel(film.download_allowed);
+    var tag = film.download_allowed
+      ? '<span class="tag dl">Download included</span>'
+      : '<span class="tag stream">Streaming only</span>';
+    var genres = (film.genres || []).map(function (g) {
+      return '<a class="tag" href="browse.html?genre=' + encodeURIComponent(g) + '">' + esc(g) + "</a>";
+    }).join(" ");
+    return (
+      '<article class="card">' +
+        "<h3>" + esc(film.title) + "</h3>" +
+        (film.filmmaker && film.filmmaker.filmmaker_id
+          ? '<p class="desc">by <a href="filmmaker.html?id=' + encodeURIComponent(film.filmmaker.filmmaker_id) + '">' + esc(film.filmmaker.display_name) + "</a></p>"
+          : "") +
+        (film.description ? '<p class="desc">' + esc(film.description) + "</p>" : '<p class="desc"></p>') +
+        (genres ? '<div class="kv">' + genres + "</div>" : "") +
+        '<div class="foot">' +
+          '<span class="price">' + money(film.price_usd_cents) + "</span>" + tag +
+        "</div>" +
+        '<a class="btn" href="film.html?id=' + encodeURIComponent(film.film_id) + '">' + esc(label) + "</a>" +
+      "</article>"
+    );
+  }
+
   window.DFL = {
     API_BASE: API_BASE,
     esc: esc,
     money: money,
     offerLabel: offerLabel,
+    filmCard: filmCard,
+    PASS_LEGAL: PASS_LEGAL,
     api: api,
     getJSON: getJSON,
     postJSON: postJSON,
+    patchJSON: patchJSON,
     queryParam: queryParam,
     renderNav: renderNav,
     showStatus: showStatus,

@@ -1,7 +1,9 @@
 'use strict';
 // JSON-file persistence with atomic writes (write tmp + rename).
-// Collections: films.json, entitlements.json, claims.json, receipts.json — all under ./data/.
-// No SQLite by design: M1 lifeboat keeps state human-inspectable and dependency-free.
+// Collections: films.json, entitlements.json, claims.json, receipts.json,
+// passes.json, credit_ledger.json, filmmakers.json — all under ./data/.
+// No SQLite by design: the lifeboat keeps state human-inspectable and
+// dependency-free.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,6 +15,9 @@ const FILES = {
   entitlements: 'entitlements.json',
   claims: 'claims.json',
   receipts: 'receipts.json',
+  passes: 'passes.json',
+  credit_ledger: 'credit_ledger.json',
+  filmmakers: 'filmmakers.json',
 };
 
 const ID_FIELDS = {
@@ -20,6 +25,9 @@ const ID_FIELDS = {
   entitlements: 'entitlement_id',
   claims: 'claim_id',
   receipts: 'receipt_id',
+  passes: 'pass_id',
+  credit_ledger: 'ledger_id',
+  filmmakers: 'filmmaker_id',
 };
 
 function filePath(name) {

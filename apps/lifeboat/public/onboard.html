@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Filmmaker onboarding</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Sell your film <span class="accent">directly.</span></h1>
+      <p>Five steps: set up your account, connect Stripe, add payout details, import your catalog, invite your audience. You keep your masters and your buyer list.</p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel" id="step-account">
+      <h3 style="margin-top:0">Step 1 — Account setup</h3>
+      <div class="field">
+        <label for="fmk-email">Email</label>
+        <input type="email" id="fmk-email" placeholder="you@studio.com">
+      </div>
+      <div class="field">
+        <label for="fmk-name">Display name</label>
+        <input type="text" id="fmk-name" placeholder="Studio Name">
+      </div>
+      <button class="btn" id="create-btn">Create filmmaker account</button>
+    </div>
+
+    <div id="onboarding" hidden>
+      <div class="panel">
+        <h3 style="margin-top:0">Your checklist</h3>
+        <div id="steps"></div>
+        <div class="progress"><div id="progress-bar"></div></div>
+        <div class="progress-label" id="progress-label"></div>
+      </div>
+
+      <div class="panel" id="step-connect">
+        <h3 style="margin-top:0">Step 2 — Stripe Connect</h3>
+        <p class="hint">Connect a Stripe account so buyer payments can reach you. Test-mode shape only right now.</p>
+        <button class="btn secondary" id="connect-btn">Connect with Stripe (test mode)</button>
+        <span id="connect-state" class="mono"></span>
+      </div>
+
+      <div class="panel" id="step-payout">
+        <h3 style="margin-top:0">Step 3 — Payout details</h3>
+        <p class="hint">Payouts go through Stripe Connect. This server never accepts raw bank details — don't enter them anywhere here.</p>
+        <button class="btn secondary" id="payout-btn">Use Stripe Connect for payouts</button>
+      </div>
+
+      <div class="panel" id="step-catalog">
+        <h3 style="margin-top:0">Step 4 — Catalog import</h3>
+        <p class="hint">Upload a master, set your price and territories, and attest that the music is cleared.</p>
+        <a class="btn secondary" href="import.html">Go to import</a>
+      </div>
+
+      <div class="panel" id="step-audience">
+        <h3 style="margin-top:0">Step 5 — Audience invite</h3>
+        <p class="hint">Bring your buyers with you: import an opted-in email list or approve Vimeo receipt claims.</p>
+        <a class="btn secondary" href="claim.html">Go to buyer claims</a>
+        <a class="btn secondary" href="dashboard.html">Filmmaker dashboard</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; filmmakers keep their masters and their audience.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("onboard.html");
+
+      var filmmakerId = null;
+
+      function refresh() {
+        if (!filmmakerId) return;
+        D.getJSON("/api/filmmakers/" + encodeURIComponent(filmmakerId) + "/onboarding")
+          .then(function (ob) {
+            var done = ob.steps.filter(function (s) { return s.done; }).length;
+            document.getElementById("steps").innerHTML = ob.steps.map(function (s) {
+              var badge = s.done
+                ? '<span class="badge verified">done</span>'
+                : '<span class="badge pending">todo</span>';
+              return '<div class="claim"><div><div class="who">' + D.esc(s.label) + "</div></div>" + badge + "</div>";
+            }).join("");
+            document.getElementById("progress-bar").style.width = Math.round(100 * done / ob.steps.length) + "%";
+            document.getElementById("progress-label").textContent = done + " of " + ob.steps.length + " steps complete";
+            if (ob.complete) {
+              D.showStatus("status", "Onboarding complete — your films are ready to sell.", "ok");
+            }
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Could not load checklist: " + err.message, "error");
+          });
+      }
+
+      document.getElementById("create-btn").addEventListener("click", function () {
+        var email = document.getElementById("fmk-email").value.trim();
+        var name = document.getElementById("fmk-name").value.trim();
+        if (!email || !name) {
+          D.showStatus("status", "Email and display name are both required.", "error");
+          return;
+        }
+        D.postJSON("/api/filmmakers", { email: email, display_name: name })
+          .then(function (f) {
+            filmmakerId = f.filmmaker_id;
+            document.getElementById("onboarding").hidden = false;
+            document.getElementById("step-account").querySelector("button").disabled = true;
+            D.showStatus("status", "Account created. Work through the checklist below.", "ok");
+            refresh();
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Account creation failed: " + err.message, "error");
+          });
+      });
+
+      document.getElementById("connect-btn").addEventListener("click", function () {
+        D.postJSON("/api/filmmakers/" + encodeURIComponent(filmmakerId) + "/connect", {})
+          .then(function () {
+            document.getElementById("connect-state").textContent = "connected";
+            refresh();
+          })
+          .catch(function (err) {
+            // Expected until Dino provides Stripe keys.
+            document.getElementById("connect-state").textContent = "not configured (test mode)";
+            D.showStatus("status", "Stripe Connect: " + err.message, "info");
+          });
+      });
+
+      document.getElementById("payout-btn").addEventListener("click", function () {
+        D.patchJSON("/api/filmmakers/" + encodeURIComponent(filmmakerId), { payout_method: "stripe_connect" })
+          .then(function () {
+            D.showStatus("status", "Payout method set to Stripe Connect.", "ok");
+            refresh();
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Payout setup failed: " + err.message, "error");
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

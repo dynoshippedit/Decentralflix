@@ -24,7 +24,7 @@ Static frontend for the Lifeboat 90-day execution plan. Plain HTML + vanilla JS 
 
 ## AB 2426 label rule
 
-The offer button says **"Buy — yours to keep"** ONLY when `download_allowed` is true; otherwise it says **"License to stream"**. Enforced centrally in `app.js` via `DFL.offerLabel()` and used on every page.
+The offer button says **"Buy — permanent DRM-free download, yours to keep"** ONLY when `download_allowed` is true; otherwise it says **"License to stream"**. (Feasibility-corrected 2026-09-28: a permanent download is not copyright ownership; wording pending counsel review.) Enforced centrally in `app.js` via `DFL.offerLabel()` and used on every page.
 
 ## Config
 

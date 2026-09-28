@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — My Library</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Your <span class="accent">library.</span></h1>
+      <p>Every film you've bought, claimed, or redeemed with Collector Pass credits. Purchases are permanent — redeemed and bought films include a permanent DRM-free download, yours to keep. <em>(License wording pending counsel review; a permanent download is not copyright ownership.)</em></p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel">
+      <div class="field" style="margin-bottom:0">
+        <label for="email">Buyer email</label>
+        <div class="kv">
+          <input type="email" id="email" placeholder="you@example.com" style="flex:1">
+          <button class="btn" id="load-btn">Load my library</button>
+        </div>
+        <div class="hint">Buyer sign-in is not built yet (M2 scope) — your library is looked up by email. Pre-launch hardening item, see README.</div>
+      </div>
+    </div>
+
+    <div id="list"></div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; "Buy" means a permanent DRM-free download where offered (AB 2426; wording pending counsel review — a download is not copyright ownership).</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("library.html");
+
+      var list = document.getElementById("list");
+
+      function sourceLabel(source) {
+        return {
+          purchase: "Purchased",
+          import: "Vimeo buyer import",
+          claim: "Vimeo receipt claim",
+          pass_redemption: "Collector Pass redemption"
+        }[source] || source || "Granted";
+      }
+
+      function load() {
+        var email = document.getElementById("email").value.trim();
+        if (!email) {
+          D.showStatus("status", "Enter the buyer email used at purchase.", "error");
+          return;
+        }
+        D.hideStatus("status");
+        D.getJSON("/api/buyers/" + encodeURIComponent(email) + "/library")
+          .then(function (lib) {
+            if (!lib.items || lib.items.length === 0) {
+              list.innerHTML = '<div class="empty">No films in this library yet. <a href="browse.html">Browse the catalog</a>.</div>';
+              return;
+            }
+            list.innerHTML = lib.items.map(function (it) {
+              var film = it.film || {};
+              // AB 2426: "Buy — permanent DRM-free download, yours to keep" only for download titles.
+              var offer = D.offerLabel(!!film.download_allowed);
+              var receiptLink = it.receipt
+                ? ' <a class="btn small secondary" href="verify.html#receipt=' +
+                  encodeURIComponent(JSON.stringify({ receipt: it.receipt, signature: it.signature })) +
+                  '">Verify receipt</a>'
+                : "";
+              return (
+                '<div class="claim">' +
+                  "<div>" +
+                    '<div class="who">' + D.esc(film.title || it.entitlement.film_id) + "</div>" +
+                    '<div class="ref">' + D.esc(sourceLabel(it.entitlement.source)) +
+                    " · " + D.esc(it.entitlement.granted_at || "") +
+                    ' · <span class="tag dl">Permanent download — yours to keep</span> ' +
+                    '<span class="tag">' + D.esc(offer) + "</span></div>" +
+                  "</div>" +
+                  '<div class="kv">' +
+                    '<a class="btn small" href="film.html?id=' + encodeURIComponent(it.entitlement.film_id) + '">Watch</a>' +
+                    (film.download_allowed
+                      ? '<a class="btn small secondary" href="' + D.api("/api/films/" + encodeURIComponent(it.entitlement.film_id) + "/download") + '">Download</a>'
+                      : "") +
+                    receiptLink +
+                  "</div>" +
+                "</div>"
+              );
+            }).join("");
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Could not load library: " + err.message, "error");
+          });
+      }
+
+      document.getElementById("load-btn").addEventListener("click", load);
+      document.getElementById("email").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") load();
+      });
+
+      var preset = D.queryParam("email");
+      if (preset) {
+        document.getElementById("email").value = preset;
+        load();
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@
   <main>
     <div class="hero">
       <h1>Films, <span class="accent">owned by the people who made them.</span></h1>
-      <p>Every title here is sold directly by its filmmaker. Some are yours to keep and download; others are licensed to stream. The offer on each card tells you exactly which.</p>
+      <p>Every title here is sold directly by its filmmaker. Some include a permanent DRM-free download — yours to keep; others are licensed to stream. The offer on each card tells you exactly which. <em>(License wording pending counsel review; a permanent download is not copyright ownership.)</em></p>
     </div>
 
     <div id="status" class="status" hidden></div>
@@ -20,7 +20,7 @@
   </main>
 
   <footer class="site">
-    <p>Decentralflix Lifeboat &mdash; a 90-day execution build. Filmmakers keep their masters and their audience.</p>
+    <p>Decentralflix Lifeboat &mdash; a 90-day execution build. Filmmakers keep their masters and their audience. <em>License wording pending counsel review — a permanent download is not copyright ownership.</em></p>
   </footer>
 
   <script src="app.js"></script>
@@ -31,7 +31,7 @@
       D.renderNav("index.html");
 
       function card(film) {
-        // AB 2426: "Buy — yours to keep" ONLY when download_allowed; else "License to stream".
+        // AB 2426: "Buy — permanent DRM-free download, yours to keep" ONLY when download_allowed; else "License to stream".
         var label = D.offerLabel(film.download_allowed);
         var tag = film.download_allowed
           ? '<span class="tag dl">Download included</span>'
