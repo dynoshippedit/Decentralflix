@@ -1,0 +1,5 @@
+# Runtime state: film masters, entitlement/claim/receipt JSON, Ed25519 receipt key.
+# Never commit buyer data or the signing key.
+data/
+node_modules/
+*.log

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Claim your purchase</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Claim your film</h1>
+      <p>Bought this on Vimeo On Demand? <span class="accent">Claim it here &mdash; your filmmaker approves and it&rsquo;s yours again.</span> Paste your Vimeo receipt reference and the filmmaker will grant your entitlement.</p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <form id="claim-form" class="panel">
+      <div class="field">
+        <label for="c-film">Film</label>
+        <select id="c-film" required>
+          <option value="">Loading films&hellip;</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="c-email">Your email</label>
+        <input type="email" id="c-email" required placeholder="you@example.com">
+        <div class="hint">Use the email from your original Vimeo purchase if you can.</div>
+      </div>
+
+      <div class="field">
+        <label for="c-ref">Vimeo receipt reference</label>
+        <input type="text" id="c-ref" required placeholder="Vimeo order ID">
+        <div class="hint">The order ID from your Vimeo On Demand receipt email.</div>
+      </div>
+
+      <button type="submit" class="btn" id="claim-btn">Submit claim</button>
+    </form>
+
+    <div id="claim-done" class="panel" hidden>
+      <h2 style="margin-top:0">Claim submitted <span class="badge pending">pending filmmaker approval</span></h2>
+      <p id="claim-summary" style="color:var(--muted)"></p>
+      <p>You&rsquo;ll be notified once the filmmaker approves. Nothing to pay &mdash; you already bought it.</p>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; claims are reviewed by the filmmaker, not by us.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("claim.html");
+
+      var select = document.getElementById("c-film");
+
+      D.getJSON("/api/films")
+        .then(function (films) {
+          select.innerHTML = '<option value="">Select a film…</option>';
+          (films || []).forEach(function (film) {
+            var opt = document.createElement("option");
+            opt.value = film.film_id;
+            opt.textContent = film.title + " — " + D.money(film.price_usd_cents);
+            select.appendChild(opt);
+          });
+        })
+        .catch(function (err) {
+          select.innerHTML = '<option value="">Could not load films</option>';
+          D.showStatus("status", "Could not load the film list: " + err.message, "error");
+        });
+
+      document.getElementById("claim-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        D.hideStatus("status");
+        document.getElementById("claim-done").hidden = true;
+
+        var filmId = select.value;
+        var email = document.getElementById("c-email").value.trim();
+        var ref = document.getElementById("c-ref").value.trim();
+
+        if (!filmId) return D.showStatus("status", "Choose the film you bought.", "error");
+        if (!email) return D.showStatus("status", "Enter your email.", "error");
+        if (!ref) return D.showStatus("status", "Enter your Vimeo receipt reference (order ID).", "error");
+
+        var btn = document.getElementById("claim-btn");
+        btn.disabled = true;
+
+        D.postJSON("/api/claims", { film_id: filmId, email: email, vimeo_receipt_ref: ref })
+          .then(function (claim) {
+            var title = select.options[select.selectedIndex].textContent;
+            document.getElementById("claim-summary").textContent =
+              title + " · " + email + " · ref " + ref +
+              (claim && claim.claim_id ? " · claim " + claim.claim_id : "");
+            document.getElementById("claim-done").hidden = false;
+            D.showStatus("status", "Claim received — pending filmmaker approval.", "ok");
+            document.getElementById("claim-form").reset();
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Claim failed: " + err.message, "error");
+          })
+          .then(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
+</body>
+</html>

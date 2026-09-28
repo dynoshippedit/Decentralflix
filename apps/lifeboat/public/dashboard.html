@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Filmmaker dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Filmmaker dashboard</h1>
+      <p>Approve buyer claims, import your existing audience, and export it whenever you want. <span class="accent">Your audience is yours.</span></p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel">
+      <div class="field" style="margin-bottom:0">
+        <label for="d-film">Film</label>
+        <select id="d-film">
+          <option value="">Loading films&hellip;</option>
+        </select>
+      </div>
+      <p class="kv" style="margin-top:1rem">
+        <a class="btn secondary" id="csv-link" href="#" download>Export audience CSV</a>
+        <a class="btn secondary" id="watch-link" href="#">Open watch page</a>
+      </p>
+    </div>
+
+    <h2>Pending claims <span class="badge pending" id="claims-count" hidden></span></h2>
+    <div id="claims"></div>
+
+    <h2>Import buyers</h2>
+    <form id="buyers-form" class="panel">
+      <div class="field">
+        <label for="b-emails">Buyer emails</label>
+        <textarea id="b-emails" placeholder="one email per line&#10;fan1@example.com&#10;fan2@example.com"></textarea>
+        <div class="hint">Pre-grants entitlements to these emails for the selected film &mdash; no claim needed.</div>
+      </div>
+      <button type="submit" class="btn" id="buyers-btn">Import buyers</button>
+    </form>
+
+    <h2>DMCA takedowns</h2>
+    <div class="panel">
+      <p style="margin-top:0">To report infringing material hosted on Lifeboat, contact:</p>
+      <p class="mono" style="font-size:1rem">[DMCA contact TBD &mdash; insert designated agent email before launch]</p>
+      <p style="color:var(--muted);font-size:0.9rem">Placeholder only. A real designated agent must be registered and listed here before any public launch.</p>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Payments via Stripe (not yet activated). Stored balances need a lawyer&rsquo;s read before launch.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("dashboard.html");
+
+      var select = document.getElementById("d-film");
+      var claimsEl = document.getElementById("claims");
+      var countBadge = document.getElementById("claims-count");
+
+      function currentFilmId() { return select.value; }
+
+      function refreshLinks() {
+        var id = currentFilmId();
+        var csv = document.getElementById("csv-link");
+        var watch = document.getElementById("watch-link");
+        if (id) {
+          csv.href = D.api("/api/films/" + encodeURIComponent(id) + "/audience.csv");
+          csv.removeAttribute("disabled");
+          watch.href = "film.html?id=" + encodeURIComponent(id);
+        } else {
+          csv.href = "#";
+          watch.href = "#";
+        }
+      }
+
+      function loadClaims() {
+        var id = currentFilmId();
+        claimsEl.innerHTML = "";
+        countBadge.hidden = true;
+        if (!id) {
+          claimsEl.innerHTML = '<div class="empty">Select a film to see its pending claims.</div>';
+          return;
+        }
+        D.getJSON("/api/claims?film_id=" + encodeURIComponent(id))
+          .then(function (claims) {
+            claims = claims || [];
+            countBadge.textContent = String(claims.length);
+            countBadge.hidden = false;
+            if (claims.length === 0) {
+              claimsEl.innerHTML = '<div class="empty">No pending claims. When a buyer claims a Vimeo purchase, it shows up here.</div>';
+              return;
+            }
+            claimsEl.innerHTML = claims.map(function (c) {
+              var cid = c.claim_id || c.id;
+              return (
+                '<div class="claim">' +
+                  '<div>' +
+                    '<div class="who">' + D.esc(c.email) + "</div>" +
+                    '<div class="ref">Vimeo ref: ' + D.esc(c.vimeo_receipt_ref || c.receipt_ref || "—") + "</div>" +
+                  "</div>" +
+                  '<button class="btn small" data-approve="' + D.esc(String(cid)) + '">Approve</button>' +
+                "</div>"
+              );
+            }).join("");
+            claimsEl.querySelectorAll("[data-approve]").forEach(function (btn) {
+              btn.addEventListener("click", function () { approveClaim(btn.getAttribute("data-approve"), btn); });
+            });
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Could not load claims: " + err.message, "error");
+          });
+      }
+
+      function approveClaim(claimId, btn) {
+        btn.disabled = true;
+        D.postJSON("/api/claims/" + encodeURIComponent(claimId) + "/approve", {})
+          .then(function () {
+            D.showStatus("status", "Claim approved — entitlement granted.", "ok");
+            loadClaims();
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Approval failed: " + err.message, "error");
+            btn.disabled = false;
+          });
+      }
+
+      D.getJSON("/api/films")
+        .then(function (films) {
+          select.innerHTML = '<option value="">Select a film…</option>';
+          (films || []).forEach(function (film) {
+            var opt = document.createElement("option");
+            opt.value = film.film_id;
+            opt.textContent = film.title;
+            select.appendChild(opt);
+          });
+          refreshLinks();
+          loadClaims();
+        })
+        .catch(function (err) {
+          select.innerHTML = '<option value="">Could not load films</option>';
+          D.showStatus("status", "Could not load the film list: " + err.message, "error");
+        });
+
+      select.addEventListener("change", function () {
+        D.hideStatus("status");
+        refreshLinks();
+        loadClaims();
+      });
+
+      document.getElementById("buyers-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var id = currentFilmId();
+        if (!id) return D.showStatus("status", "Select a film first.", "error");
+
+        var emails = document.getElementById("b-emails").value
+          .split("\n")
+          .map(function (l) { return l.trim(); })
+          .filter(function (l) { return l.length > 0 && l.indexOf("@") > 0; });
+
+        if (emails.length === 0) {
+          return D.showStatus("status", "Enter at least one valid email (one per line).", "error");
+        }
+
+        var btn = document.getElementById("buyers-btn");
+        btn.disabled = true;
+        D.postJSON("/api/buyers/import", { film_id: id, emails: emails })
+          .then(function (res) {
+            var n = (res && (res.imported || res.count)) || emails.length;
+            D.showStatus("status", "Imported " + n + " buyer entitlement(s).", "ok");
+            document.getElementById("b-emails").value = "";
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Buyer import failed: " + err.message, "error");
+          })
+          .then(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
+</body>
+</html>
