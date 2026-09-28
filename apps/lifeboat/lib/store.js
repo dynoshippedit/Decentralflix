@@ -26,6 +26,9 @@ const FILES = {
   // Sales ledger: one record per completed bundle (and, in future, per
   // purchase), with explicit per-film revenue allocation.
   orders: 'orders.json',
+  // Auth: email+password accounts and bearer-token sessions.
+  accounts: 'accounts.json',
+  sessions: 'sessions.json',
 };
 
 const ID_FIELDS = {
@@ -38,6 +41,8 @@ const ID_FIELDS = {
   filmmakers: 'filmmaker_id',
   migration_contacts: 'contact_id',
   orders: 'order_id',
+  accounts: 'account_id',
+  sessions: 'token',
 };
 
 function filePath(name) {

@@ -42,7 +42,7 @@ Filmmakers or the operator define **plans** (`planId → name, price, duration`)
 
 ### 3.3 Pay-per-view (PayPerView)
 
-For one-time purchases without an NFT: `buyAccess(filmId)` records permanent access for the caller. The filmmaker sets the price; the contract splits payment into filmmaker revenue and a platform fee (`platformFeeBps`, capped at 2500 = 25%, adjustable by the owner). Overpayment is impossible by design — the call reverts unless `msg.value` exactly equals the price. Filmmakers withdraw via `withdrawRevenue`; the owner withdraws accrued platform fees separately. Every wei is accounted for in exactly one of those two buckets.
+For one-time purchases without an NFT: `buyAccess(filmId)` records licensed streaming access for the caller (rental or licensed access per the filmmaker's terms; not a perpetuity claim). The filmmaker sets the price; the contract splits payment into filmmaker revenue and a platform fee (`platformFeeBps`, capped at 2500 = 25%, adjustable by the owner). Overpayment is impossible by design — the call reverts unless `msg.value` exactly equals the price. Filmmakers withdraw via `withdrawRevenue`; the owner withdraws accrued platform fees separately. Every wei is accounted for in exactly one of those two buckets.
 
 ### 3.4 Storage layer (@decentralflix/storage)
 
@@ -142,7 +142,7 @@ The owner can pause claims and set fees, but **cannot move user funds or tickets
 3. **Swarm density.** All bandwidth-saving claims about P2P are suspended until measured: live peers per film, geographic distribution, session duration. The reference architecture treats P2P as an **opt-in boost layer**, with CDN as primary delivery.
 4. **Sybil attacks.** Reputation scores reflect attestor-reported activity; one entity can run many seeder identities. Scores are informational in the pilot and must never gate payouts without challenge-response verification and stake or allowlisted identity.
 5. **Encryption ≠ DRM.** Fragment encryption defeats casual scraping, not a key-holder. Do not market it as unbreakable content protection.
-6. **Availability ≠ durability.** IPFS availability depends on active pinning; Arweave permanence covers manifests and proofs, not video bytes. "Permanent access" means the *right* is permanent (the NFT); the *bits* depend on the pinning strategy documented in `PINNING.md`.
+6. **Availability ≠ durability.** IPFS availability depends on active pinning; Arweave permanence covers manifests and proofs, not video bytes. Licensed access means the *right* defined by the license terms (rental, licensed streaming, or permanent download where explicitly permitted); the *bits* depend on the pinning strategy documented in `PINNING.md`. No "forever" or "can't be taken away" claim is made.
 7. **Attestor trust.** In the bootstrap phase the attestor can fabricate or censor reports. The mitigation is transparency (all reports are on-chain events) and the planned move to quorum/challenge models — not pretended trustlessness.
 
 ---
@@ -198,7 +198,7 @@ The 1,000,000,000 DFLIX cap is a ceiling, not a schedule. No distribution is fin
 
 The protocol competes with centralized distributors (Vimeo OTT, Gumroad, Eventive) on **take rate and custody**: 75% to the filmmaker with wallet-to-wallet settlement versus platform-held balances and 30–50% effective takes. It does not compete on content moderation, discovery algorithms, or licensed catalogs — those are product-layer concerns.
 
-Legally, the protocol is designed for **utility characterization**: tickets are access rights, DFLIX powers protocol mechanics, and no contract promises profit. But characterization is jurisdiction- and fact-specific, which is why §8 requires transaction-specific counsel before mainnet. The Producer-tier crowdfunding mechanics in the existing `FilmmakerCampaign` contract carry the highest scrutiny under investment-contract analysis and are quarantined from the Phase 2 access contracts — a deliberate separation so the core ticket/subscription/PPV flow does not inherit crowdfunding risk.
+Legally, the protocol is designed for **utility characterization**: tickets are access rights, DFLIX powers protocol mechanics, and no contract promises profit. But characterization is jurisdiction- and fact-specific, which is why §8 requires transaction-specific counsel before mainnet. The Producer-tier crowdfunding mechanics in the `FilmmakerCampaign` contract are DEFERRED (the contract carries a prominent DEFERRED warning and is not deployed). Crowdfunding without a registered funding portal creates unregistered-securities risk. The deferred contract is quarantined from the Phase 2 access contracts — a deliberate separation so the core ticket/subscription/PPV flow does not inherit crowdfunding risk.
 
 ## 14. Security considerations
 

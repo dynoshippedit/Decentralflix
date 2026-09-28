@@ -16,6 +16,7 @@ const receipts = require('./lib/receipts');
 const cdn = require('./lib/cdn');
 const stripe = require('./lib/stripe');
 const passLib = require('./lib/pass');
+const authLib = require('./lib/auth');
 
 const PORT = parseInt(process.env.PORT || '8080', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -193,6 +194,144 @@ function nowIso() {
 }
 
 // ---------------------------------------------------------------------------
+// auth helpers
+// ---------------------------------------------------------------------------
+
+// Extracts the bearer token from the Authorization header, validates the
+// session, and returns the account. Returns null when unauthenticated.
+function getAuthAccount(req) {
+  const header = req.headers.authorization || '';
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  if (!m) return null;
+  const token = m[1].trim();
+  if (!token) return null;
+  const session = store.get('sessions', token);
+  if (!authLib.sessionValid(session)) {
+    if (session) { try { store.remove('sessions', token); } catch {} }
+    return null;
+  }
+  const account = store.get('accounts', session.account_id);
+  if (!account) return null;
+  // Return a safe public view (never the password hash).
+  return {
+    account_id: account.account_id,
+    email: account.email,
+    role: account.role,
+    name: account.name || null,
+    created_at: account.created_at,
+  };
+}
+
+// Sends 401 when unauthenticated; otherwise returns the account.
+function requireAuth(req, res) {
+  const account = getAuthAccount(req);
+  if (!account) { sendError(res, 401, 'authentication required'); return null; }
+  return account;
+}
+
+// Sends 401 when unauthenticated, 403 when not a filmmaker.
+function requireFilmmaker(req, res) {
+  const account = requireAuth(req, res);
+  if (!account) return null;
+  if (account.role !== 'filmmaker') { sendError(res, 403, 'filmmaker role required'); return null; }
+  return account;
+}
+
+// True when the account owns the film (filmmaker_email matches account email).
+function ownsFilm(account, film) {
+  return !!account && !!film &&
+    typeof film.filmmaker_email === 'string' &&
+    film.filmmaker_email.trim().toLowerCase() === account.email.toLowerCase();
+}
+
+// True when the account has a purchase entitlement for the film.
+function hasEntitlement(account, filmId) {
+  if (!account || !filmId) return false;
+  const email = account.email.toLowerCase();
+  return store.all('entitlements').some((e) =>
+    e.film_id === filmId &&
+    typeof e.email === 'string' &&
+    e.email.toLowerCase() === email &&
+    e.status !== 'revoked' && e.status !== 'refunded'
+  );
+}
+
+// ---------------------------------------------------------------------------
+// auth endpoints
+// ---------------------------------------------------------------------------
+
+async function signup(req, res) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
+  const role = typeof body.role === 'string' ? body.role.trim().toLowerCase() : 'buyer';
+  if (!isEmail(email)) return sendError(res, 400, 'email must be a valid email');
+  if (password.length < 8) return sendError(res, 400, 'password must be at least 8 characters');
+  if (role !== 'buyer' && role !== 'filmmaker')
+    return sendError(res, 400, 'role must be "buyer" or "filmmaker"');
+  const existing = store.all('accounts').some((a) => a.email.toLowerCase() === email);
+  if (existing) return sendError(res, 409, 'an account with this email already exists');
+  const account = {
+    account_id: 'acct_' + crypto.randomBytes(8).toString('hex'),
+    email,
+    password_hash: authLib.hashPassword(password),
+    role,
+    name: typeof body.name === 'string' ? body.name.trim().slice(0, 100) : null,
+    created_at: nowIso(),
+  };
+  store.insert('accounts', account);
+  const session = authLib.newSession(account.account_id);
+  store.insert('sessions', session);
+  return sendJson(res, 201, {
+    token: session.token,
+    expires_at: session.expires_at,
+    account: {
+      account_id: account.account_id,
+      email: account.email,
+      role: account.role,
+      name: account.name,
+    },
+    note: 'Test/dev auth only — not hardened for production (no rate limiting, no email verification).',
+  });
+}
+
+async function login(req, res) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
+  const account = store.all('accounts').find((a) => a.email.toLowerCase() === email);
+  if (!account || !authLib.verifyPassword(password, account.password_hash))
+    return sendError(res, 401, 'invalid email or password');
+  const session = authLib.newSession(account.account_id);
+  store.insert('sessions', session);
+  return sendJson(res, 200, {
+    token: session.token,
+    expires_at: session.expires_at,
+    account: {
+      account_id: account.account_id,
+      email: account.email,
+      role: account.role,
+      name: account.name,
+    },
+  });
+}
+
+async function logout(req, res) {
+  const header = req.headers.authorization || '';
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  if (m) { try { store.remove('sessions', m[1].trim()); } catch {} }
+  return sendJson(res, 200, { logged_out: true });
+}
+
+async function authMe(req, res) {
+  const account = requireAuth(req, res);
+  if (!account) return;
+  return sendJson(res, 200, { account });
+}
+
+// ---------------------------------------------------------------------------
 // domain
 // ---------------------------------------------------------------------------
 
@@ -290,7 +429,7 @@ function alreadyEntitled(filmId, emailNorm) {
 // route handlers
 // ---------------------------------------------------------------------------
 
-async function importFilm(req, res) {
+async function importFilm(req, res, account) {
   const ct = req.headers['content-type'] || '';
   if (!ct.includes('multipart/form-data')) {
     return sendError(res, 400, 'expected multipart/form-data');
@@ -341,7 +480,7 @@ async function importFilm(req, res) {
     territories: meta.territories.map((t) => t.trim()),
     download_allowed: Boolean(meta.download_allowed),
     cleared_music_attested: true,
-    filmmaker_email: meta.filmmaker_email.trim().toLowerCase(),
+    filmmaker_email: (account ? account.email : meta.filmmaker_email).trim().toLowerCase(),
     genres: Array.isArray(meta.genres) ? meta.genres.map((g) => g.trim()) : [],
     master_bytes: masterData.length,
     original_filename: path.basename(masterFilename),
@@ -500,15 +639,16 @@ async function approveClaim(req, res, claimId) {
 
 // TEST-ONLY: simulates a completed purchase without touching Stripe or money.
 async function testPurchase(req, res) {
+  const account = requireAuth(req, res);
+  if (!account) return;
   const body = await readJson(req, res);
   if (body === null) return;
   const film = body.film_id ? store.get('films', body.film_id) : null;
   if (!film) return sendError(res, 404, 'film not found');
-  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
 
   const { entitlement, receipt, signature } = grantEntitlement({
     film,
-    email: body.email,
+    email: account.email,
     source: 'purchase',
     testMode: true,
   });
@@ -528,9 +668,10 @@ async function testPurchase(req, res) {
 // Multi-seller bundles are OUT of scope (they need explicit revenue
 // allocation across filmmakers plus a supported payment flow).
 async function bundleTestPurchase(req, res) {
+  const account = requireAuth(req, res);
+  if (!account) return;
   const body = await readJson(req, res);
   if (body === null) return;
-  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
   const ids = body.film_ids;
   if (!Array.isArray(ids) || ids.length < 2)
     return sendError(res, 400, 'film_ids must be an array of at least 2 film ids');
@@ -548,7 +689,7 @@ async function bundleTestPurchase(req, res) {
     return sendError(res, 400, 'bundle films must share one filmmaker — multi-seller bundles are out of scope');
   }
 
-  const email = body.email.trim().toLowerCase();
+  const email = account.email.toLowerCase();
   const granted = [];
   const alreadyOwned = [];
   for (const film of films) {
@@ -956,6 +1097,19 @@ function buyerLibrary(req, res, emailParam) {
 
 async function handleApi(req, res, url, seg, method) {
   // seg: path segments after /api
+  // --- auth ---
+  if (seg[0] === 'auth' && seg[1] === 'signup' && seg.length === 2 && method === 'POST') {
+    return signup(req, res);
+  }
+  if (seg[0] === 'auth' && seg[1] === 'login' && seg.length === 2 && method === 'POST') {
+    return login(req, res);
+  }
+  if (seg[0] === 'auth' && seg[1] === 'logout' && seg.length === 2 && method === 'POST') {
+    return logout(req, res);
+  }
+  if (seg[0] === 'auth' && seg[1] === 'me' && seg.length === 2 && method === 'GET') {
+    return authMe(req, res);
+  }
   if (seg[0] === 'films' && seg.length === 1 && method === 'GET') {
     // M2: ?q= searches title+description, ?genre= filters by genre tag.
     let films = store.all('films');
@@ -970,17 +1124,35 @@ async function handleApi(req, res, url, seg, method) {
     return sendJson(res, 200, films.map(publicFilm));
   }
   if (seg[0] === 'films' && seg[1] === 'import' && seg.length === 2 && method === 'POST') {
-    return importFilm(req, res);
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    return importFilm(req, res, account);
   }
   if (seg[0] === 'films' && seg[2] === 'stream' && seg.length === 3 && method === 'GET') {
+    const account = requireAuth(req, res);
+    if (!account) return;
     const film = store.get('films', seg[1]);
     if (!film) return sendError(res, 404, 'film not found');
+    if (!ownsFilm(account, film) && !hasEntitlement(account, film.film_id))
+      return sendError(res, 403, 'purchase required to stream this film');
     return CDN.streamFile(req, res, film);
   }
   if (seg[0] === 'films' && seg[2] === 'download' && seg.length === 3 && method === 'GET') {
+    const account = requireAuth(req, res);
+    if (!account) return;
+    const film = store.get('films', seg[1]);
+    if (!film) return sendError(res, 404, 'film not found');
+    if (!ownsFilm(account, film) && !hasEntitlement(account, film.film_id))
+      return sendError(res, 403, 'purchase required to download this film');
     return downloadFilm(req, res, seg[1]);
   }
   if (seg[0] === 'films' && seg[2] === 'audience.csv' && seg.length === 3 && method === 'GET') {
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    const film = store.get('films', seg[1]);
+    if (!film) return sendError(res, 404, 'film not found');
+    if (!ownsFilm(account, film))
+      return sendError(res, 403, 'only the filmmaker who owns this film can view its audience');
     return audienceCsv(req, res, seg[1]);
   }
   if (seg[0] === 'films' && seg.length === 2 && method === 'GET') {
@@ -995,18 +1167,46 @@ async function handleApi(req, res, url, seg, method) {
     return fileClaim(req, res);
   }
   if (seg[0] === 'claims' && seg.length === 1 && method === 'GET') {
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
     const filmId = url.searchParams.get('film_id');
-    const claims = store.all('claims').filter((c) => !filmId || c.film_id === filmId);
+    const ownFilmIds = new Set(
+      store.all('films').filter((f) => ownsFilm(account, f)).map((f) => f.film_id)
+    );
+    const claims = store.all('claims').filter((c) =>
+      ownFilmIds.has(c.film_id) && (!filmId || c.film_id === filmId)
+    );
     return sendJson(res, 200, claims);
   }
   if (seg[0] === 'claims' && seg[1] === 'review-queue' && seg.length === 2 && method === 'GET') {
-    const queue = store.all('claims').filter((c) => c.status === 'needs_review');
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    const ownFilmIds = new Set(
+      store.all('films').filter((f) => ownsFilm(account, f)).map((f) => f.film_id)
+    );
+    const queue = store.all('claims').filter((c) =>
+      c.status === 'needs_review' && ownFilmIds.has(c.film_id)
+    );
     return sendJson(res, 200, queue);
   }
   if (seg[0] === 'claims' && seg[2] === 'review' && seg.length === 3 && method === 'POST') {
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    const claim = store.get('claims', seg[1]);
+    if (!claim) return sendError(res, 404, 'claim not found');
+    const film = store.get('films', claim.film_id);
+    if (!ownsFilm(account, film))
+      return sendError(res, 403, 'only the filmmaker who owns this film can review its claims');
     return reviewClaim(req, res, seg[1]);
   }
   if (seg[0] === 'claims' && seg[2] === 'approve' && seg.length === 3 && method === 'POST') {
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    const claim = store.get('claims', seg[1]);
+    if (!claim) return sendError(res, 404, 'claim not found');
+    const film = store.get('films', claim.film_id);
+    if (!ownsFilm(account, film))
+      return sendError(res, 403, 'only the filmmaker who owns this film can approve its claims');
     return approveClaim(req, res, seg[1]);
   }
   if (seg[0] === 'purchases' && seg[1] === 'test' && seg.length === 2 && method === 'POST') {
@@ -1079,6 +1279,11 @@ async function handleApi(req, res, url, seg, method) {
   }
   // M2: buyer library (purchase history).
   if (seg[0] === 'buyers' && seg[2] === 'library' && seg.length === 3 && method === 'GET') {
+    const account = requireAuth(req, res);
+    if (!account) return;
+    const requested = decodeURIComponent(seg[1]).trim().toLowerCase();
+    if (requested !== account.email.toLowerCase())
+      return sendError(res, 403, 'you can only view your own library');
     return buyerLibrary(req, res, seg[1]);
   }
   if (seg[0] === 'health' && seg.length === 1 && method === 'GET') {

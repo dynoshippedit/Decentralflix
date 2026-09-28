@@ -108,10 +108,15 @@ export default function AdminDashboard() {
   const isAdmin = isConnected && address?.toLowerCase() === ADMIN_WALLET.toLowerCase();
 
   // Filtered + sorted queue
+  // DELISTED films are hidden from the default/ALL view (delisting removes the film
+  // from the presented local list) but retained in the audit record; they appear
+  // only when the filter is explicitly set to DELISTED.
   const filteredFilms = useMemo(() => {
     let result = [...films];
 
-    if (filter !== 'ALL') {
+    if (filter === 'ALL') {
+      result = result.filter(f => f.status !== 'DELISTED');
+    } else {
       result = result.filter(f => f.status === filter);
     }
     if (search) {

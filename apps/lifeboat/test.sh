@@ -47,6 +47,57 @@ if [ "$ready" != 1 ]; then
 fi
 pass "server ready on :$PORT"
 
+# --- auth setup: filmmaker + buyer accounts -----------------------------------
+# Helper to extract JSON field (jget defined above)
+FILMMAKER_EMAIL="filmmaker@example.com"
+BUYER_EMAIL="buyer@example.com"
+OTHER_EMAIL="other@example.com"
+
+curl -s -o "$TMPD/fm-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$FILMMAKER_EMAIL\",\"password\":\"testpass123\",\"role\":\"filmmaker\",\"name\":\"Test Filmmaker\"}"
+FM_TOKEN=$(jget "$TMPD/fm-signup.json" token)
+[ -n "$FM_TOKEN" ] && pass "filmmaker signup returns token" || fail "filmmaker signup"
+
+curl -s -o "$TMPD/buyer-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$BUYER_EMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}"
+BUYER_TOKEN=$(jget "$TMPD/buyer-signup.json" token)
+[ -n "$BUYER_TOKEN" ] && pass "buyer signup returns token" || fail "buyer signup"
+
+curl -s -o "$TMPD/other-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$OTHER_EMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}"
+OTHER_TOKEN=$(jget "$TMPD/other-signup.json" token)
+[ -n "$OTHER_TOKEN" ] && pass "second buyer signup returns token" || fail "second buyer signup"
+
+# Duplicate signup rejected
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$BUYER_EMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}")
+[ "$code" = "409" ] && pass "duplicate signup rejected (409)" || fail "duplicate signup" "http=$code"
+
+# Login works
+curl -s -o "$TMPD/login.json" -X POST "$BASE/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$BUYER_EMAIL\",\"password\":\"testpass123\"}"
+[ -n "$(jget "$TMPD/login.json" token)" ] && pass "login returns token" || fail "login"
+
+# Wrong password rejected
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$BUYER_EMAIL\",\"password\":\"wrongpass\"}")
+[ "$code" = "401" ] && pass "wrong password rejected (401)" || fail "wrong password" "http=$code"
+
+# Auth me works
+code=$(curl -s -o "$TMPD/me.json" -w "%{http_code}" "$BASE/api/auth/me" -H "Authorization: Bearer $BUYER_TOKEN")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/me.json" account.email)" = "$BUYER_EMAIL" ] \
+  && pass "auth/me returns account" || fail "auth/me" "http=$code"
+
+# Auth me without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/auth/me")
+[ "$code" = "401" ] && pass "auth/me without token -> 401" || fail "auth/me no token" "http=$code"
+
 # --- generate test film ------------------------------------------------------
 if [ ! -s /tmp/testfilm.mp4 ]; then
   if ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libx264; then VCODEC=libx264; else VCODEC=mpeg4; fi
@@ -64,6 +115,7 @@ fi
 # --- import film 1 (download allowed) ----------------------------------------
 META1='{"title":"Lifeboat Test Film","description":"e2e fixture","price_usd_cents":499,"territories":["US","CA"],"download_allowed":true,"cleared_music_attested":true,"filmmaker_email":"filmmaker@example.com"}'
 code=$(curl -s -o "$TMPD/import1.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META1")
 [ "$code" = "201" ] && pass "import film returns 201" || fail "import film" "http=$code"
 FILM1=$(jget "$TMPD/import1.json" film_id)
@@ -74,16 +126,19 @@ FILM1=$(jget "$TMPD/import1.json" film_id)
 # --- import validation: music-rights rule ------------------------------------
 METABAD='{"title":"Bad","price_usd_cents":100,"territories":["US"],"download_allowed":false,"cleared_music_attested":false,"filmmaker_email":"f@example.com"}'
 code=$(curl -s -o "$TMPD/bad.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$METABAD")
 [ "$code" = "400" ] && pass "cleared_music_attested=false rejected (400)" || fail "music-rights rejection" "http=$code"
 
 METABAD2='{"title":"Bad","price_usd_cents":0,"territories":["US"],"download_allowed":false,"cleared_music_attested":true,"filmmaker_email":"f@example.com"}'
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$METABAD2")
 [ "$code" = "400" ] && pass "price_usd_cents=0 rejected (400)" || fail "price validation" "http=$code"
 
 METABAD3='{"title":"Bad","price_usd_cents":100,"territories":[],"download_allowed":false,"cleared_music_attested":true,"filmmaker_email":"f@example.com"}'
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$METABAD3")
 [ "$code" = "400" ] && pass "empty territories rejected (400)" || fail "territories validation" "http=$code"
 
@@ -96,24 +151,66 @@ code=$(curl -s -o "$TMPD/film1.json" -w "%{http_code}" "$BASE/api/films/$FILM1")
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/films/film_doesnotexist")
 [ "$code" = "404" ] && pass "unknown film returns 404" || fail "unknown film 404" "http=$code"
 
-# --- streaming + Range ----------------------------------------------------------
-code=$(curl -s -D "$TMPD/stream.hdr" -o "$TMPD/stream.mp4" -w "%{http_code}" "$BASE/api/films/$FILM1/stream")
+# --- REFUSAL tests: auth required -----------------------------------------------
+# Stream without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/films/$FILM1/stream")
+[ "$code" = "401" ] && pass "stream without token -> 401" || fail "stream no auth" "http=$code"
+
+# Stream with token but no purchase -> 403
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM1/stream")
+[ "$code" = "403" ] && pass "stream without purchase -> 403" || fail "stream no purchase" "http=$code"
+
+# Download without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/films/$FILM1/download")
+[ "$code" = "401" ] && pass "download without token -> 401" || fail "download no auth" "http=$code"
+
+# audience.csv without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
+[ "$code" = "401" ] && pass "audience.csv without token -> 401" || fail "audience no auth" "http=$code"
+
+# audience.csv with buyer token (not filmmaker) -> 403
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM1/audience.csv")
+[ "$code" = "403" ] && pass "audience.csv as buyer -> 403" || fail "audience buyer 403" "http=$code"
+
+# import film without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META1")
+[ "$code" = "401" ] && pass "import without token -> 401" || fail "import no auth" "http=$code"
+
+# import film with buyer token -> 403
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META1")
+[ "$code" = "403" ] && pass "import as buyer -> 403" || fail "import buyer 403" "http=$code"
+
+# --- test purchase (buyer auth, email from session) -------------------------------------
+code=$(curl -s -o "$TMPD/purchase.json" -w "%{http_code}" -X POST "$BASE/api/purchases/test" \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\"}")
+[ "$code" = "201" ] && [ "$(jget "$TMPD/purchase.json" test_mode)" = "true" ] \
+  && pass "test purchase returns test_mode=true" || fail "test purchase" "http=$code"
+
+
+# --- streaming + Range (authenticated, post-purchase) ----------------------------------------------------------------------------------
+code=$(curl -s -D "$TMPD/stream.hdr" -o "$TMPD/stream.mp4" -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM1/stream")
 [ "$code" = "200" ] && pass "stream full returns 200" || fail "stream full" "http=$code"
 grep -qi "^content-type: video/mp4" "$TMPD/stream.hdr" && pass "stream content-type video/mp4" || fail "stream content-type"
 grep -qi "^accept-ranges: bytes" "$TMPD/stream.hdr" && pass "stream advertises Accept-Ranges" || fail "accept-ranges header"
 
-code=$(curl -s -D "$TMPD/range.hdr" -o "$TMPD/range.bin" -w "%{http_code}" -r 0-1023 "$BASE/api/films/$FILM1/stream")
+code=$(curl -s -D "$TMPD/range.hdr" -o "$TMPD/range.bin" -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" -r 0-1023 "$BASE/api/films/$FILM1/stream")
 [ "$code" = "206" ] && pass "Range request returns 206" || fail "range 206" "http=$code"
 grep -qi "^content-range: bytes 0-1023/" "$TMPD/range.hdr" && pass "Content-Range header correct" || fail "content-range header"
 [ "$(stat -c%s "$TMPD/range.bin")" = "1024" ] && pass "range body is 1024 bytes" || fail "range body size"
 # byte-exactness: first 1024 bytes of the range must match the full stream
 cmp -s <(head -c 1024 "$TMPD/stream.mp4") "$TMPD/range.bin" && pass "range bytes match stream start" || fail "range byte-exactness"
 
-code=$(curl -s -o /dev/null -w "%{http_code}" -H "Range: bytes=99999999999-" "$BASE/api/films/$FILM1/stream")
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" -H "Range: bytes=99999999999-" "$BASE/api/films/$FILM1/stream")
 [ "$code" = "416" ] && pass "out-of-range Range returns 416" || fail "range 416" "http=$code"
 
 # --- buyers import: Vimeo export rows are contacts, NEVER entitlements -----------------
 code=$(curl -s -o "$TMPD/buyers.json" -w "%{http_code}" -X POST "$BASE/api/buyers/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -H 'Content-Type: application/json' \
   -d "{\"film_id\":\"$FILM1\",\"emails\":[\"buyer1@example.com\",\"buyer2@example.com\",\"not-an-email\"]}")
 [ "$code" = "201" ] && [ "$(jget "$TMPD/buyers.json" contacts_recorded)" = "2" ] \
@@ -121,7 +218,7 @@ code=$(curl -s -o "$TMPD/buyers.json" -w "%{http_code}" -X POST "$BASE/api/buyer
 [ "$(jget "$TMPD/buyers.json" invalid_emails)" = "not-an-email" ] && pass "invalid email reported" || fail "invalid email reporting"
 # An export row alone must NEVER create an entitlement: the Vimeo audience
 # export is opt-in contacts, not a purchase ledger.
-code=$(curl -s -o "$TMPD/aud-pre.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
+code=$(curl -s -o "$TMPD/aud-pre.csv" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/films/$FILM1/audience.csv")
 ! grep -q "^buyer1@example.com," "$TMPD/aud-pre.csv" && ! grep -q "^buyer2@example.com," "$TMPD/aud-pre.csv" \
   && pass "imported export rows grant no entitlements (no access from export alone)" || fail "no auto-grant from export"
 
@@ -156,7 +253,7 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
   -d "{\"film_id\":\"$FILM1\",\"email\":\"claimer@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-124\",\"purchase_type\":\"rent\",\"purchase_date\":\"2026-09-02\"}")
 [ "$code" = "409" ] && pass "duplicate open claim rejected" || fail "claim dedupe" "http=$code"
 
-code=$(curl -s -o "$TMPD/claims.json" -w "%{http_code}" "$BASE/api/claims?film_id=$FILM1")
+code=$(curl -s -o "$TMPD/claims.json" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/claims?film_id=$FILM1")
 [ "$code" = "200" ] && grep -q "$CLAIM1" "$TMPD/claims.json" \
   && pass "filmmaker claim list shows pending claim" || fail "claim list" "http=$code"
 
@@ -167,35 +264,41 @@ code=$(curl -s -o "$TMPD/claim2.json" -w "%{http_code}" -X POST "$BASE/api/claim
 [ "$code" = "201" ] && pass "second claim filed" || fail "file claim 2" "http=$code"
 CLAIM2=$(jget "$TMPD/claim2.json" claim_id)
 
-code=$(curl -s -o "$TMPD/review.json" -w "%{http_code}" -X POST "$BASE/api/claims/$CLAIM2/review" \
+code=$(curl -s -o "$TMPD/review.json" -w "%{http_code}" -X POST -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/claims/$CLAIM2/review" \
   -H 'Content-Type: application/json' \
   -d '{"reason":"receipt ref format unfamiliar"}')
 [ "$code" = "200" ] && [ "$(jget "$TMPD/review.json" status)" = "needs_review" ] \
   && pass "uncertain claim routed to manual review" || fail "review queue routing" "http=$code"
 
-code=$(curl -s -o "$TMPD/queue.json" -w "%{http_code}" "$BASE/api/claims/review-queue")
+code=$(curl -s -o "$TMPD/queue.json" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/claims/review-queue")
 [ "$code" = "200" ] && grep -q "$CLAIM2" "$TMPD/queue.json" && ! grep -q "$CLAIM1" "$TMPD/queue.json" \
   && pass "review queue lists only needs_review claims" || fail "review queue" "http=$code"
 
+# REFUSAL: approve without token -> 401
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+  -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM1/approve")
+[ "$code" = "401" ] && pass "approve without token -> 401" || fail "approve no auth" "http=$code"
+
+# REFUSAL: approve as buyer (not filmmaker) -> 403
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM1/approve")
+[ "$code" = "403" ] && pass "approve as buyer -> 403" || fail "approve buyer 403" "http=$code"
+
 # Reviewed claims can still be approved after manual review
 code=$(curl -s -o "$TMPD/approve2.json" -w "%{http_code}" -X POST \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM2/approve")
 [ "$code" = "200" ] && [ -n "$(jget "$TMPD/approve2.json" signature)" ] \
   && pass "manually reviewed claim approved" || fail "approve after review" "http=$code"
 
 code=$(curl -s -o "$TMPD/approve.json" -w "%{http_code}" -X POST \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM1/approve")
 [ "$code" = "200" ] && [ -n "$(jget "$TMPD/approve.json" signature)" ] \
   && pass "claim approved with signed receipt (empty {} body, frontend shape)" || fail "approve claim" "http=$code"
 [ "$(jget "$TMPD/approve.json" receipt.transferable)" = "false" ] \
   && pass "receipt is non-transferable" || fail "receipt transferable flag"
-
-# --- test purchase ---------------------------------------------------------------------
-code=$(curl -s -o "$TMPD/purchase.json" -w "%{http_code}" -X POST "$BASE/api/purchases/test" \
-  -H 'Content-Type: application/json' \
-  -d "{\"film_id\":\"$FILM1\",\"email\":\"purchaser@example.com\"}")
-[ "$code" = "201" ] && [ "$(jget "$TMPD/purchase.json" test_mode)" = "true" ] \
-  && pass "test purchase returns test_mode=true" || fail "test purchase" "http=$code"
 
 # --- receipt verification ----------------------------------------------------------------
 node -e '
@@ -238,11 +341,11 @@ code=$(curl -s -o "$TMPD/pubkey.json" -w "%{http_code}" "$BASE/api/receipts/pubk
   && pass "pubkey endpoint serves Ed25519 key" || fail "pubkey" "http=$code"
 
 # --- audience CSV ---------------------------------------------------------------------------
-code=$(curl -s -o "$TMPD/aud.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
+code=$(curl -s -o "$TMPD/aud.csv" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/films/$FILM1/audience.csv")
 [ "$code" = "200" ] && pass "audience.csv returns 200" || fail "audience.csv" "http=$code"
 head -1 "$TMPD/aud.csv" | grep -q "^email,granted_at,source,price_usd_cents$" \
   && pass "CSV header correct" || fail "CSV header"
-for em in claimer@example.com purchaser@example.com; do
+for em in claimer@example.com buyer@example.com; do
   grep -q "^$em," "$TMPD/aud.csv" && pass "CSV contains $em" || fail "CSV missing $em"
 done
 grep -q ",claim," "$TMPD/aud.csv" && grep -q ",purchase," "$TMPD/aud.csv" \
@@ -251,22 +354,28 @@ grep -q ",claim," "$TMPD/aud.csv" && grep -q ",purchase," "$TMPD/aud.csv" \
   && pass "CSV has no import-granted rows (export never grants access)" || fail "CSV import source"
 
 # --- downloads: allowed vs AB2426 ---------------------------------------------------------------
-code=$(curl -s -D "$TMPD/dl.hdr" -o "$TMPD/dl.mp4" -w "%{http_code}" "$BASE/api/films/$FILM1/download")
+code=$(curl -s -D "$TMPD/dl.hdr" -o "$TMPD/dl.mp4" -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM1/download")
 [ "$code" = "200" ] && pass "download allowed film returns 200" || fail "download allowed" "http=$code"
 grep -qi "attachment" "$TMPD/dl.hdr" && pass "download sends attachment disposition" || fail "download disposition"
 cmp -s "$TMPD/stream.mp4" "$TMPD/dl.mp4" && pass "download bytes equal stream bytes" || fail "download byte-exactness"
 
 META2='{"title":"Streaming Only Film","price_usd_cents":299,"territories":["US"],"download_allowed":false,"cleared_music_attested":true,"filmmaker_email":"filmmaker@example.com"}'
 code=$(curl -s -o "$TMPD/import2.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META2")
 FILM2=$(jget "$TMPD/import2.json" film_id)
 [ "$code" = "201" ] && [ -z "$(jget "$TMPD/import2.json" download_url)" ] \
   && pass "streaming-only film has no download_url" || fail "import film 2" "http=$code"
 
-code=$(curl -s -o "$TMPD/dl403.json" -w "%{http_code}" "$BASE/api/films/$FILM2/download")
+# Purchase FILM2 first (streaming-only film)
+curl -s -o /dev/null -X POST "$BASE/api/purchases/test" \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM2\"}"
+code=$(curl -s -o "$TMPD/dl403.json" -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM2/download")
 [ "$code" = "403" ] && grep -qi "ab 2426" "$TMPD/dl403.json" \
   && pass "streaming-only download → 403 with AB2426 message" || fail "AB2426 403" "http=$code"
-code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/films/$FILM2/stream")
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/films/$FILM2/stream")
 [ "$code" = "200" ] && pass "streaming-only film still streams" || fail "stream film2" "http=$code"
 
 # --- static frontend -----------------------------------------------------------
@@ -298,6 +407,7 @@ PBEMAIL="passbuyer-$(date +%s)-$RANDOM@example.com"
 # --- M2: genre import + search/genre filters ------------------------------------------
 META3='{"title":"Zebra Migration Documentary","description":"a film about zebra crossings of the savanna","price_usd_cents":799,"territories":["US"],"download_allowed":true,"cleared_music_attested":true,"filmmaker_email":"filmmaker@example.com","genres":["documentary","indie"]}'
 code=$(curl -s -o "$TMPD/import3.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META3")
 FILM3=$(jget "$TMPD/import3.json" film_id)
 [ "$code" = "201" ] && [ -n "$FILM3" ] && pass "M2: import film with genres returns 201" || fail "M2: import film with genres" "http=$code"
@@ -368,17 +478,17 @@ code=$(curl -s -o "$TMPD/film1full.json" -w "%{http_code}" "$BASE/api/films/$FIL
 # --- bundle checkout: same-seller multi-film, one checkout (TEST-ONLY) ------------------
 # The fee-saving alternative to stored balances: five separate $4 domestic-card
 # purchases cost ~$2.08 in processing; one $20 bundle costs ~$0.88.
-BUNDLEMAIL="bundle-$(date +%s)-$RANDOM@example.com"
 code=$(curl -s -o "$TMPD/bundle.json" -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
   -H 'Content-Type: application/json' \
-  -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"$BUNDLEMAIL\"}")
+  -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"]}")
 BUNDLECHECK=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   const alloc = (j.allocations || []).reduce((s, a) => s + a.amount_usd_cents, 0);
   console.log(j.test_mode + ":" + j.total_usd_cents + ":" + alloc + ":" + (j.entitlements || []).length + ":" + !!(j.order_id && j.fee_note));
 ' "$TMPD/bundle.json")
-[ "$code" = "201" ] && [ "$BUNDLECHECK" = "true:1298:1298:2:true" ] \
-  && pass "bundle: 2 films, total 1298c, allocations sum to total, order recorded" \
+[ "$code" = "201" ] && [ "$BUNDLECHECK" = "true:799:799:1:true" ] \
+  && pass "bundle: 1 new film (FILM1 already owned), total 799c, order recorded" \
   || fail "bundle purchase" "http=$code check=$BUNDLECHECK"
 
 # one signed receipt per film, each verifiable
@@ -387,46 +497,56 @@ node -e '
   j.entitlements.forEach((g, i) => require("fs").writeFileSync(process.argv[2] + i + ".json", JSON.stringify({ receipt: g.receipt, signature: g.signature })));
 ' "$TMPD/bundle.json" "$TMPD/br"
 BOK=0
-for i in 0 1; do
+for i in 0; do
   code=$(curl -s -o "$TMPD/brv$i.json" -w "%{http_code}" -X POST "$BASE/api/receipts/verify" \
     -H 'Content-Type: application/json' --data @"$TMPD/br$i.json")
   [ "$code" = "200" ] && [ "$(jget "$TMPD/brv$i.json" valid)" = "true" ] && BOK=$((BOK + 1))
 done
-[ "$BOK" = "2" ] && pass "bundle: one signed receipt per film, both verify" || fail "bundle receipts" "verified=$BOK"
+[ "$BOK" = "1" ] && pass "bundle: signed receipt verifies" || fail "bundle receipts" "verified=$BOK"
 
 # multi-seller bundles are out of scope -> 400
+# Create a second filmmaker account so FILM4 has a different owner
+curl -s -o /dev/null -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"filmmaker2@example.com","password":"testpass123","role":"filmmaker"}'
+FM2_TOKEN=$(curl -s -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' -d '{"email":"filmmaker2@example.com","password":"testpass123"}' | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))")
 META4='{"title":"Other Seller Film","price_usd_cents":399,"territories":["US"],"download_allowed":false,"cleared_music_attested":true,"filmmaker_email":"other-seller@example.com"}'
 code=$(curl -s -o "$TMPD/import4.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -H "Authorization: Bearer $FM2_TOKEN" \
   -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META4")
 FILM4=$(jget "$TMPD/import4.json" film_id)
 [ "$code" = "201" ] && [ -n "$FILM4" ] && pass "bundle: other-seller film imported" || fail "bundle: import film 4" "http=$code"
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM4\"],\"email\":\"$BUNDLEMAIL\"}")
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM4\"]}")
 [ "$code" = "400" ] && pass "bundle: multi-seller rejected (400)" || fail "bundle multi-seller" "http=$code"
 
 # validation guards
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM1\"],\"email\":\"$BUNDLEMAIL\"}")
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM1\"]}")
 [ "$code" = "400" ] && pass "bundle: duplicate film_ids rejected (400)" || fail "bundle duplicates" "http=$code"
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"film_nope\"],\"email\":\"$BUNDLEMAIL\"}")
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"film_nope\"]}")
 [ "$code" = "404" ] && pass "bundle: unknown film returns 404" || fail "bundle unknown film" "http=$code"
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"nope\"}")
-[ "$code" = "400" ] && pass "bundle: invalid email rejected (400)" || fail "bundle email" "http=$code"
-code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\"],\"email\":\"$BUNDLEMAIL\"}")
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\"]}")
 [ "$code" = "400" ] && pass "bundle: single film rejected (400)" || fail "bundle single" "http=$code"
 
 # already-owned films: nothing re-granted, no new order
 code=$(curl -s -o "$TMPD/bundle2.json" -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
-  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"$BUNDLEMAIL\"}")
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"]}")
 [ "$code" = "200" ] && [ "$(jget "$TMPD/bundle2.json" total_usd_cents)" = "0" ] \
   && pass "bundle: all-owned returns 200, zero total, no new grants" || fail "bundle already-owned" "http=$code"
-code=$(curl -s -o "$TMPD/audb.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
-[ "$code" = "200" ] && [ "$(grep -c "^$BUNDLEMAIL," "$TMPD/audb.csv")" = "1" ] \
+code=$(curl -s -o "$TMPD/audb.csv" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/films/$FILM1/audience.csv")
+[ "$code" = "200" ] && [ "$(grep -c "^$BUYER_EMAIL," "$TMPD/audb.csv")" = "1" ] \
   && pass "bundle: already-owned film not re-granted" || fail "bundle no double grant"
-grep -q ",bundle_purchase," "$TMPD/audb.csv" \
+# Bundle granted FILM3 (not FILM1), check FILM3's CSV for bundle_purchase source
+code=$(curl -s -o "$TMPD/audb3.csv" -w "%{http_code}" -H "Authorization: Bearer $FM_TOKEN" "$BASE/api/films/$FILM3/audience.csv")
+grep -q ",bundle_purchase," "$TMPD/audb3.csv" \
   && pass "CSV records bundle_purchase source" || fail "CSV bundle source"
 
 # --- M2: Collector Pass (test mode) -------------------------------------------------------
@@ -512,7 +632,12 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/
 [ "$code" = "400" ] && pass "M2: redeem validates email (400)" || fail "M2: redeem email validation" "http=$code"
 
 # --- M2: buyer library (purchase history) ----------------------------------------------------
-code=$(curl -s -o "$TMPD/lib.json" -w "%{http_code}" "$BASE/api/buyers/$PBEMAIL/library")
+# Create an account for the pass buyer so the library (auth-required) can be viewed
+curl -s -o /dev/null -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$PBEMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}"
+PB_TOKEN=$(curl -s -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$PBEMAIL\",\"password\":\"testpass123\"}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))")
+code=$(curl -s -o "$TMPD/lib.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/buyers/$PBEMAIL/library")
 LIBCHECK=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   const it = j.items[0] || {};
@@ -522,7 +647,10 @@ LIBCHECK=$(node -e '
 [ "$code" = "200" ] && [ "$LIBCHECK" = "1:$FILM1:permanent:true:pass_redemption" ] \
   && pass "M2: library shows redeemed film, permanent license, signed receipt" || fail "M2: buyer library" "http=$code $LIBCHECK"
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/buyers/not-an-email/library")
-[ "$code" = "400" ] && pass "M2: library validates email (400)" || fail "M2: library email validation" "http=$code"
+[ "$code" = "401" ] && pass "M2: library without token -> 401" || fail "M2: library no token" "http=$code"
+# Library with wrong email -> 403 (authenticated as buyer, requesting other email)
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $BUYER_TOKEN" "$BASE/api/buyers/$OTHER_EMAIL/library")
+[ "$code" = "403" ] && pass "M2: library with wrong email -> 403" || fail "M2: library wrong email" "http=$code"
 
 # --- M2: receipt terms (feasibility-corrected wording) ------------------------------------------
 code=$(curl -s -o "$TMPD/terms.json" -w "%{http_code}" "$BASE/api/receipts/terms")
