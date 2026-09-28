@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Decentralflix — Own the films. Keep the art alive.",
-  description: "Censorship-resistant platform for independent films. Buy permanent access once, own it forever. Creators receive 75% of every sale directly. No subscription required. Section 230 + DMCA compliant.",
+  description: "Censorship-resistant platform for independent films. Buy licensed streaming access. No perpetual-operation promises. Creators receive 75% of every sale directly. No subscription required. Section 230 + DMCA compliant.",
   icons: {
     icon: "/favicon.ico",
   },

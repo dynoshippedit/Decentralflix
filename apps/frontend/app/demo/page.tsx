@@ -19,7 +19,7 @@ const METRICS = [
   { value: '75%', label: 'Creator payout — instant, on-chain' },
   { value: '$0.05', label: 'Cost per NFT mint (Arbitrum L2)' },
   { value: '$0', label: 'Video egress fees (Cloudflare R2)' },
-  { value: 'Forever', label: 'Access duration — permanent' },
+  { value: 'Licensed', label: 'Access — stated terms, no perpetual promise' },
 ];
 
 export default function DemoPage() {
@@ -35,10 +35,10 @@ export default function DemoPage() {
           </div>
           <h1 className="text-6xl md:text-8xl font-semibold tracking-[-4px] leading-[0.92] mb-6">
             Own Your Cinema.<br />
-            <span className="text-white/40">Forever.</span>
+            <span className="text-white/40">Under a clear license.</span>
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-snug">
-            The censorship-resistant Netflix. Creators get 75% instantly. Viewers own their access permanently.
+            The censorship-resistant Netflix. Creators get 75% instantly. Viewers buy under a clear license.
             No middlemen. No bans. Built for the influencer era.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
@@ -46,7 +46,7 @@ export default function DemoPage() {
               Browse Films
             </Link>
             <Link href="/mint" className="px-8 py-4 border border-white/30 hover:bg-white/10 rounded-full transition">
-              Get Permanent Access
+              Get Access
             </Link>
           </div>
         </div>
@@ -71,8 +71,8 @@ export default function DemoPage() {
             <ul className="space-y-3 text-white/60">
               <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Content stored on Filecoin — no single entity controls it</li>
               <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Creators receive 75% immediately, on-chain, no invoices</li>
-              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Access is an NFT — immutable, transferable, permanent</li>
-              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Viewers buy once, own forever</li>
+              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Access is an NFT — verifiable, transferable, on-chain</li>
+              <li className="flex gap-3"><span className="text-emerald-400 mt-0.5">✓</span> Viewers buy once under a clear license</li>
             </ul>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function DemoPage() {
             <div className="text-2xl font-semibold tracking-tight mb-2">Independent Filmmakers</div>
             <div className="text-white/40 text-sm mb-4">Direct-to-audience distribution</div>
             <p className="text-white/60 text-sm leading-relaxed">
-              Sell permanent access to your film. Keep 75%. No middlemen, no algorithms, no gatekeepers.
+              Sell licensed streaming access to your film. Keep 75%. No middlemen, no algorithms, no gatekeepers.
               Infrastructure engineered to survive a viral spike — Cloudflare R2 primary delivery, IPFS/Filecoin backup.
             </p>
           </div>
@@ -181,7 +181,7 @@ export default function DemoPage() {
       {/* ── CTA ──────────────────────────────────────────────────────── */}
       <section className="max-w-3xl mx-auto px-6 py-24 text-center">
         <h2 className="text-4xl font-semibold tracking-tight mb-4">Ready to see it live?</h2>
-        <p className="text-white/50 mb-8">Browse the catalog, buy permanent access, or upload your film.</p>
+        <p className="text-white/50 mb-8">Browse the catalog, buy licensed access, or upload your film.</p>
         <div className="flex gap-3 justify-center flex-wrap">
           <Link href="/catalog" className="px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition">
             Browse Films

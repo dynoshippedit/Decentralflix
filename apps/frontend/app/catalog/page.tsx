@@ -41,7 +41,7 @@ export default function CatalogPage() {
       {/* Header */}
       <div className="border-b border-white/10 px-6 py-10 max-w-7xl mx-auto">
         <h1 className="text-5xl font-semibold tracking-[-3px] mb-2">Browse Films</h1>
-        <p className="text-white/50">Permanent access. Own it forever. No algorithms.</p>
+        <p className="text-white/50">Licensed streaming access. No subscription. No algorithms.</p>
       </div>
 
       {/* Filters */}

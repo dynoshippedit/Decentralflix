@@ -283,7 +283,7 @@ export default function UploadPage() {
             </div>
 
             {[
-              { key: 'BASIC', label: 'Standard Access', val: basicPrice, set: setBasicPrice, desc: 'Watch the film forever' },
+              { key: 'BASIC', label: 'Standard Access', val: basicPrice, set: setBasicPrice, desc: 'Streaming access' },
               { key: 'DELUXE', label: 'Premium Access', val: deluxePrice, set: setDeluxePrice, desc: 'Watch + behind-the-scenes' },
               { key: 'PRODUCER', label: 'Producer Credit', val: producerPrice, set: setProducerPrice, desc: 'Watch + credit + community' },
             ].map(({ key, label, val, set, desc }) => (
@@ -362,7 +362,7 @@ export default function UploadPage() {
             </div>
 
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 text-sm text-emerald-300">
-              Your film will be published to the DecentralFlix catalog. Permanent access becomes available for purchase immediately.
+              Your film will be published to the DecentralFlix catalog. Licensed streaming access becomes available for purchase immediately.
               You will receive 75% of every sale, paid directly to you.
             </div>
 

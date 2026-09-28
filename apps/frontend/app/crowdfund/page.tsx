@@ -70,7 +70,7 @@ export default function CrowdfundPage() {
         <div className="text-center max-w-md">
           <div className="text-6xl mb-6">🎬</div>
           <h1 className="text-4xl font-semibold tracking-tight mb-3">Back verified creators.</h1>
-          <p className="text-white/70 mb-8">Fund independent films. Receive permanent access. Your backing gives you a verified voice in Reviews — exactly like ticket holders.</p>
+          <p className="text-white/70 mb-8">Fund independent films. Receive licensed streaming access. Your backing gives you a verified voice in Reviews — exactly like ticket holders.</p>
           <button onClick={login} className="px-10 py-4 bg-white text-black rounded-full font-medium">Sign in to Back Films</button>
           <div className="mt-6 text-xs text-white/50">Arbitrum • Arweave • Escrow-protected</div>
         </div>
@@ -363,7 +363,7 @@ export default function CrowdfundPage() {
       <div className="max-w-5xl mx-auto px-6 pt-12 pb-8 text-center">
         <div className="inline-block px-4 py-1 mb-4 text-xs tracking-[3px] border border-emerald-500/40 text-emerald-400 rounded-full">ESCROW • MILESTONES • AI REVIEW WINDOW</div>
         <h1 className="text-6xl md:text-7xl font-semibold tracking-[-3.5px] leading-none mb-4">Back the films.<br />Own the proof.</h1>
-        <p className="max-w-2xl mx-auto text-2xl text-white/70 tracking-[-0.5px]">Fund verified creators. Receive permanent access. Your support makes you a <span className="text-emerald-400">verified owner</span> eligible to review — exactly like ticket holders.</p>
+        <p className="max-w-2xl mx-auto text-2xl text-white/70 tracking-[-0.5px]">Fund verified creators. Receive licensed streaming access. Your support makes you a <span className="text-emerald-400">verified owner</span> eligible to review — exactly like ticket holders.</p>
         <p className="mt-4 text-sm text-white/50">Producer-tier backers unlock a special power: submit milestone proofs for platform review (48–72h window) before escrow release.</p>
         <p className="mt-2 text-[10px] text-emerald-400/70">After final milestone, filmmakers/owners can link the master videoHash (new tool below) for precise crowdfund backer gating.</p>
       </div>
@@ -443,7 +443,7 @@ export default function CrowdfundPage() {
                 <div className="mt-auto">
                   <div className="text-xs text-white/60 mb-2 flex items-center gap-2">
                     BACK THIS FILM
-                    <span className="text-[10px] px-1.5 py-px border border-white/20 rounded">Permanent access included</span>
+                    <span className="text-[10px] px-1.5 py-px border border-white/20 rounded">Licensed streaming access included</span>
                   </div>
 
                   <TierPicker
@@ -471,7 +471,7 @@ export default function CrowdfundPage() {
                   )}
 
                   <div className="text-[10px] text-white/40 mt-2 leading-snug">
-                    Backing = permanent access + verified reviewer status on this film. Producer tier unlocks AI-proof submissions for escrow releases.
+                    Backing = licensed streaming access + verified reviewer status on this film. Producer tier unlocks AI-proof submissions for escrow releases.
                   </div>
                 </div>
 
@@ -492,7 +492,7 @@ export default function CrowdfundPage() {
           <div className="mb-6">
             <div className="text-emerald-400 text-xs tracking-[3px]">ANTI-GATEKEEPING • ANY CREATOR</div>
             <h3 className="text-3xl font-semibold tracking-tight mt-1">Launch Your Campaign</h3>
-            <p className="text-white/60 mt-2">Upload rich metadata to Arweave first (permanent), then launch the escrow-protected campaign. Backers receive permanent access and become verified voices in Reviews.</p>
+            <p className="text-white/60 mt-2">Upload rich metadata to Arweave first (permanent), then launch the escrow-protected campaign. Backers receive licensed streaming access and become verified voices in Reviews.</p>
           </div>
 
           <div className="space-y-4 bg-zinc-900 border border-white/10 rounded-2xl p-6">
@@ -591,7 +591,7 @@ export default function CrowdfundPage() {
 
       {/* Footer tie-back to core Reviews experience */}
       <div className="max-w-3xl mx-auto px-6 py-10 text-center text-xs text-white/40 border-t border-white/10 mt-8">
-        Every crowdfund backer is a verified owner. Your permanent access gives you the same weight in public film reviews as anyone who holds a ticket.<br />
+        Every crowdfund backer is a verified owner. Your licensed access gives you the same weight in public film reviews as anyone who holds a ticket.<br />
         <a href="/reviews" className="text-emerald-400 hover:underline">See how ownership powers the reviews layer →</a>
       </div>
 

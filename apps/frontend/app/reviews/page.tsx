@@ -36,7 +36,7 @@ function ReviewsPageInner() {
         </div>
         <p className="text-white/60 mt-2">
           Honest critiques from verified owners only — ticket holders and backers. 
-          Your voice carries real weight because you own permanent access. This is the owner-first version of reviews.
+          Your voice carries real weight because you actually bought the film. This is the owner-first version of reviews.
         </p>
         <p className="text-xs text-white/40 mt-1 font-mono">
           {videoHash}

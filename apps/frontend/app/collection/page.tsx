@@ -37,7 +37,7 @@ export default function MyCollectionPage() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl mb-4">My Collection</h1>
-          <p className="text-white/60 mb-6">Sign in to see the films you own permanent access to.</p>
+          <p className="text-white/60 mb-6">Sign in to see the films in your licensed collection.</p>
           <button onClick={login} className="px-8 py-3 bg-white text-black rounded-full">
             Sign in
           </button>
@@ -66,14 +66,14 @@ export default function MyCollectionPage() {
 
       <div className="max-w-5xl mx-auto p-8">
       <h1 className="text-4xl font-semibold tracking-tight mb-2">My Collection</h1>
-      <p className="text-white/60 mb-8">Permanent access across films. Your tickets unlock the only reviews that matter — from verified owners whose voice carries real weight because they own it.</p>
+      <p className="text-white/60 mb-8">Your licensed collection, across films. Your tickets unlock the only reviews that matter — from verified owners whose voice carries real weight because they actually bought it.</p>
 
       <div className="bg-zinc-900 border border-white/10 rounded-2xl p-8">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🎟️</div>
           <h2 className="text-2xl mb-3">Your Owned Tickets</h2>
           <p className="text-white/60 max-w-md mx-auto">
-            Permanent access. No subscription required. No ads. Your tickets are the key to the film and to the only reviews that matter — those from people who actually own it.
+            Licensed streaming access. No subscription required. No ads. Your tickets are the key to the film and to the only reviews that matter — those from people who actually bought it.
           </p>
           <a href="/crowdfund" className="text-sm text-emerald-400 hover:underline mt-2 inline-block">Back or launch new crowdfund campaigns →</a>
           <a href="/dashboard" className="ml-4 text-sm text-emerald-400 hover:underline mt-2 inline-block">Full Dashboard → Library, Credits, Campaigns, Earnings, Quick Launch</a>
@@ -127,7 +127,7 @@ export default function MyCollectionPage() {
 
                   {/* Strong ownership signal */}
                   <div className="text-emerald-400/90 text-xs font-medium mb-4">
-                    You own this film. Your voice carries real weight — your reviews are verified and permanently visible.
+                    You own this film. Your voice carries real weight — your reviews are verified and stay published under your name.
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -196,7 +196,7 @@ export default function MyCollectionPage() {
         {/* Your Reviews — Personal ownership connection */}
         <div className="mb-10">
           <h3 className="text-xl font-semibold mb-2">Your reviews</h3>
-          <p className="text-sm text-white/60 mb-4">Only verified owners can leave reviews. Your voice carries real weight because you own it — edit yours anytime; they’re permanently yours.</p>
+          <p className="text-sm text-white/60 mb-4">Only verified owners can leave reviews. Your voice carries real weight because you actually bought it — edit yours anytime; they stay yours.</p>
 
           <div className="space-y-3">
             <div className="p-5 bg-zinc-950 border border-white/10 rounded-xl">
@@ -267,7 +267,7 @@ export default function MyCollectionPage() {
           </div>
 
           <div className="text-[10px] text-white/40 mt-4">
-            All reviews come from verified owners. Your voice carries real weight because you own it. Your voice belongs here too.
+            All reviews come from verified owners. Your voice carries real weight because you actually bought the film. Your voice belongs here too.
           </div>
         </div>
       </div>

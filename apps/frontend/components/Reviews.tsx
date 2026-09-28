@@ -239,7 +239,7 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
 
         {existingReview && (
           <div className="mb-3 text-xs text-emerald-400 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-1.5">
-            You already left a review. Edit it below — your voice carries real weight because you own it on-chain; your words are permanently anchored.
+            You already left a review. Edit it below — your voice carries real weight because you own it on-chain; your words stay anchored to your on-chain proof.
           </div>
         )}
       </div>
@@ -308,7 +308,7 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="As a verified owner, what stayed with you? Your voice carries real weight because you own it on-chain. Your honest perspective is permanently tied to your stake. (max 500 characters)"
+            placeholder="As a verified owner, what stayed with you? Your voice carries real weight because you own it on-chain. Your honest perspective stays tied to your stake. (max 500 characters)"
             maxLength={500}
             className="w-full h-24 bg-black border border-white/20 rounded-xl p-4 text-sm resize-none mb-1 placeholder:text-white/40 focus:border-white/40 transition"
           />
@@ -330,7 +330,7 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
           </button>
 
           <div className="text-[10px] text-emerald-400/80 mt-3 leading-relaxed">
-            Your voice carries real weight because you own it on-chain. Your review is permanently visible to everyone who cares about the work. 
+            Your voice carries real weight because you own it on-chain. Your review stays published for everyone who cares about the work. 
             Edit anytime — your voice is inseparable from your ownership.
           </div>
         </div>
@@ -340,14 +340,14 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
       <div className="space-y-4">
         {isLoading ? (
           <div className="rounded-2xl border border-white/10 bg-zinc-950/60 p-6 text-center text-sm text-white/60">
-            Curating verified owner voices from the chain… Your perspective joins a permanent on-chain record.
+            Curating verified owner voices from the chain… Your perspective joins a verifiable on-chain record.
           </div>
         ) : reviews.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-zinc-950/60 p-6 text-center">
             <div className="text-2xl mb-2">🎟️💎</div>
             <div className="font-medium text-white/80 mb-1">No verified reviews yet</div>
             <div className="text-sm text-white/60 max-w-xs mx-auto leading-snug">
-              Be the first verified owner to share what this film meant to you. Your voice carries real weight because you own it on-chain — your words will live here forever, tied to your on-chain proof of ownership.
+              Be the first verified owner to share what this film meant to you. Your voice carries real weight because you own it on-chain — your words stay published here, tied to your on-chain proof of ownership.
             </div>
           </div>
         ) : (

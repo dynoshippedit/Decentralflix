@@ -34,11 +34,11 @@ export default function WatchPage() {
           <div className="text-6xl mb-6">🔒</div>
           <h1 className="text-3xl font-semibold tracking-tight mb-3">{title}</h1>
           <p className="text-white/50 mb-8 leading-relaxed">
-            Get permanent access to watch this film. One-time purchase — own it forever. No subscription required.
+            Get licensed access to watch this film. One-time purchase under a clear license. No subscription required.
           </p>
           {demoFilm && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8 text-left">
-              <div className="text-xs text-white/40 tracking-widest mb-3">PERMANENT ACCESS</div>
+              <div className="text-xs text-white/40 tracking-widest mb-3">LICENSED ACCESS</div>
               <div className="flex justify-between items-center">
                 <div>
                   <div className="font-semibold">{title}</div>
@@ -56,7 +56,7 @@ export default function WatchPage() {
               href={mintUrl || `/mint?film=${encodeURIComponent(filmHash)}`}
               className="px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition text-center"
             >
-              Get Permanent Access
+              Get Access
             </Link>
             <button
               onClick={() => router.back()}

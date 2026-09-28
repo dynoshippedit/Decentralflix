@@ -31,7 +31,7 @@ export default async function HomePage() {
 
         <div className="relative z-20 text-center px-6 max-w-5xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 text-xs tracking-[3px] border border-white/20 rounded-full text-white/60">
-            CENSORSHIP-RESISTANT · PERMANENT ACCESS · 75% TO CREATORS
+            CENSORSHIP-RESISTANT · LICENSED ACCESS · 75% TO CREATORS
           </div>
 
           <h1 className="text-6xl md:text-8xl font-semibold tracking-[-4px] leading-[0.92] mb-6">
@@ -301,7 +301,7 @@ export default async function HomePage() {
         <div className="space-y-6">
           {[
             { q: "Is this launched? Can I pay real money today?", a: "No. Decentralflix is in development and testing. The storefront, checkout, and passes you see here run in test mode — no real payments are processed." },
-            { q: "What does “permanent access” actually mean?", a: "Your purchase comes with a cryptographically signed receipt. Even if the platform disappeared, the receipt proves your license and can be verified offline. We don’t sell copyright — you’re buying a permanent viewing license." },
+            { q: "What exactly am I buying?", a: "A license under stated terms: rental is time-limited; streaming access carries honest limits and no promise of perpetual operation; permanent download is offered only where the filmmaker allows it and plays without an authorization server. Your receipt is cryptographically signed and verifiable offline. We don’t sell copyright." },
             { q: "I’m on Vimeo. What happens to my audience?", a: "Vimeo exports create contacts only — never automatic access. Your fans get an invitation to claim their access, and you approve each claim. Nobody is migrated without consent on both sides." },
             { q: "Why only 75% to creators? Others promise 90%.", a: "Because we did the math in public. At a $4 sale, a 90% share loses money on every order after processing and delivery. We’d rather pay 75% sustainably than 90% until we go broke." },
             { q: "What about NFTs, crypto, and P2P?", a: "Access tokens and decentralized storage are part of the long-term architecture, but native NFT access, seeder rewards, P2P delivery savings, and stablecoin checkout are deferred. We won’t market what isn’t built." },

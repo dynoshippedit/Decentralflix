@@ -44,7 +44,7 @@ export default function FilmDetailPage() {
 
   const tierPrices = demoFilm
     ? [
-        { tier: 'Standard', price: demoFilm.price, desc: 'Watch forever' },
+        { tier: 'Standard', price: demoFilm.price, desc: 'Streaming access' },
         { tier: 'Premium', price: (parseFloat(demoFilm.price) * 2.5).toFixed(3), desc: 'Watch + extras' },
         { tier: 'Producer', price: (parseFloat(demoFilm.price) * 10).toFixed(3), desc: 'Watch + producer credit' },
       ]
@@ -58,7 +58,7 @@ export default function FilmDetailPage() {
         {demoFilm?.isDeplatformed && (
           <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
             <div className="text-amber-400 font-semibold text-sm mb-1">
-              Removed from other platforms — permanent here
+              Removed from other platforms — streaming here
             </div>
             <p className="text-amber-200/60 text-sm">{demoFilm.deplatformedReason}</p>
           </div>
@@ -97,7 +97,7 @@ export default function FilmDetailPage() {
             <div>
               <div className="font-semibold text-emerald-400 text-lg tracking-tight">You own this film</div>
               <div className="text-sm text-white/70 mt-1">
-                Your ownership is verified permanently. Only owners can leave reviews.
+                Your ownership is verified on-chain. Only owners can leave reviews.
               </div>
             </div>
             <Link
@@ -112,7 +112,7 @@ export default function FilmDetailPage() {
         {/* Access / pricing for non-owners */}
         {!hasAccessFinal && !accessLoading && (
           <div className="mb-8">
-            <div className="text-xs text-white/40 tracking-widest mb-4">GET PERMANENT ACCESS</div>
+            <div className="text-xs text-white/40 tracking-widest mb-4">GET ACCESS</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
               {tierPrices.map(t => (
                 <Link
@@ -123,7 +123,7 @@ export default function FilmDetailPage() {
                   <div className="font-semibold mb-1 group-hover:text-white">{t.tier}</div>
                   <div className="text-white/40 text-xs mb-3">{t.desc}</div>
                   <div className="text-xl font-semibold">{t.price} ETH</div>
-                  <div className="text-white/30 text-xs mt-1">once, forever</div>
+                  <div className="text-white/30 text-xs mt-1">one-time purchase</div>
                 </Link>
               ))}
             </div>
@@ -132,7 +132,7 @@ export default function FilmDetailPage() {
                 href={`/mint?film=${encodeURIComponent(videoHash)}`}
                 className="block w-full py-4 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition text-center"
               >
-                Get Permanent Access
+                Get Access
               </Link>
             )}
           </div>

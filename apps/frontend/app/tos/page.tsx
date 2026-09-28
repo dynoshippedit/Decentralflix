@@ -55,7 +55,7 @@ export default function TermsOfServicePage() {
           </div>
           <h1 className="text-6xl font-semibold tracking-[-2.5px] mt-4">Terms of Service</h1>
           <p className="mt-3 text-xl text-white/70 max-w-2xl">
-            This is the full, binding agreement for using Decentralflix — a fully non-custodial, censorship-resistant platform for permanent film ownership.
+            This is the full, binding agreement for using Decentralflix — a fully non-custodial, censorship-resistant platform for licensed film access.
           </p>
         </div>
 

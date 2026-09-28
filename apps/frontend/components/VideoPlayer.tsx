@@ -91,7 +91,7 @@ export default function VideoPlayer({
   // Premium access source display
   const accessLabel = accessSources && accessSources.length > 0
     ? accessSources.map(s => s === 'MovieTicket' ? '🎟️ MovieTicket' : '💎 Crowdfund InvestmentNFT').join(' + ')
-    : 'Permanent Pass';
+    : 'Licensed Pass';
 
   if (!isPermanentPass) {
     return (
