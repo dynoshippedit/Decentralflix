@@ -31,6 +31,27 @@ const CREDITS_PER_BILLING_PERIOD = 1; // 1 credit per month; 1 credit = 1 film
 
 const LEGAL_NOTICE = 'REQUIRES LEGAL REVIEW BEFORE LAUNCH (money-transmission risk)';
 
+// Unit-economics warning (verified 2026-09-28, research update 5). The pass
+// does NOT pencil on autopilot:
+//   - A $10/mo pass with two $8 credits costs $12 in creator payouts alone
+//     at a 75% creator share — before card processing (~2.9% + $0.30) and
+//     delivery. At the current test config ($9.99/mo, 1 credit redeemable
+//     for any film), a single redemption of a film priced above ~$12 already
+//     exceeds the subscription price in creator payout at 75%.
+//   - The model only works with a different price, allocation basis,
+//     included catalog, or usage design. Do NOT quietly rely on subscribers
+//     forgetting to redeem (breakage).
+//   - Before ANY real-money launch, these must be defined: creator
+//     allocations, credit expiration/rollover, refunds, cancellation terms,
+//     and whether redeemed access survives membership end.
+const ECONOMICS_WARNING =
+  'COLLECTOR PASS ECONOMICS (test-mode only): a $10/mo pass with two $8 credits ' +
+  'costs $12 in creator payouts at a 75% creator share — before processing and delivery. ' +
+  'This model only works with a different price, allocation basis, included catalog, or ' +
+  'usage design; do not rely on subscribers forgetting to redeem. Creator allocations, ' +
+  'credit expiration/rollover, refunds, cancellation, and post-membership access survival ' +
+  'must all be defined before any real-money launch.';
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -137,6 +158,7 @@ module.exports = {
   PASS_PRICE_USD_CENTS,
   CREDITS_PER_BILLING_PERIOD,
   LEGAL_NOTICE,
+  ECONOMICS_WARNING,
   createPass,
   getPass,
   getPassByEmail,

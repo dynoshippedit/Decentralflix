@@ -1,7 +1,8 @@
 'use strict';
 // JSON-file persistence with atomic writes (write tmp + rename).
 // Collections: films.json, entitlements.json, claims.json, receipts.json,
-// passes.json, credit_ledger.json, filmmakers.json — all under ./data/.
+// passes.json, credit_ledger.json, filmmakers.json, migration_contacts.json,
+// orders.json — all under ./data/.
 // No SQLite by design: the lifeboat keeps state human-inspectable and
 // dependency-free.
 
@@ -18,6 +19,13 @@ const FILES = {
   passes: 'passes.json',
   credit_ledger: 'credit_ledger.json',
   filmmakers: 'filmmakers.json',
+  // Migration contacts: Vimeo audience-export rows recorded for migration
+  // NOTICES ONLY. Never entitlements — the export is opt-in contacts, not a
+  // purchase ledger. Access requires claim + filmmaker approval.
+  migration_contacts: 'migration_contacts.json',
+  // Sales ledger: one record per completed bundle (and, in future, per
+  // purchase), with explicit per-film revenue allocation.
+  orders: 'orders.json',
 };
 
 const ID_FIELDS = {
@@ -28,6 +36,8 @@ const ID_FIELDS = {
   passes: 'pass_id',
   credit_ledger: 'ledger_id',
   filmmakers: 'filmmaker_id',
+  migration_contacts: 'contact_id',
+  orders: 'order_id',
 };
 
 function filePath(name) {

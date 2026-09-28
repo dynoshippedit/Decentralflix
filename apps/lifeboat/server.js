@@ -362,7 +362,15 @@ async function importBuyers(req, res) {
   if (!Array.isArray(body.emails) || body.emails.length === 0)
     return sendError(res, 400, 'emails must be a non-empty array');
 
-  let imported = 0;
+  // Vimeo's audience export is OPT-IN CONTACTS, not a purchase ledger
+  // (Vimeo's own seller FAQ: "Only viewers who explicitly opted in to
+  // receive updates are included — for privacy reasons we are not able to
+  // provide full buyer lists"; the opt-in button appears on VOD pages as
+  // well as after checkout, so opt-ins are not buyers). Importing it must
+  // NEVER grant access — these contacts are for migration NOTICES only.
+  // Buyers get access through the claim flow: POST /api/claims with their
+  // Vimeo receipt reference, then filmmaker approval.
+  let recorded = 0;
   let skipped = 0;
   const invalid = [];
   for (const raw of body.emails) {
@@ -371,18 +379,28 @@ async function importBuyers(req, res) {
       continue;
     }
     const email = raw.trim().toLowerCase();
-    if (alreadyEntitled(film.film_id, email)) {
+    const dup = store
+      .all('migration_contacts')
+      .some((c) => c.film_id === film.film_id && c.email === email);
+    if (dup) {
       skipped += 1;
       continue;
     }
-    grantEntitlement({ film, email, source: 'import' });
-    imported += 1;
+    store.insert('migration_contacts', {
+      contact_id: 'mc_' + crypto.randomBytes(6).toString('hex'),
+      film_id: film.film_id,
+      email,
+      source: 'vimeo_export',
+      imported_at: nowIso(),
+    });
+    recorded += 1;
   }
   return sendJson(res, 201, {
     film_id: film.film_id,
-    imported,
+    contacts_recorded: recorded,
     skipped_duplicates: skipped,
     invalid_emails: invalid,
+    note: 'Migration contacts recorded for notices ONLY — no access granted. Buyers claim access with their Vimeo receipt at POST /api/claims; the filmmaker approves each claim.',
   });
 }
 
@@ -450,6 +468,93 @@ async function testPurchase(req, res) {
     entitlement,
     receipt,
     signature,
+  });
+}
+
+// TEST-ONLY: same-seller multi-film bundle purchase — one checkout for N
+// films from ONE filmmaker. This is the fee-saving alternative to stored
+// balances: five separate $4 domestic-card purchases cost ~$2.08 in
+// processing (2.9% + $0.30 each); one $20 bundle costs ~$0.88.
+// Multi-seller bundles are OUT of scope (they need explicit revenue
+// allocation across filmmakers plus a supported payment flow).
+async function bundleTestPurchase(req, res) {
+  const body = await readJson(req, res);
+  if (body === null) return;
+  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
+  const ids = body.film_ids;
+  if (!Array.isArray(ids) || ids.length < 2)
+    return sendError(res, 400, 'film_ids must be an array of at least 2 film ids');
+  if (new Set(ids).size !== ids.length)
+    return sendError(res, 400, 'film_ids must not contain duplicates');
+
+  const films = [];
+  for (const id of ids) {
+    const f = store.get('films', id);
+    if (!f) return sendError(res, 404, `film not found: ${id}`);
+    films.push(f);
+  }
+  const sellers = new Set(films.map((f) => f.filmmaker_email));
+  if (sellers.size > 1) {
+    return sendError(res, 400, 'bundle films must share one filmmaker — multi-seller bundles are out of scope');
+  }
+
+  const email = body.email.trim().toLowerCase();
+  const granted = [];
+  const alreadyOwned = [];
+  for (const film of films) {
+    if (alreadyEntitled(film.film_id, email)) {
+      alreadyOwned.push(film.film_id);
+      continue;
+    }
+    const { entitlement, receipt, signature } = grantEntitlement({
+      film,
+      email,
+      source: 'bundle_purchase',
+      testMode: true,
+    });
+    granted.push({ film_id: film.film_id, entitlement, receipt, signature });
+  }
+  if (granted.length === 0) {
+    return sendJson(res, 200, {
+      test_mode: true,
+      note: 'all bundle films already owned — nothing granted, no order recorded',
+      already_owned: alreadyOwned,
+      allocations: [],
+      total_usd_cents: 0,
+    });
+  }
+  // Explicit per-film revenue allocation, recorded in the sales ledger
+  // (orders collection). Allocation basis: each film's list price; the bundle
+  // total is the sum. The card-fee saving versus separate purchases accrues
+  // to whichever party bears processing under the filmmaker agreement
+  // (see README "Unit economics").
+  const allocations = granted.map((g) => {
+    const film = films.find((f) => f.film_id === g.film_id);
+    return { film_id: film.film_id, amount_usd_cents: film.price_usd_cents };
+  });
+  const total = allocations.reduce((s, a) => s + a.amount_usd_cents, 0);
+  const order = {
+    order_id: 'ord_' + crypto.randomBytes(6).toString('hex'),
+    email,
+    film_ids: granted.map((g) => g.film_id),
+    allocations,
+    total_usd_cents: total,
+    filmmaker_email: films[0].filmmaker_email,
+    bundle: true,
+    test_mode: true,
+    created_at: nowIso(),
+  };
+  store.insert('orders', order);
+  return sendJson(res, 201, {
+    test_mode: true,
+    note: 'TEST-ONLY simulated bundle purchase — no money moved, Stripe not involved',
+    order_id: order.order_id,
+    email,
+    total_usd_cents: total,
+    allocations,
+    entitlements: granted,
+    already_owned: alreadyOwned,
+    fee_note: 'One checkout instead of N: five $4 purchases cost ~$2.08 in card fees vs ~$0.88 for one $20 bundle (2.9% + $0.30 domestic).',
   });
 }
 
@@ -572,7 +677,7 @@ async function passCheckout(req, res) {
     await stripe.createSubscriptionCheckout();
     return sendError(res, 500, 'unexpected: checkout did not throw');
   } catch (err) {
-    return sendError(res, 503, err.message, { legal_notice: passLib.LEGAL_NOTICE });
+    return sendError(res, 503, err.message, { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
   }
 }
 
@@ -597,6 +702,7 @@ async function passTestSubscribe(req, res) {
     test_mode: true,
     note: 'TEST-ONLY simulated Collector Pass subscription — no money moved, Stripe not involved',
     legal_notice: passLib.LEGAL_NOTICE,
+    economics_warning: passLib.ECONOMICS_WARNING,
     pass: p,
     credit_grant: grant,
     balance: passLib.balance(p.pass_id),
@@ -611,6 +717,7 @@ function passDetail(req, res, passId) {
     balance: passLib.balance(passId),
     ledger: passLib.ledger(passId),
     legal_notice: passLib.LEGAL_NOTICE,
+    economics_warning: passLib.ECONOMICS_WARNING,
   });
 }
 
@@ -621,7 +728,7 @@ async function passRedeem(req, res, passId) {
   if (!film) return sendError(res, 404, 'film not found');
   const email = String(body.email || '').trim().toLowerCase();
   if (!isEmail(email)) {
-    return sendError(res, 400, 'email must be a valid email', { legal_notice: passLib.LEGAL_NOTICE });
+    return sendError(res, 400, 'email must be a valid email', { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
   }
   // CRITICAL: ownership is checked BEFORE any credit is debited. A duplicate
   // redemption must never consume a credit.
@@ -635,13 +742,14 @@ async function passRedeem(req, res, passId) {
       balance: passLib.balance(passId),
       license_term: 'permanent', // NOT copyright ownership — wording pending counsel review
       legal_notice: passLib.LEGAL_NOTICE,
+      economics_warning: passLib.ECONOMICS_WARNING,
     });
   }
   let redemption;
   try {
     redemption = passLib.redeemCredit({ pass_id: passId, film_id: film.film_id, email });
   } catch (err) {
-    return sendError(res, err.status || 500, err.message, { legal_notice: passLib.LEGAL_NOTICE });
+    return sendError(res, err.status || 500, err.message, { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
   }
   // A redeemed film takes the same entitlement path as a purchase,
   // so it grants a permanent DRM-free download (yours to keep — wording
@@ -656,6 +764,7 @@ async function passRedeem(req, res, passId) {
     balance: passLib.balance(passId),
     license_term: 'permanent', // NOT copyright ownership — wording pending counsel review
     legal_notice: passLib.LEGAL_NOTICE,
+    economics_warning: passLib.ECONOMICS_WARNING,
   });
 }
 
@@ -733,15 +842,18 @@ function filmmakerOnboarding(req, res, filmmakerId) {
   if (!f) return sendError(res, 404, 'filmmaker not found');
   const films = store.all('films').filter((fl) => fl.filmmaker_email === f.email);
   const filmIds = new Set(films.map((fl) => fl.film_id));
-  const audience = store
+  // "Audience invite" is done when the filmmaker has imported their Vimeo
+  // audience-export contacts (notices — never access) or has approved claims.
+  const invited = store.all('migration_contacts').some((c) => filmIds.has(c.film_id));
+  const claimedAccess = store
     .all('entitlements')
-    .some((e) => filmIds.has(e.film_id) && (e.source === 'import' || e.source === 'claim'));
+    .some((e) => filmIds.has(e.film_id) && (e.source === 'claim'));
   const steps = [
     { id: 'account', label: 'Account setup', done: true },
     { id: 'connect', label: 'Stripe Connect (test-mode shape)', done: f.connect_status === 'active' },
     { id: 'payout', label: 'Payout details', done: f.payout_status !== 'not_started' },
     { id: 'catalog', label: 'Catalog import', done: films.length > 0 },
-    { id: 'audience', label: 'Audience invite', done: audience },
+    { id: 'audience', label: 'Audience invite', done: invited || claimedAccess },
   ];
   return sendJson(res, 200, { filmmaker: f, steps, complete: steps.every((s) => s.done) });
 }
@@ -842,6 +954,9 @@ async function handleApi(req, res, url, seg, method) {
   }
   if (seg[0] === 'purchases' && seg[1] === 'test' && seg.length === 2 && method === 'POST') {
     return testPurchase(req, res);
+  }
+  if (seg[0] === 'purchases' && seg[1] === 'bundle' && seg[2] === 'test' && seg.length === 3 && method === 'POST') {
+    return bundleTestPurchase(req, res);
   }
   if (seg[0] === 'webhooks' && seg[1] === 'stripe' && seg.length === 2 && method === 'POST') {
     return stripeWebhook(req, res);

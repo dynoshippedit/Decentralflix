@@ -44,11 +44,12 @@ Frontend contract details (aligned with `public/`):
 | GET | `/api/films/:id` | Full metadata + `playback_url` |
 | GET | `/api/films/:id/stream` | Video bytes via CDN abstraction; honors `Range` (206 Partial Content) |
 | GET | `/api/films/:id/download` | File download **only if `download_allowed`**; else 403 with the AB 2426 message |
-| POST | `/api/buyers/import` | `{film_id, emails[]}` — pre-granted entitlements (Vimeo opted-in email lists) |
+| POST | `/api/buyers/import` | `{film_id, emails[]}` — records Vimeo audience-export contacts for migration **NOTICES ONLY**. The export is opt-in contacts, not a purchase ledger; **no entitlement is granted**. Buyers claim access with their Vimeo receipt; the filmmaker approves. |
 | POST | `/api/claims` | `{film_id, email, vimeo_receipt_ref}` — creates a PENDING claim |
 | GET | `/api/claims?film_id=` | Filmmaker view of pending claims |
 | POST | `/api/claims/:id/approve` | Approves → entitlement + signed receipt |
 | POST | `/api/purchases/test` | **TEST-ONLY** simulated completed purchase `{film_id, email}` → entitlement + signed receipt, response carries `"test_mode": true` |
+| POST | `/api/purchases/bundle/test` | **TEST-ONLY** same-seller multi-film bundle `{film_ids[], email}` → one checkout for N films from ONE filmmaker, explicit per-film allocation recorded in the sales ledger (`orders`), one signed receipt per film. Multi-seller bundles rejected (400). |
 | POST | `/api/webhooks/stripe` | Real webhook shape; verifies `Stripe-Signature` against `STRIPE_WEBHOOK_SECRET`; **503 "not configured" when the secret is unset** |
 | GET | `/api/films/:id/audience.csv` | CSV `email,granted_at,source,price_usd_cents` — the filmmaker owns their audience data |
 | GET | `/api/receipts/pubkey` | Ed25519 public key (base64) |
@@ -59,10 +60,12 @@ Frontend contract details (aligned with `public/`):
 ## What is real vs stubbed
 
 - **Real:** film import + validation, JSON-file persistence (atomic tmp+rename
-  writes), HTTP Range streaming (206), buyer imports, Vimeo claims flow,
-  Ed25519 signed receipts (keypair generated on first run into
-  `./data/receipt-key.pem`), receipt verification, audience CSV export, Stripe
-  webhook **signature verification** (HMAC, real when the secret is set).
+  writes), HTTP Range streaming (206), buyer-contact imports (migration
+  notices only — **never access**), Vimeo claims flow, same-seller bundle
+  checkout with per-film allocation in the sales ledger, Ed25519 signed
+  receipts (keypair generated on first run into `./data/receipt-key.pem`),
+  receipt verification, audience CSV export, Stripe webhook **signature
+  verification** (HMAC, real when the secret is set).
 - **Stubbed:** `lib/stripe.js` `createCheckoutSession` throws
   `"Stripe not configured — needs Dino's keys"`. No money can move.
 - **Not activated:** `lib/cdn.js` `Bunny` backend — code-complete, but every
@@ -131,6 +134,73 @@ the following claims in this codebase:
   unresolved (reportedly proposed up to 15% in Aug 2026). Do not model a
   permanent 0%.
 
+## Vimeo migration: the export is not a purchase ledger
+
+Vimeo's own seller FAQ (verified 2026-09-28): the audience export contains
+**only viewers who explicitly opted in to receive updates** — "for privacy
+reasons we are not able to provide full buyer lists" — and the opt-in button
+appears on VOD pages *as well as* after checkout. The export is therefore
+opt-in **contacts**, not a purchase ledger: pre-granting paid access to every
+exported address would include non-buyers and omit real buyers.
+
+This codebase treats it accordingly:
+
+- `POST /api/buyers/import` records **migration contacts** (for migration
+  notices, subject to the export's permissions). It **never creates
+  entitlements** — an export row alone grants nothing. A test asserts this.
+- Access comes only from the claim flow: `POST /api/claims`
+  (`{film_id, email, vimeo_receipt_ref}`) → filmmaker reviews →
+  `POST /api/claims/:id/approve` → entitlement + signed receipt. The claim
+  evidence (title, buyer email control, transaction reference, purchase type,
+  date) is checked and deduplicated; uncertain receipts get manual review.
+- Keep transactional access notices and promotional consent distinct.
+
+## Unit economics (verified 2026-09-28)
+
+Baseline scenario: the creator receives **75%** of the pre-tax sale price —
+the tested basis for this project. Decentralflix bears US domestic card
+processing, delivery, and a variable-operations allowance.
+
+| Per order | $4 / 75% | $4 / 90% | $8 / 75% | $12 / 75% |
+|---|---|---|---|---|
+| Creator payout | $3.000 | $3.600 | $6.000 | $9.000 |
+| Card cost (2.9% + $0.30) | $0.416 | $0.416 | $0.532 | $0.648 |
+| Delivery allowance | $0.100 | $0.100 | $0.100 | $0.150 |
+| Variable ops allowance | $0.200 | $0.200 | $0.200 | $0.200 |
+| **Platform contribution** | **$0.284** | **-$0.316** | **$1.168** | **$2.002** |
+
+Calculated before storage, ingest/transcoding, Connect/account/payout fees,
+taxes, FX, legal review, customer acquisition, and fixed overhead. The $0.20
+ops allowance is a placeholder, not measured expected losses.
+
+- **90% creator share at $4 is loss-making (~-$0.32/order). Never advertise it.**
+  75% is thin but testable; the variable that kills it is support cost.
+- **Delivery:** Bunny posted rates — $0.01/GB for Europe/North America on the
+  standard network, $0.005/GB on the volume network; storage ~$0.01/GB per
+  region. A 100-minute film at 5 Mbps is ≈3.75 GB: one full NA/EU transfer ≈
+  $0.05, not the lifetime cost of selling the film.
+- **Bundles beat wallets for fee savings:** five separate $4 domestic-card
+  purchases cost ~$2.08 in processing; one $20 bundle costs ~$0.88. The
+  same-seller bundle checkout (`POST /api/purchases/bundle/test`) captures
+  this without stored balances. Multi-seller bundles stay out of scope (they
+  need cross-filmmaker allocation and a supported payment flow).
+
+## Collector Pass: economics warning
+
+The pass does **not** pencil on autopilot. A $10/mo pass with two $8 credits
+costs **$12 in creator payouts alone** at a 75% creator share — before card
+processing and delivery. The model only works with a different price,
+allocation basis, included catalog, or usage design; do **not** quietly rely
+on subscribers forgetting to redeem.
+
+Before any real-money launch, all of the following must be defined: creator
+allocations, credit expiration/rollover, refunds, cancellation terms, and
+whether redeemed access survives membership end. The API emits
+`economics_warning` on every Collector Pass response; the UI states it up
+front. This sits alongside the existing `REQUIRES LEGAL REVIEW BEFORE LAUNCH
+(money-transmission risk)` notice — a money-transmission opinion is still
+required before activation.
+
 ### Deferred by policy (do not build)
 
 - **Stablecoin checkout** — confirmed real (Stripe, 1.5%, no chargeback path,
@@ -139,9 +209,14 @@ the following claims in this codebase:
   Crowdfunding ($5M/12-mo cap) requires a registered broker-dealer or funding
   portal, Form C, and ongoing reporting. Building the UI first would be an
   unregistered offering.
-- **Any token/NFT mechanics** — the no-token stance is confirmed: Senate
-  cloture on the CLARITY Act failed 49–50 on Sep 15, 2026; federal crypto
-  market-structure law is genuinely unsettled.
+- **Any token/NFT mechanics** — deferred pending a **transaction-specific
+  legal assessment**, not a blanket ban. SEC Release 33-11412 (effective
+  Mar 23, 2026) recognizes "practical digital tools" (tickets named) as
+  not-securities while retaining investment-contract analysis; the Aug 2026
+  safe-harbor proposal is **not** operative (comment deadline Oct 20, 2026).
+  Apple's App Review Guidelines still prohibit NFT ownership unlocking app
+  functionality. No token/NFT-gated access ships without counsel's
+  transaction-specific read and an Apple-compatible design.
 
 ### Confirmed-real context relied on
 
@@ -199,3 +274,27 @@ the following claims in this codebase:
    Pass credits go live.
 4. GitHub push target for this repo.
 5. Whether Nov 20 is a full launch or a marketing beat + seller waitlist.
+
+### Fix pass — research update 5 (2026-09-28)
+
+Verified against primary sources (SEC releases, Stripe docs, Bunny pricing,
+Vimeo seller FAQ). All inside `apps/lifeboat/`:
+
+- **Vimeo export ≠ purchase ledger.** `/api/buyers/import` no longer grants
+  entitlements — it records migration contacts for notices only. Access
+  requires claim + filmmaker approval. Test asserts no entitlement is created
+  from an export row alone.
+- **Collector Pass economics warning** on every pass response (`economics_warning`)
+  and in the UI: $10/mo with two $8 credits costs $12 at 75% before
+  processing/delivery; the model needs a different price, allocation basis,
+  catalog, or usage design.
+- **NFT/token stance softened** from blanket-defer to "requires
+  transaction-specific legal assessment" (SEC 33-11412, Aug 2026 proposal not
+  operative, Apple restrictions stand). Feature stays deferred.
+- **Same-seller bundle checkout** (`POST /api/purchases/bundle/test`):
+  one checkout for N films from one filmmaker, explicit per-film allocation
+  in the sales ledger (`orders`), one signed receipt per film. Multi-seller
+  bundles rejected — out of scope.
+- **Unit economics documented:** 75% creator share is the tested basis; 90%
+  at $4 is loss-making (~-$0.32/order) and must never be advertised; verified
+  Bunny rates ($0.01/GB NA/EU, $0.005/GB volume, ~$0.01/GB-region storage).

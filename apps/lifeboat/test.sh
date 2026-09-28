@@ -112,13 +112,18 @@ cmp -s <(head -c 1024 "$TMPD/stream.mp4") "$TMPD/range.bin" && pass "range bytes
 code=$(curl -s -o /dev/null -w "%{http_code}" -H "Range: bytes=99999999999-" "$BASE/api/films/$FILM1/stream")
 [ "$code" = "416" ] && pass "out-of-range Range returns 416" || fail "range 416" "http=$code"
 
-# --- buyers import -----------------------------------------------------------------
+# --- buyers import: Vimeo export rows are contacts, NEVER entitlements -----------------
 code=$(curl -s -o "$TMPD/buyers.json" -w "%{http_code}" -X POST "$BASE/api/buyers/import" \
   -H 'Content-Type: application/json' \
   -d "{\"film_id\":\"$FILM1\",\"emails\":[\"buyer1@example.com\",\"buyer2@example.com\",\"not-an-email\"]}")
-[ "$code" = "201" ] && [ "$(jget "$TMPD/buyers.json" imported)" = "2" ] \
-  && pass "buyers import grants 2 entitlements" || fail "buyers import" "http=$code body=$(cat "$TMPD/buyers.json")"
+[ "$code" = "201" ] && [ "$(jget "$TMPD/buyers.json" contacts_recorded)" = "2" ] \
+  && pass "buyers import records 2 migration contacts" || fail "buyers import" "http=$code body=$(cat "$TMPD/buyers.json")"
 [ "$(jget "$TMPD/buyers.json" invalid_emails)" = "not-an-email" ] && pass "invalid email reported" || fail "invalid email reporting"
+# An export row alone must NEVER create an entitlement: the Vimeo audience
+# export is opt-in contacts, not a purchase ledger.
+code=$(curl -s -o "$TMPD/aud-pre.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
+! grep -q "^buyer1@example.com," "$TMPD/aud-pre.csv" && ! grep -q "^buyer2@example.com," "$TMPD/aud-pre.csv" \
+  && pass "imported export rows grant no entitlements (no access from export alone)" || fail "no auto-grant from export"
 
 # --- vimeo claim flow ----------------------------------------------------------------
 code=$(curl -s -o "$TMPD/claim.json" -w "%{http_code}" -X POST "$BASE/api/claims" \
@@ -191,11 +196,13 @@ code=$(curl -s -o "$TMPD/aud.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audi
 [ "$code" = "200" ] && pass "audience.csv returns 200" || fail "audience.csv" "http=$code"
 head -1 "$TMPD/aud.csv" | grep -q "^email,granted_at,source,price_usd_cents$" \
   && pass "CSV header correct" || fail "CSV header"
-for em in buyer1@example.com buyer2@example.com claimer@example.com purchaser@example.com; do
+for em in claimer@example.com purchaser@example.com; do
   grep -q "^$em," "$TMPD/aud.csv" && pass "CSV contains $em" || fail "CSV missing $em"
 done
-grep -q ",claim," "$TMPD/aud.csv" && grep -q ",import," "$TMPD/aud.csv" && grep -q ",purchase," "$TMPD/aud.csv" \
-  && pass "CSV sources import/claim/purchase present" || fail "CSV sources"
+grep -q ",claim," "$TMPD/aud.csv" && grep -q ",purchase," "$TMPD/aud.csv" \
+  && pass "CSV sources claim/purchase present" || fail "CSV sources"
+! grep -q ",import," "$TMPD/aud.csv" \
+  && pass "CSV has no import-granted rows (export never grants access)" || fail "CSV import source"
 
 # --- downloads: allowed vs AB2426 ---------------------------------------------------------------
 code=$(curl -s -D "$TMPD/dl.hdr" -o "$TMPD/dl.mp4" -w "%{http_code}" "$BASE/api/films/$FILM1/download")
@@ -269,8 +276,9 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/filmmakers" \
   -H 'Content-Type: application/json' -d '{"email":"not-an-email","display_name":"X"}')
 [ "$code" = "400" ] && pass "M2: filmmaker account requires valid email" || fail "M2: filmmaker email validation" "http=$code"
 
+REGNAME=$(jget "$TMPD/fmk.json" display_name)
 code=$(curl -s -o "$TMPD/fmkget.json" -w "%{http_code}" "$BASE/api/filmmakers/$FMK")
-[ "$code" = "200" ] && [ "$(jget "$TMPD/fmkget.json" display_name)" = "Test Filmmaker" ] \
+[ "$code" = "200" ] && [ -n "$REGNAME" ] && [ "$(jget "$TMPD/fmkget.json" display_name)" = "$REGNAME" ] \
   && pass "M2: GET filmmaker returns profile" || fail "M2: get filmmaker" "http=$code"
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/filmmakers/fmk_nope")
 [ "$code" = "404" ] && pass "M2: unknown filmmaker returns 404" || fail "M2: filmmaker 404" "http=$code"
@@ -311,6 +319,70 @@ code=$(curl -s -o "$TMPD/film1full.json" -w "%{http_code}" "$BASE/api/films/$FIL
 [ "$code" = "200" ] && [ "$(jget "$TMPD/film1full.json" filmmaker.filmmaker_id)" = "$FMK" ] \
   && pass "M2: film detail links to filmmaker profile" || fail "M2: film filmmaker link" "http=$code"
 
+# --- bundle checkout: same-seller multi-film, one checkout (TEST-ONLY) ------------------
+# The fee-saving alternative to stored balances: five separate $4 domestic-card
+# purchases cost ~$2.08 in processing; one $20 bundle costs ~$0.88.
+BUNDLEMAIL="bundle-$(date +%s)-$RANDOM@example.com"
+code=$(curl -s -o "$TMPD/bundle.json" -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"$BUNDLEMAIL\"}")
+BUNDLECHECK=$(node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const alloc = (j.allocations || []).reduce((s, a) => s + a.amount_usd_cents, 0);
+  console.log(j.test_mode + ":" + j.total_usd_cents + ":" + alloc + ":" + (j.entitlements || []).length + ":" + !!(j.order_id && j.fee_note));
+' "$TMPD/bundle.json")
+[ "$code" = "201" ] && [ "$BUNDLECHECK" = "true:1298:1298:2:true" ] \
+  && pass "bundle: 2 films, total 1298c, allocations sum to total, order recorded" \
+  || fail "bundle purchase" "http=$code check=$BUNDLECHECK"
+
+# one signed receipt per film, each verifiable
+node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  j.entitlements.forEach((g, i) => require("fs").writeFileSync(process.argv[2] + i + ".json", JSON.stringify({ receipt: g.receipt, signature: g.signature })));
+' "$TMPD/bundle.json" "$TMPD/br"
+BOK=0
+for i in 0 1; do
+  code=$(curl -s -o "$TMPD/brv$i.json" -w "%{http_code}" -X POST "$BASE/api/receipts/verify" \
+    -H 'Content-Type: application/json' --data @"$TMPD/br$i.json")
+  [ "$code" = "200" ] && [ "$(jget "$TMPD/brv$i.json" valid)" = "true" ] && BOK=$((BOK + 1))
+done
+[ "$BOK" = "2" ] && pass "bundle: one signed receipt per film, both verify" || fail "bundle receipts" "verified=$BOK"
+
+# multi-seller bundles are out of scope -> 400
+META4='{"title":"Other Seller Film","price_usd_cents":399,"territories":["US"],"download_allowed":false,"cleared_music_attested":true,"filmmaker_email":"other-seller@example.com"}'
+code=$(curl -s -o "$TMPD/import4.json" -w "%{http_code}" -X POST "$BASE/api/films/import" \
+  -F "master=@/tmp/testfilm.mp4;type=video/mp4" -F "meta=$META4")
+FILM4=$(jget "$TMPD/import4.json" film_id)
+[ "$code" = "201" ] && [ -n "$FILM4" ] && pass "bundle: other-seller film imported" || fail "bundle: import film 4" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM4\"],\"email\":\"$BUNDLEMAIL\"}")
+[ "$code" = "400" ] && pass "bundle: multi-seller rejected (400)" || fail "bundle multi-seller" "http=$code"
+
+# validation guards
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM1\"],\"email\":\"$BUNDLEMAIL\"}")
+[ "$code" = "400" ] && pass "bundle: duplicate film_ids rejected (400)" || fail "bundle duplicates" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"film_nope\"],\"email\":\"$BUNDLEMAIL\"}")
+[ "$code" = "404" ] && pass "bundle: unknown film returns 404" || fail "bundle unknown film" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"nope\"}")
+[ "$code" = "400" ] && pass "bundle: invalid email rejected (400)" || fail "bundle email" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\"],\"email\":\"$BUNDLEMAIL\"}")
+[ "$code" = "400" ] && pass "bundle: single film rejected (400)" || fail "bundle single" "http=$code"
+
+# already-owned films: nothing re-granted, no new order
+code=$(curl -s -o "$TMPD/bundle2.json" -w "%{http_code}" -X POST "$BASE/api/purchases/bundle/test" \
+  -H 'Content-Type: application/json' -d "{\"film_ids\":[\"$FILM1\",\"$FILM3\"],\"email\":\"$BUNDLEMAIL\"}")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/bundle2.json" total_usd_cents)" = "0" ] \
+  && pass "bundle: all-owned returns 200, zero total, no new grants" || fail "bundle already-owned" "http=$code"
+code=$(curl -s -o "$TMPD/audb.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/audience.csv")
+[ "$code" = "200" ] && [ "$(grep -c "^$BUNDLEMAIL," "$TMPD/audb.csv")" = "1" ] \
+  && pass "bundle: already-owned film not re-granted" || fail "bundle no double grant"
+grep -q ",bundle_purchase," "$TMPD/audb.csv" \
+  && pass "CSV records bundle_purchase source" || fail "CSV bundle source"
+
 # --- M2: Collector Pass (test mode) -------------------------------------------------------
 code=$(curl -s -o "$TMPD/pass.json" -w "%{http_code}" -X POST "$BASE/api/passes/test" \
   -H 'Content-Type: application/json' -d "{\"email\":\"$PBEMAIL\"}")
@@ -320,6 +392,11 @@ PASSID=$(jget "$TMPD/pass.json" pass.pass_id)
   && pass "M2: test pass subscription grants 1 credit" || fail "M2: pass subscribe" "http=$code"
 grep -q "REQUIRES LEGAL REVIEW BEFORE LAUNCH" "$TMPD/pass.json" \
   && pass "M2: pass responses carry the legal-review warning" || fail "M2: pass legal warning"
+node -e '
+  const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  if (!/do not rely on subscribers forgetting to redeem/i.test(j.economics_warning || "")) process.exit(1);
+' "$TMPD/pass.json" \
+  && pass "M2: pass subscribe carries the economics warning" || fail "M2: pass economics warning"
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/test" \
   -H 'Content-Type: application/json' -d '{"email":"not-an-email"}')
 [ "$code" = "400" ] && pass "M2: pass subscribe validates email" || fail "M2: pass email validation" "http=$code"

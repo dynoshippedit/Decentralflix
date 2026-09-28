@@ -33,14 +33,14 @@
     <h2>Pending claims <span class="badge pending" id="claims-count" hidden></span></h2>
     <div id="claims"></div>
 
-    <h2>Import buyers</h2>
+    <h2>Import audience</h2>
     <form id="buyers-form" class="panel">
       <div class="field">
-        <label for="b-emails">Buyer emails</label>
+        <label for="b-emails">Audience emails (Vimeo export)</label>
         <textarea id="b-emails" placeholder="one email per line&#10;fan1@example.com&#10;fan2@example.com"></textarea>
-        <div class="hint">Pre-grants entitlements to these emails for the selected film &mdash; no claim needed.</div>
+        <div class="hint">Your Vimeo audience export is opt-in contacts &mdash; <strong>not a purchase ledger</strong>. This records contacts for migration notices only. <strong>No access is granted.</strong> Buyers claim access with their Vimeo receipt above; you approve each claim.</div>
       </div>
-      <button type="submit" class="btn" id="buyers-btn">Import buyers</button>
+      <button type="submit" class="btn" id="buyers-btn">Import audience</button>
     </form>
 
     <h2>DMCA takedowns</h2>
@@ -174,8 +174,8 @@
         btn.disabled = true;
         D.postJSON("/api/buyers/import", { film_id: id, emails: emails })
           .then(function (res) {
-            var n = (res && (res.imported || res.count)) || emails.length;
-            D.showStatus("status", "Imported " + n + " buyer entitlement(s).", "ok");
+            var n = (res && res.contacts_recorded) || 0;
+            D.showStatus("status", "Recorded " + n + " migration contact(s) for notices — no access granted.", "ok");
             document.getElementById("b-emails").value = "";
           })
           .catch(function (err) {
