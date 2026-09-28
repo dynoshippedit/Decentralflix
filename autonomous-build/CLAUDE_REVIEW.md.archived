@@ -1,0 +1,92 @@
+# CLAUDE REVIEW PROTOCOL — DecentralFlix
+
+**This is Claude's side of the flow. Grok codes (see GROK_BOOTSTRAP.md). Claude reviews here.**
+
+The user runs Grok to build, then switches to Claude and says **"review Grok's work."** This doc defines exactly what Claude does.
+
+---
+
+## The Flow (no git — by user choice)
+
+```
+Grok builds task → sets status "needs_review" → keeps going
+                              │
+                              ▼
+User: "review grok's work"  (switches to Claude)
+                              │
+                              ▼
+Claude reviews everything changed since last review
+                              │
+                   ┌──────────┴──────────┐
+                   ▼                     ▼
+          APPROVE                  KICK BACK
+   status → "completed"      status → "pending"
+   update review marker      + add "review_notes" field
+                             explaining what to fix
+```
+
+Because there's no git, "what changed" is tracked by **file modification time** against a marker file: `autonomous-build/.last-review`. Everything modified after that timestamp is what Grok did since the last review.
+
+---
+
+## How Claude Runs a Review
+
+When the user says "review Grok's work" (or similar):
+
+1. **See what changed.** Run:
+   ```bash
+   bash /home/dino/Decentralflix/autonomous-build/show-grok-changes.sh
+   ```
+   This lists every code file modified since `.last-review`, plus all tasks currently in `needs_review`.
+
+2. **For each `needs_review` task**, check against its acceptance criteria in `task-queue.json`:
+   - Does the file the task was supposed to create/change actually exist with real content (not a stub)?
+   - Does the task's `verify_cmd` pass? Run it.
+   - Read the actual diff/files — is the logic correct, or did Grok fake it / loop / drift?
+   - **No hidden files** (Grok's `.filename` bug — check `lib/`, `hooks/`, `components/`, `app/`).
+   - No `as any` papering over real type errors.
+   - UI copy rule respected (no "NFT"/"wallet"/"blockchain"/"mint"/"crypto" in primary UI).
+
+3. **Run the gates** (always, every review):
+   ```bash
+   cd /home/dino/Decentralflix && npx tsc --noEmit 2>&1 | tail -20
+   cd /home/dino/Decentralflix/apps/frontend && npm run build 2>&1 | tail -20
+   ```
+   (Add `cd packages/contracts && npx hardhat compile` if any `.sol` changed.)
+
+4. **Decide per task:**
+   - **Approve:** set `"status": "completed"` in task-queue.json. Append to `live-build-status.log`:
+     `[T## APPROVED] <timestamp> | Claude review PASS | <one-line note>`
+   - **Kick back:** set `"status": "pending"` AND add a `"review_notes"` field to that task object with a concrete fix list. Append:
+     `[T## REJECTED] <timestamp> | Claude review FAIL | <what's wrong>`
+
+5. **Update the marker** at the end:
+   ```bash
+   date -Iseconds > /home/dino/Decentralflix/autonomous-build/.last-review
+   ```
+
+6. **Tell the user** a short summary: what passed, what was kicked back and why.
+
+---
+
+## What Claude is specifically watching for (Grok's known failure modes)
+
+These come straight from the salvaged Grok persona (`.archive/dec-flix-product-reference/decentralflix-builder.toml`) — they are the things Grok has actually done wrong before:
+
+| Failure mode | How to catch it in review |
+|---|---|
+| **Edit loops** — Grok re-edits one file many times, never converging | If a file looks thrashed / inconsistent, or the log shows repeated edits to one path, read the final state carefully. |
+| **Plan drift** — polishing easy stuff while hard tasks stay broken | Check that the *actual queued task* got done, not some adjacent polish. Higher-priority pending tasks must not be skipped. |
+| **False completion** — claims done without it working | Always run `verify_cmd` + tsc + build yourself. Never trust the log line. |
+| **Stub/simulation passed off as real** | Open the file. A "functionally complete simulation" is fine if labeled; an empty stub is a kick-back. |
+| **Hidden files** (`.indexer.ts` instead of `indexer.ts`) | `find apps/frontend cloudflare-worker packages/contracts -name '.*' -type f` outside the allowed dotfiles. |
+| **UI copy leaks crypto jargon** | grep the changed `app/` + `components/` files for forbidden words. |
+
+---
+
+## Status values in task-queue.json
+
+- `pending` — not started, or kicked back by Claude (check for `review_notes`)
+- `needs_review` — Grok finished it, awaiting Claude
+- `completed` — Claude approved it. **Only Claude sets this.**
+- `failed` — could not be completed (rare; needs human)

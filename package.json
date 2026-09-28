@@ -1,0 +1,14 @@
+{
+  "name": "decentralflix",
+  "version": "0.1.0",
+  "private": true,
+  "comment": "Root is a monorepo orchestrator only. The real app lives in apps/frontend; contracts in packages/contracts. These scripts delegate to the frontend so `npm run dev` from the repo root launches the actual app, not a boilerplate stub.",
+  "scripts": {
+    "dev": "cd apps/frontend && npx next dev",
+    "build": "cd apps/frontend && npx next build",
+    "start": "cd apps/frontend && npx next start",
+    "lint": "cd apps/frontend && npx eslint",
+    "typecheck": "cd apps/frontend && npx tsc --noEmit",
+    "contracts:compile": "cd packages/contracts && npx hardhat compile"
+  }
+}

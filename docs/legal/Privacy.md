@@ -1,0 +1,4 @@
+# DecentralFlix Privacy Policy  
+Last Updated: May 29, 2026  
+
+We collect minimal data: wallet addresses (on-chain and public), IP addresses (for security only), and basic usage analytics via cookies. We do not collect KYC, personal identifying information, or private keys. All transactions are public on blockchain. We do not sell data. Data sharing occurs only as required by law or with service providers (e.g., hosting). CCPA/GDPR rights apply where required — contact us for deletion requests (limited to off-chain data). We are non-custodial; we cannot delete on-chain data. Updates posted here; continued use = acceptance.
