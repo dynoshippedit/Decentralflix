@@ -62,8 +62,8 @@ describe('getFilmReviews (demo mode)', () => {
 describe('getCreatorEarnings (demo mode)', () => {
   it('returns demo earnings whose total equals the sum of payments', async () => {
     const e = await getCreatorEarnings('0xDino000000000000000000000000000000000001');
-    expect(e.totalEarned).toBe(3_500_000_000_000_000_000n); // 3.5 ETH
-    const sum = e.payments.reduce((acc, p) => acc + p.amount, 0n);
+    expect(e.totalEarned).toBe(BigInt(3_500_000_000_000_000_000)); // 3.5 ETH
+    const sum = e.payments.reduce((acc, p) => acc + p.amount, BigInt(0));
     expect(sum).toBe(e.totalEarned);
   });
 });
