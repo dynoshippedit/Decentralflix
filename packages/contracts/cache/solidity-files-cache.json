@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/dino/Decentralflix/packages/contracts/contracts/FilmmakerCampaign.sol": {
-      "lastModificationDate": 1780131374899,
-      "contentHash": "cd0c770049151a2bcd4a2be5164b1d97",
+      "lastModificationDate": 1790634903029,
+      "contentHash": "52abccf24a2535f152a0978ab3850483",
       "sourceName": "contracts/FilmmakerCampaign.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -33,9 +33,14 @@
         "erc721a/contracts/ERC721A.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "./MovieTicket.sol",
+        "erc721a/contracts/ERC721A.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
         "./MovieTicket.sol"
       ],
       "versionPragmas": [
+        "^0.8.20",
         "^0.8.20"
       ],
       "artifacts": [
@@ -43,8 +48,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/MovieTicket.sol": {
-      "lastModificationDate": 1780131475973,
-      "contentHash": "5bb610417214039d4a92b4517822cf79",
+      "lastModificationDate": 1790634724284,
+      "contentHash": "71f05e32dffcd0c47c1b6eb1e688d965",
       "sourceName": "contracts/MovieTicket.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -918,7 +923,7 @@
       "artifacts": []
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/Reviews.sol": {
-      "lastModificationDate": 1780110797625,
+      "lastModificationDate": 1790633644463,
       "contentHash": "50cae8770ce8d969af51fc6bb37fba1f",
       "sourceName": "contracts/Reviews.sol",
       "solcConfig": {
@@ -957,7 +962,7 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/SeederCredits.sol": {
-      "lastModificationDate": 1780131481113,
+      "lastModificationDate": 1790633644463,
       "contentHash": "f038d00f9efacfda87f11585bbecb23f",
       "sourceName": "contracts/SeederCredits.sol",
       "solcConfig": {

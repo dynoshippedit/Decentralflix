@@ -23,7 +23,7 @@ export default function LegalCompliancePage() {
               <li><span className="font-medium text-emerald-400">Section 230 (47 U.S.C. § 230)</span> — Strong immunity for interactive computer services regarding third-party user-generated content. Decentralflix qualifies as it does not materially contribute to films or reviews.</li>
               <li><span className="font-medium text-emerald-400">DMCA Safe Harbor (17 U.S.C. § 512)</span> — Designating a copyright agent is one element of safe harbor, not the whole program. Full compliance also requires a repeat-infringer policy, expeditious takedown handling, and the other statutory conditions; registration alone does not confer immunity. We delist access links expeditiously (blockchain immutability respected — data itself is not removed).</li>
               <li><span className="font-medium text-emerald-400">Non-Custodial Architecture</span> — Zero custody of funds, NFTs, or keys. All value movement is direct wallet-to-wallet via audited smart contracts on Arbitrum. No money transmission surface under FinCEN or Ohio law.</li>
-              <li><span className="font-medium text-emerald-400">Utility-Only NFTs</span> — Basic / Deluxe / Producer tiers grant access, review rights, and crowdfunding participation only. No profit expectations, no securities classification under Howey for pure access utility.</li>
+              <li><span className="font-medium text-emerald-400">Utility-Only NFTs</span> — Basic / Deluxe / Producer tiers grant licensed access and review rights only. Crowdfunding is deferred and not offered. No profit expectations, no securities classification under Howey for pure access utility.</li>
             </ul>
           </section>
 

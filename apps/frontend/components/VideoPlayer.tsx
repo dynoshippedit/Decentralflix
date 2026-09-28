@@ -104,7 +104,7 @@ export default function VideoPlayer({
               Full cinematic playback + verified owner reviews require on-chain access for this film.
             </div>
             <div className="mt-4 text-sm text-emerald-400">
-              Hold a 🎟️ MovieTicket or 💎 crowdfund InvestmentNFT to unlock.
+              Hold a 🎟️ MovieTicket to unlock.
             </div>
           </div>
         </div>

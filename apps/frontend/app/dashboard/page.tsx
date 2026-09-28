@@ -12,15 +12,15 @@ import { getDemoFilmTitle, useFilmMetadata, getDemoOwnedFilms } from '@/hooks/us
  * /dashboard — Advanced high-quality Phase 0/1 stub for Creator + User dashboards.
  *
  * Tabbed cinematic experience:
- *   - User Library & Voice: owned/gated films (useMyAccessibleFilms + useHasFilmAccess for MovieTicket + crowdfund), credits/seeding (useSeederCredits), profile, strong "you own this" + verified owner voice links to Reviews.
+ *   - User Library & Voice: owned/gated films (useMyAccessibleFilms + useHasFilmAccess for MovieTicket; crowdfund deferred), credits/seeding (useSeederCredits), profile, strong "you own this" + verified owner voice links to Reviews.
  *   - Creator Studio: manage active campaigns (FilmmakerCampaign + inline stubs for AI proofs / setCampaignVideo), Arweave upload + direct launch (reuse hook + contract calls for launchCampaign), earnings (real CreatorPaid logs + stats for raised/reach), created films.
  *
- * Leverages all recent systems (multi-tier NFTs, P2P SeederCredits, crowdfund escrow+AI review, Arweave, Reviews as verified owner voice, real ownership/gating, Livepeer via links). Demo + real paths. Minimal files. Cinematic emerald ownership accents + emotional messaging.
+ * Leverages all recent systems (multi-tier NFTs, P2P SeederCredits, Arweave, Reviews as verified owner voice, real ownership/gating, Livepeer via links; crowdfund deferred). Demo + real paths. Minimal files. Cinematic emerald ownership accents + emotional messaging.
  */
 
 type Tab = 'user' | 'creator';
 
-// Local Hardhat detection (reused pattern from crowdfund/mint for launch in dashboard)
+// Local Hardhat detection (reused pattern from mint for launch in dashboard)
 const hardhatLocal = defineChain({
   id: 31337,
   name: 'Hardhat',
@@ -41,7 +41,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('user');
 
   // === Real hooks (all existing patterns) ===
-  // useMyAccessibleFilms: combines MovieTicket + crowdfund (hasCrowdfundAccess + campaignVideoHash from setCampaignVideo) using the improved gating logic
+  // useMyAccessibleFilms: MovieTicket gating (crowdfund hasCrowdfundAccess path is deferred/inert — contract not deployed)
   const { films: accessibleFilmsRaw, isLoading: accessibleLoading } = useMyAccessibleFilms(connectedAddress);
   const {
     credits,
@@ -68,11 +68,11 @@ export default function DashboardPage() {
     refresh: refreshCreator,
   } = useCreatorDashboard(connectedAddress);
 
-  // Arweave upload (exact same hook used in crowdfund + UploadTest)
+  // Arweave upload (same hook used in UploadTest)
   const { upload, uploadJson, uploading: arUploading, result: arResult, error: arError, reset: resetAr } = useArweaveUpload();
 
   // === Advanced Creator Launch (Phase 0/1 stub): upload + direct launch from Dashboard ===
-  // Reuses exact crowdfund patterns (metadata, uploadJson, walletClient + contract write)
+  // Upload patterns (metadata, uploadJson, walletClient + contract write)
   // Launch pattern mirrors crowdfund/page.tsx handleLaunchCampaign (Arweave-first + launchCampaign) — step toward shared util
   const [launchTitle, setLaunchTitle] = useState('');
   const [launchDesc, setLaunchDesc] = useState('');
@@ -86,7 +86,7 @@ export default function DashboardPage() {
   const [quickTierSupplies, setQuickTierSupplies] = useState(['120', '40', '12']);
   const [quickMilestones, setQuickMilestones] = useState(['0.8', '1.0', '0.7']);
 
-  // Network for launch (reused from crowdfund pattern)
+  // Network for launch
   const isLocalAddress = FILMMAKER_CAMPAIGN_ADDRESS.toLowerCase() === '0x5fbdb2315678afecb367f032d93f642f64180aa3';
   const targetChain = isLocalAddress ? hardhatLocal : arbitrumSepolia;
 
@@ -160,7 +160,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Enriched accessible films for User Library (now uses improved useMyAccessibleFilms + sources for MovieTicket vs Crowdfund)
+  // Enriched accessible films for User Library (useMyAccessibleFilms, MovieTicket sources; crowdfund deferred)
   // Leans on shared hook (getDemoOwnedFilms + getDemoFilmTitle graceful) to reduce demo list duplication.
   // Real Arweave titles via useFilmMetadata on film pages / when metadataHash present.
   const ownedFilms = accessibleFilmsRaw.length > 0
@@ -168,16 +168,16 @@ export default function DashboardPage() {
         title: getDemoFilmTitle(f.hash),
         hash: f.hash,
         sources: f.sources || [],
-        // tokenId omitted (crowdfund tokens use different ID space; not needed for gating links)
+        // tokenId omitted (not needed for gating links)
       }))
     : getDemoOwnedFilms();
 
-  // Real review voice surface — uses owned/accessible films (MovieTicket + crowdfund)
+  // Real review voice surface — uses owned/accessible films (MovieTicket)
   // Full aggregation via useReviews per hash would be ideal; here we surface direct edit links + count of films with voice.
 
   const isLoading = creatorLoading || accessibleLoading || creditsLoading;
 
-  // Simple network badge (matches crowdfund/mint)
+  // Simple network badge (matches mint)
   const isLocal = false; // extend if needed
   const networkName = isLocal ? 'Hardhat Local' : 'Arbitrum Sepolia';
 

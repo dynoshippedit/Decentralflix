@@ -9,7 +9,7 @@ export default function MyCollectionPage() {
 
   const connectedAddress = user?.wallet?.address;
 
-  // Real on-chain gated access (MovieTicket + crowdfund InvestmentNFTs via improved useMyAccessibleFilms + hasCrowdfundAccess)
+  // Real on-chain gated access (MovieTicket via improved useMyAccessibleFilms; crowdfund InvestmentNFT support deferred)
   const { films: accessibleFilmsRaw, isLoading: ownedLoading } = useMyAccessibleFilms(connectedAddress as `0x${string}` | undefined);
 
   // Titles via centralized Arweave metadata hook fallback (replaces all prior duplicated ternary mappings).
@@ -233,7 +233,7 @@ export default function MyCollectionPage() {
           </div>
         </div>
 
-        {/* Social proof: Reviews from other verified owners of films you own — polished for crowdfund + ticket parity */}
+        {/* Social proof: Reviews from other verified owners of films you own — polished for ticket gating */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">What other owners are saying</h3>

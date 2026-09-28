@@ -11,6 +11,14 @@ TMPD="$(mktemp -d)"
 PASS=0
 FAIL=0
 
+# Hermetic data dir: auth tests use fixed emails and accounts persist in
+# data/accounts.json — without this, a second run gets 409s and cascades.
+DATA_BACKUP=""
+if [ -d "data" ]; then
+  DATA_BACKUP="$TMPD/data-backup"
+  mv "data" "$DATA_BACKUP"
+fi
+
 pass() { PASS=$((PASS + 1)); echo "PASS: $1"; }
 fail() { FAIL=$((FAIL + 1)); echo "FAIL: $1${2:+  [detail: $2]}"; }
 
@@ -33,7 +41,7 @@ jget() {
 # --- start server -----------------------------------------------------------
 node server.js </dev/null >"$TMPD/server.log" 2>&1 &
 SERVER_PID=$!
-trap 'kill "$SERVER_PID" 2>/dev/null; rm -rf "$TMPD"' EXIT
+trap 'kill "$SERVER_PID" 2>/dev/null; rm -rf "data"; if [ -n "$DATA_BACKUP" ]; then mv "$DATA_BACKUP" "data"; fi; rm -rf "$TMPD"' EXIT
 
 ready=0
 for _ in $(seq 1 60); do

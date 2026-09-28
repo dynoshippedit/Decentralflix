@@ -9,13 +9,13 @@ Last Updated: May 29, 2026
 By accessing or using DecentralFlix (the “Platform”), you agree to these Terms of Service (“Terms”). If you do not agree, do not use the Platform.
 
 **2. Non-Custodial Decentralized Platform**  
-DecentralFlix is a non-custodial software interface that connects users directly to blockchain networks. We do not hold, control, custody, or have access to any user funds, NFTs, credits, or assets. All transactions (minting, sales, crowdfunding, escrow, P2P credits) occur solely on-chain via user-controlled wallets and smart contracts. The Platform provides no financial services, money transmission, or custodial functions.
+DecentralFlix is a non-custodial software interface that connects users directly to blockchain networks. We do not hold, control, custody, or have access to any user funds, NFTs, credits, or assets. All transactions (minting, sales, P2P credits) occur solely on-chain via user-controlled wallets and smart contracts. Crowdfunding and milestone escrow are deferred and not offered. The Platform provides no financial services, money transmission, or custodial functions.
 
 **3. User-Generated Content & Zero-Censorship Policy**  
 Users retain ownership of their content. You grant us a worldwide, royalty-free license to host, display, and make your content available on the Platform. We do not curate, endorse, or moderate content except as required by law (e.g., DMCA). We support a zero-censorship policy to the maximum extent permitted by Section 230 of the Communications Decency Act. You are solely responsible for your content.
 
-**4. NFTs, Minting, Sales, Access Gating, Crowdfunding, Escrow & P2P Credits**  
-All NFTs are utility/access tokens only. Producer-tier crowdfunding, milestone escrows, and P2P credits are facilitated solely through decentralized smart contracts. We make no representations regarding value, completion of milestones, repayment, or any returns. These are not investment contracts, securities, or financial products.
+**4. NFTs, Minting, Sales, Access Gating & P2P Credits**  
+All NFTs are utility/access tokens only. P2P credits are facilitated solely through decentralized smart contracts. Crowdfunding and milestone escrow are deferred and not offered. We make no representations regarding value or any returns. These are not investment contracts, securities, or financial products.
 
 **5. Crypto/NFT Volatility & Risk Disclaimers**  
 Cryptocurrencies and NFTs are highly volatile. You may lose all value. The Platform is provided “AS IS” with no guarantees of liquidity, functionality, or future value. We provide no financial, investment, tax, or legal advice. You assume all risk.

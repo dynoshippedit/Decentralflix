@@ -49,7 +49,7 @@ export default function LegalConsentModal({ open, onAccepted }: LegalConsentModa
           <p>DecentralFlix is a non-custodial software interface. We do not hold, control, custody, or have access to any user funds, NFTs, credits, or assets. All transactions occur solely on-chain via your wallet and smart contracts. No financial services or money transmission.</p>
 
           <p className="font-medium text-emerald-400 mt-4">Utility-Only NFTs — No Securities or Investment Contracts</p>
-          <p>All NFTs (Basic, Deluxe, Producer) are utility/access tokens only. They grant film access, review rights, and crowdfund participation. Producer-tier crowdfunding and milestone escrow create no expectation of profits or returns. These are not investments, securities, or financial products. You assume all risk of volatility and total loss.</p>
+          <p>All NFTs (Basic, Deluxe, Producer) are utility/access tokens only. They grant licensed film access and review rights. They create no expectation of profits or returns. These are not investments, securities, or financial products. Crowdfunding is deferred and not offered. You assume all risk of volatility and total loss.</p>
 
           <p className="font-medium text-emerald-400 mt-4">Zero Censorship + Section 230 + DMCA</p>
           <p>We support a zero-censorship policy for user-generated content to the maximum extent permitted by Section 230 of the Communications Decency Act. We respond to valid DMCA notices by delisting access links only. You are solely responsible for your content.</p>
