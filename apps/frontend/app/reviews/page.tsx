@@ -23,8 +23,7 @@ function ReviewsPageInner() {
           <div className="flex items-center gap-4 text-sm">
             <a href="/dashboard" className="text-emerald-400 hover:text-emerald-300 font-medium">Dashboard</a>
             <a href="/collection" className="text-white/60 hover:text-white">Collection</a>
-            <a href="/crowdfund" className="text-white/60 hover:text-white">Crowdfund</a>
-            <a href="/mint" className="text-white/60 hover:text-white">Mint</a>
+                        <a href="/mint" className="text-white/60 hover:text-white">Mint</a>
           </div>
         </div>
       </div>

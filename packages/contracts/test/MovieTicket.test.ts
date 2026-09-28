@@ -6,7 +6,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
  * MovieTicket.sol — core money contract tests.
  *
  * Covers the financial invariants that matter for a launch handling real funds:
- *  - 70% creator / 30% platform split is exact and paid to the creator immediately on mint
+ *  - 75% creator / 25% platform split is exact (creator withdraws their share)
  *  - platform fee is retained in the contract and only withdrawable by the owner
  *  - access tiers (Basic/Deluxe/Producer) and Producer rights are recorded correctly
  *  - burnable tickets can be burned once by their owner, permanent passes cannot
@@ -21,7 +21,7 @@ const Tier = { BASIC: 0, DELUXE: 1, PRODUCER: 2 } as const;
 // TicketType enum mirror (PERMANENT_PASS=0, BURNABLE_TICKET=1)
 const TicketType = { PERMANENT_PASS: 0, BURNABLE_TICKET: 1 } as const;
 
-const FEE_BPS = 3000n; // 30% platform fee → 70% creator, the headline split
+const FEE_BPS = 2500n; // 25% platform fee → 75% creator, the headline split
 const PRICE = ethers.parseEther("1"); // 1 ETH
 const VIDEO_HASH = "ar://film-raging-midlife-master";
 
@@ -62,7 +62,7 @@ describe("MovieTicket", () => {
 
     it("rejects a fee above the 50% cap at construction", async () => {
       await expect(ethers.deployContract("MovieTicket", [5001n])).to.be.revertedWith(
-        "Fee too high (max 50%)"
+        "Fee too high (max 25%)"
       );
     });
 
@@ -74,21 +74,21 @@ describe("MovieTicket", () => {
   });
 
   describe("Fee math helpers", () => {
-    it("computes the 70/30 split exactly", async () => {
+    it("computes the 75/25 split exactly", async () => {
       const { movieTicket } = await loadFixture(deployFixture);
       const fee = await movieTicket.getPlatformFee(PRICE);
       const creatorShare = await movieTicket.getCreatorShare(PRICE);
       expect(fee).to.equal((PRICE * FEE_BPS) / 10000n);
       expect(creatorShare).to.equal(PRICE - fee);
       expect(fee + creatorShare).to.equal(PRICE);
-      // 30% / 70% of 1 ETH
-      expect(fee).to.equal(ethers.parseEther("0.3"));
-      expect(creatorShare).to.equal(ethers.parseEther("0.7"));
+      // 25% / 75% of 1 ETH
+      expect(fee).to.equal(ethers.parseEther("0.25"));
+      expect(creatorShare).to.equal(ethers.parseEther("0.75"));
     });
   });
 
   describe("mintPermanentPass", () => {
-    it("pays the creator their share immediately and retains the platform fee", async () => {
+    it("pays the creator their share and retains the platform fee", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
       const fee = (PRICE * FEE_BPS) / 10000n;
       const creatorShare = PRICE - fee;
@@ -263,8 +263,8 @@ describe("MovieTicket", () => {
 
     it("rejects a fee above the cap", async () => {
       const { movieTicket, owner } = await loadFixture(deployFixture);
-      await expect(movieTicket.connect(owner).setPlatformFee(5001n)).to.be.revertedWith(
-        "Fee too high (max 50%)"
+      await expect(movieTicket.connect(owner).setPlatformFee(2501n)).to.be.revertedWith(
+        "Fee too high (max 25%)"
       );
     });
 

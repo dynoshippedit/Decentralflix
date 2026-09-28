@@ -57,8 +57,7 @@ export default function MyCollectionPage() {
           </div>
           <div className="flex items-center gap-4 text-sm">
             <a href="/dashboard" className="text-emerald-400 hover:text-emerald-300 font-medium">Dashboard</a>
-            <a href="/crowdfund" className="text-white/60 hover:text-white">Crowdfund</a>
-            <a href="/mint" className="text-white/60 hover:text-white">Mint</a>
+                        <a href="/mint" className="text-white/60 hover:text-white">Mint</a>
             <a href="/reviews" className="text-white/60 hover:text-white">Reviews</a>
           </div>
         </div>
@@ -75,8 +74,7 @@ export default function MyCollectionPage() {
           <p className="text-white/60 max-w-md mx-auto">
             Licensed streaming access. No subscription required. No ads. Your tickets are the key to the film and to the only reviews that matter — those from people who actually bought it.
           </p>
-          <a href="/crowdfund" className="text-sm text-emerald-400 hover:underline mt-2 inline-block">Back or launch new crowdfund campaigns →</a>
-          <a href="/dashboard" className="ml-4 text-sm text-emerald-400 hover:underline mt-2 inline-block">Full Dashboard → Library, Credits, Campaigns, Earnings, Quick Launch</a>
+                    <a href="/dashboard" className="ml-4 text-sm text-emerald-400 hover:underline mt-2 inline-block">Full Dashboard → Library, Earnings, Quick Launch</a>
         </div>
 
         {/* Films You Own + Real Reviews Data (Core Experience) */}

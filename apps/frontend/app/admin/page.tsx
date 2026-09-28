@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useMovieTicket } from '@/lib/contracts/useMovieTicket';
 import { AdminFilm, AdminCreator, AuditLogEntry, NCMECReportData, TrustTier, ContentStatus } from '@/lib/admin-types';
@@ -63,9 +63,40 @@ export default function AdminDashboard() {
   const address = user?.wallet?.address as `0x${string}` | undefined;
   const { } = useMovieTicket(); // we have delistFilm on the contract
 
-  const [films, setFilms] = useState<AdminFilm[]>(DEMO_FILMS);
-  const [creators, setCreators] = useState<AdminCreator[]>(DEMO_CREATORS);
-  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  // Local registry: films, creators, and audit log persist in this browser's
+  // localStorage so delists survive reloads. This is a LOCAL registry only —
+  // contracts are undeployed, so no on-chain delistFilm call occurs here.
+  const [films, setFilms] = useState<AdminFilm[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem('dfx-admin-films') : null;
+      if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return parsed; }
+    } catch { /* fall through to demo data */ }
+    return DEMO_FILMS;
+  });
+  const [creators, setCreators] = useState<AdminCreator[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem('dfx-admin-creators') : null;
+      if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return parsed; }
+    } catch { /* fall through to demo data */ }
+    return DEMO_CREATORS;
+  });
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem('dfx-admin-audit') : null;
+      if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return parsed; }
+    } catch { /* fall through to empty */ }
+    return [];
+  });
+
+  useEffect(() => {
+    try { window.localStorage.setItem('dfx-admin-films', JSON.stringify(films)); } catch { /* storage unavailable */ }
+  }, [films]);
+  useEffect(() => {
+    try { window.localStorage.setItem('dfx-admin-creators', JSON.stringify(creators)); } catch { /* storage unavailable */ }
+  }, [creators]);
+  useEffect(() => {
+    try { window.localStorage.setItem('dfx-admin-audit', JSON.stringify(auditLog.slice(0, 50))); } catch { /* storage unavailable */ }
+  }, [auditLog]);
   const [filter, setFilter] = useState<'ALL' | ContentStatus>('ALL');
   const [sort, setSort] = useState<'newest' | 'tier'>('newest');
   const [search, setSearch] = useState('');
@@ -119,11 +150,13 @@ export default function AdminDashboard() {
       return;
     }
 
-    // In a real app we would use useWriteContract / viem to call delistFilm on MovieTicket
-    // For now we simulate the on-chain call + update local state (the contract function exists from T16)
-    console.log('Calling delistFilm on-chain for', film.videoHash, 'reason:', removalReason);
+    // Local-registry removal. The MovieTicket.delistFilm contract function exists
+    // but contracts are UNDEPLOYED, so no on-chain call happens here. The film is
+    // marked DELISTED in this browser's local admin registry (persisted) and the
+    // action is recorded in the audit log.
+    console.log('Delisting from local admin registry:', film.videoHash, 'reason:', removalReason);
 
-    // Update local state
+    // Update local registry (persisted to localStorage)
     setFilms(prev =>
       prev.map(f =>
         f.id === film.id
@@ -148,7 +181,7 @@ export default function AdminDashboard() {
     }
 
     setSelectedFilmForRemoval(null);
-    alert(`Film ${film.title} has been delisted on-chain (simulated in this build). All delivery layers notified.`);
+    alert(`Film ${film.title} marked DELISTED in the local admin registry (this browser only). No on-chain call — contracts are undeployed.`);
   };
 
   const handleApprove = (film: AdminFilm) => {
@@ -207,7 +240,7 @@ Mandatory reporting under 18 U.S.C. § 2258A.`;
         <div className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
           <div>
             <div className="text-2xl font-semibold tracking-widest">DECENTRALFLIX</div>
-            <div className="text-red-500 text-sm font-mono">ADMIN DASHBOARD — SIMULATION MODE (T17)</div>
+            <div className="text-red-500 text-sm font-mono">ADMIN DASHBOARD — LOCAL REGISTRY (contracts undeployed)</div>
           </div>
           <div className="text-sm text-gray-400">
             Connected as admin: {address?.slice(0, 6)}...{address?.slice(-4)}
@@ -285,7 +318,7 @@ Mandatory reporting under 18 U.S.C. § 2258A.`;
           {/* Emergency Removal */}
           <div className="border border-red-500/40 bg-black/60 p-6 rounded-2xl">
             <div className="text-red-500 font-semibold mb-3 text-lg">EMERGENCY REMOVAL</div>
-            <p className="text-sm text-gray-400 mb-4">Immediate on-chain delist + R2/Filecoin removal. Legal use only.</p>
+            <p className="text-sm text-gray-400 mb-4">Mark DELISTED in the local admin registry (this browser only). Contracts are undeployed, so no on-chain call occurs. Legal use only.</p>
 
             <input
               placeholder="Search film hash or title..."
@@ -314,7 +347,7 @@ Mandatory reporting under 18 U.S.C. § 2258A.`;
                   onClick={() => handleDelist(selectedFilmForRemoval)}
                   className="mt-3 w-full bg-red-600 hover:bg-red-700 py-2 rounded font-semibold"
                 >
-                  REMOVE NOW — CALL delistFilm()
+                  MARK DELISTED IN LOCAL REGISTRY
                 </button>
               </div>
             )}
@@ -357,7 +390,25 @@ Mandatory reporting under 18 U.S.C. § 2258A.`;
           <div className="border border-white/10 bg-black/40 p-6 rounded-2xl text-sm">
             <div className="font-semibold mb-3 flex justify-between">
               <span>Audit Log (immutable)</span>
-              <button onClick={() => { /* export CSV stub */ }} className="text-xs underline">Export CSV</button>
+              <button onClick={() => {
+              const esc = (v: unknown) => {
+                const str = String(v ?? '');
+                return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+              };
+              const header = ['id','title','description','creator','creatorTier','submittedAt','status','genre','durationMinutes','videoHash'].join(',');
+              const rows = films.map(f => [f.id, f.title, f.description, f.creator, f.creatorTier, f.submittedAt, f.status, f.genre, f.durationMinutes, f.videoHash].map(esc).join(','));
+              const csv = [header, ...rows].join('\n');
+              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'decentralflix-films.csv';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              logAction('EXPORT_CSV', 'film-list', `${films.length} films exported`);
+            }} className="text-xs underline">Export CSV</button>
             </div>
             {auditLog.length === 0 && <div className="text-gray-500 text-xs">No actions yet in this session.</div>}
             {auditLog.map(entry => (
@@ -370,7 +421,7 @@ Mandatory reporting under 18 U.S.C. § 2258A.`;
       </div>
 
       <div className="text-center text-[10px] text-gray-600 py-8 border-t border-white/10">
-        Admin dashboard (T17) — Simulation mode. Real delistFilm calls available. No public nav link (direct /admin access only).
+        Admin dashboard — Local registry in this browser (localStorage). Film data is demo seed data; delists persist locally. Contracts are unaudited and undeployed, so delistFilm is never called on-chain from here. No public nav link (direct /admin access only).
       </div>
     </div>
   );

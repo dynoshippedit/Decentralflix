@@ -63,7 +63,6 @@ export default function DashboardPage() {
     createdFilms,
     totalEarnings,
     recentPayouts,
-    myCampaigns,
     isLoading: creatorLoading,
     error: creatorError,
     refresh: refreshCreator,
@@ -449,7 +448,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6 pb-16 space-y-10">
           {/* Quick Launch Bar */}
           <div className="flex flex-wrap gap-3">
-            <a href="/crowdfund" className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.985] text-black font-medium rounded-2xl text-sm transition">Launch New Crowdfund Campaign</a>
+            <span className="px-8 py-3 border border-amber-500/40 text-amber-400/80 rounded-2xl text-sm" title="Crowdfunding is deferred until a compliant legal structure exists">Crowdfunding deferred</span>
             <button
               onClick={() => { setActiveTab('creator'); window.scrollTo({ top: 600, behavior: 'smooth' }); }}
               className="px-8 py-3 border border-white/30 hover:bg-white/5 rounded-2xl text-sm"
@@ -463,7 +462,7 @@ export default function DashboardPage() {
           <div className="bg-zinc-950 border border-emerald-500/20 rounded-3xl p-8">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <div className="text-emerald-400 text-xs tracking-[3.5px]">INSTANT • 75% TO CREATORS</div>
+                <div className="text-emerald-400 text-xs tracking-[3.5px]">75% TO CREATORS</div>
                 <h3 className="text-4xl font-semibold tracking-[-1.5px] mt-1">Creator Earnings</h3>
               </div>
               <button onClick={refreshCreator} className="text-xs px-4 py-1.5 border border-emerald-500/40 rounded-full text-emerald-400">REFRESH PAYOUTS</button>
@@ -476,13 +475,13 @@ export default function DashboardPage() {
                   {Number(formatEther(totalEarnings)).toFixed(3)}
                 </div>
                 <div className="text-2xl text-white/70 -mt-2">ETH</div>
-                <div className="mt-3 text-xs text-white/50">Every mint sends your share directly via CreatorPaid event. No platform holding period.</div>
+                <div className="mt-3 text-xs text-white/50">Every mint splits your 75% share to your wallet via the CreatorPaid event.</div>
               </div>
 
               <div className="md:col-span-2">
                 <div className="text-xs text-white/60 mb-3">RECENT PAYOUTS</div>
                 <div className="space-y-2">
-                  {recentPayouts.length === 0 && <div className="text-white/50 text-sm">No payouts yet. Mint activity on your films will appear here instantly.</div>}
+                  {recentPayouts.length === 0 && <div className="text-white/50 text-sm">No payouts yet. Mint activity on your films will appear here.</div>}
                   {recentPayouts.map((p, i) => (
                     <div key={i} className="flex justify-between items-center bg-black/70 border border-white/10 rounded-xl px-4 py-3 text-sm">
                       <div className="font-mono text-white/70">
@@ -492,18 +491,16 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-[10px] text-white/40 mt-2">Platform fee (currently 30% adjustable) stays in contract. You always receive your share immediately.</div>
+                <div className="text-[10px] text-white/40 mt-2">Platform fee (currently 25%, adjustable by the owner, hard-capped at 25%) stays in the contract for the owner to withdraw.</div>
               </div>
             </div>
 
             {/* Advanced basic stats row (raised across campaigns, ownership reach) */}
             <div className="mt-6 pt-6 border-t border-white/10 grid md:grid-cols-3 gap-4 text-sm">
-              <div className="bg-black/60 border border-white/10 rounded-xl p-4">
-                <div className="text-white/50 text-xs">TOTAL RAISED (YOUR CAMPAIGNS)</div>
-                <div className="text-3xl font-semibold text-emerald-400 mt-1 tabular-nums">
-                  {myCampaigns.length ? myCampaigns.reduce((s, c) => s + Number(formatEther(c.raised)), 0).toFixed(2) : '0.00'} ETH
-                </div>
-                <div className="text-xs text-white/50 mt-1">Direct escrow-backed. Backers = future verified reviewers.</div>
+              <div className="bg-black/60 border border-amber-500/20 rounded-xl p-4">
+                <div className="text-white/50 text-xs">CROWDFUNDING</div>
+                <div className="text-3xl font-semibold text-amber-400 mt-1">Deferred</div>
+                <div className="text-xs text-white/50 mt-1">Campaigns are deferred until a compliant legal structure exists.</div>
               </div>
               <div className="bg-black/60 border border-white/10 rounded-xl p-4">
                 <div className="text-white/50 text-xs">YOUR FILMS + REACH</div>
@@ -518,76 +515,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* My Campaigns (from crowdfund integration) */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="text-emerald-400 text-xs tracking-[3px]">VERIFIED BACKERS = FUTURE REVIEWERS</div>
-                <h3 className="text-3xl font-semibold tracking-tight">Your Active Campaigns</h3>
-              </div>
-              <a href="/crowdfund" className="text-sm text-emerald-400 hover:underline">Manage all on Crowdfund →</a>
-            </div>
-
-            {myCampaigns.length === 0 ? (
-              <div className="text-white/60 bg-zinc-950 border border-white/10 rounded-2xl p-8">No campaigns yet. Use the Quick Launchpad above (or full Crowdfund) — backers instantly become verified owners eligible for Reviews. Producer backers unlock AI milestone proofs.</div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {myCampaigns.map((c, idx) => {
-                  const progress = c.target > 0 ? Math.min(100, Math.floor((Number(c.raised) / Number(c.target)) * 100)) : 0;
-                  const isMyCampaign = true; // filtered by hook
-                  return (
-                    <div key={idx} className="bg-zinc-950 border border-white/10 rounded-2xl p-6">
-                      {c.poster && (
-                        <div className="mb-3 -mx-1">
-                          <img
-                            src={c.poster.startsWith('ar://') ? `https://arweave.net/${c.poster.replace(/^ar:\/\//, '')}` : c.poster}
-                            alt=""
-                            className="w-full h-24 object-cover rounded-xl border border-white/10"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        </div>
-                      )}
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-semibold text-xl tracking-tight">{c.title}</div>
-                          <div className="text-xs text-white/50 font-mono">{c.metadataHash.slice(0,22)}…</div>
-                        </div>
-                        <div className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 text-emerald-400">YOUR CAMPAIGN</div>
-                      </div>
-                      <div className="text-sm text-white/70 mb-3 line-clamp-2">{c.description}</div>
-
-                      <div className="mb-3">
-                        <div className="h-1.5 bg-white/10 rounded overflow-hidden">
-                          <div className="h-1.5 bg-emerald-500" style={{ width: `${progress}%` }} />
-                        </div>
-                        <div className="text-[10px] text-white/50 mt-1 flex justify-between font-mono">
-                          <span>{formatEther(c.raised)} / {formatEther(c.target)} ETH • {progress}%</span>
-                          <span>{c.tierSold?.[2] || 0} Producer (💎 verified)</span>
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-emerald-400/80 mb-3">Backers = verified reviewers on your film. Producer tier unlocks AI proof submissions for escrow.</div>
-
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <a href="/crowdfund" className="px-3 py-1.5 border border-white/30 rounded-lg hover:bg-white/5">Full manage on Crowdfund →</a>
-                        <button 
-                          onClick={() => alert(`(Stub) Open AI Proof submit for campaign #${c.id} — reuses submitAIProof + Arweave upload exactly like crowdfund page. Producer only.`)}
-                          className="px-3 py-1.5 border border-emerald-500/50 text-emerald-400 rounded-lg hover:bg-emerald-500/10"
-                        >
-                          Submit AI Milestone Proof
-                        </button>
-                        <button 
-                          onClick={() => alert(`(Stub) Link videoHash to campaign #${c.id} via setCampaignVideo — enables precise hasCrowdfundAccess gating + Livepeer unlock for all backers.`)}
-                          className="px-3 py-1.5 border border-white/30 rounded-lg hover:bg-white/5"
-                        >
-                          Link Master Video
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          {/* Crowdfunding campaigns — DEFERRED (securities risk without a registered funding portal) */}
+          <div className="bg-zinc-950 border border-amber-500/20 rounded-2xl p-8">
+            <div className="text-amber-400 text-xs tracking-[3px] mb-2">CROWDFUNDING DEFERRED</div>
+            <p className="text-white/60 text-sm">
+              Crowdfunding campaigns are deferred until a compliant legal structure exists.
+              Sell licensed streaming access to your films instead — 75% creator share on every sale.
+            </p>
           </div>
 
           {/* My Created Films + Reviews Voice — strong emotional ownership tie */}

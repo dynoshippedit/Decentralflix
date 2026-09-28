@@ -33,7 +33,7 @@ export interface AuditLogEntry {
   id: string;
   timestamp: string;
   adminWallet: string;
-  action: 'APPROVE' | 'DENY' | 'DELIST' | 'RESTORE' | 'PROMOTE_TIER' | 'DEMOTE_TIER' | 'BAN';
+  action: 'APPROVE' | 'DENY' | 'DELIST' | 'RESTORE' | 'PROMOTE_TIER' | 'DEMOTE_TIER' | 'BAN' | 'EXPORT_CSV';
   targetId: string;              // filmHash or creator wallet
   details: string;
 }

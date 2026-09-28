@@ -1,4 +1,23 @@
 // SPDX-License-Identifier: MIT
+// ============================================================================
+// DEFERRED — DO NOT DEPLOY OR OFFER.
+//
+// This contract (FilmmakerCampaign) implements crowdfunding mechanics that
+// are DEFERRED per the DecentralFlix research PDFs: offering crowdfunding
+// without a registered funding portal risks an unregistered securities
+// offering. It is retained for architecture and test history ONLY. It is not
+// deployed by scripts/deploy.ts, the /crowdfund route shows a deferral
+// notice, and no UI offers crowdfunding. Do not re-enable without Dino's
+// explicit authorization and a compliant legal structure (registered funding
+// portal + transaction-specific counsel).
+// ============================================================================
+pragma solidity ^0.8.20;
+
+import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./MovieTicket.sol";
+
 pragma solidity ^0.8.20;
 
 import "erc721a/contracts/ERC721A.sol";

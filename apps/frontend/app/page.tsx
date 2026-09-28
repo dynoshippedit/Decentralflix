@@ -74,7 +74,7 @@ export default async function HomePage() {
       {/* ── Stats bar ──────────────────────────────────────────────────── */}
       <div className="border-y border-white/10 py-4 bg-white/[0.02]">
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-xs text-white/40 tracking-widest">
-          <span>75% CREATOR PAYOUT — INSTANT</span>
+          <span>75% CREATOR PAYOUT</span>
           <span>NO CENTRAL AUTHORITY</span>
           <span>BUY ONCE, LICENSED CLEARLY</span>
           <span>SIGNED RECEIPTS, VERIFIABLE OFFLINE</span>
@@ -104,8 +104,8 @@ export default async function HomePage() {
             <div className="text-4xl mb-6">🎬</div>
             <h3 className="text-2xl font-semibold tracking-tight mb-3">For filmmakers</h3>
             <p className="text-white/55 leading-relaxed mb-8">
-              Upload your film, set your price, get paid instantly on 75% of every sale —
-              no invoices, no net-30, no middlemen. Start free with the capped Migration
+              Upload your film, set your price, get paid on 75% of every sale —
+              no invoices, no middlemen. Start free with the capped Migration
               Pilot, or pick a plan that fits your catalog.
             </p>
             <Link href="/pricing#filmmakers" className="inline-flex items-center gap-2 text-white font-medium group-hover:gap-3 transition-all">

@@ -99,7 +99,7 @@ export default function UploadPage() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-5xl font-semibold tracking-tight mb-2">Upload Your Film</h1>
-          <p className="text-white/50">75% of every sale goes directly to you. Instantly.</p>
+          <p className="text-white/50">75% of every sale goes directly to you.</p>
         </div>
 
         {/* Step indicator */}
@@ -279,7 +279,7 @@ export default function UploadPage() {
             )}
 
             <div className="text-white/60 text-sm leading-relaxed">
-              Set your access prices. You receive 75% of every sale, paid instantly to you.
+              Set your access prices. You receive 75% of every sale, paid to your wallet.
             </div>
 
             {[

@@ -16,8 +16,9 @@ async function main() {
   console.log("Balance:", ethers.formatEther(balance), "ETH");
   console.log("====================================\n");
 
-  // Default to 30% platform fee (3000 basis points). Change as needed.
-  const INITIAL_PLATFORM_FEE_BPS = 3000;
+  // Default to 25% platform fee (2500 basis points) = 75% creator share.
+  // Matches the verified site economics; PayPerView caps at 2500 as well.
+  const INITIAL_PLATFORM_FEE_BPS = 2500;
 
   const MovieTicketFactory = await ethers.getContractFactory("MovieTicket");
   const movieTicket = await MovieTicketFactory.deploy(INITIAL_PLATFORM_FEE_BPS);
@@ -27,18 +28,12 @@ async function main() {
 
   console.log("✅ MovieTicket deployed to:", movieTicketAddress);
 
-  // Deploy FilmmakerCampaign first (so Reviews can take both addresses for unified verified-owner gating)
-  const FilmmakerCampaignFactory = await ethers.getContractFactory("FilmmakerCampaign");
-  const filmmakerCampaign = await FilmmakerCampaignFactory.deploy(movieTicketAddress);
-  await filmmakerCampaign.waitForDeployment();
-
-  const filmmakerCampaignAddress = await filmmakerCampaign.getAddress();
-  console.log("✅ FilmmakerCampaign deployed to:", filmmakerCampaignAddress);
-
-  // Deploy Reviews contract with both contracts so onlyVerifiedOwner accepts
-  // MovieTicket holders OR crowdfund InvestmentNFT backers (hasCrowdfundAccess after setCampaignVideo)
+  // FilmmakerCampaign is DEFERRED (crowdfunding = securities risk without a
+  // registered funding portal). It is NOT deployed. Reviews receives the zero
+  // address for the campaign parameter — onlyVerifiedOwner then gates on
+  // MovieTicket holders only.
   const ReviewsFactory = await ethers.getContractFactory("Reviews");
-  const reviews = await ReviewsFactory.deploy(movieTicketAddress, filmmakerCampaignAddress);
+  const reviews = await ReviewsFactory.deploy(movieTicketAddress, ethers.ZeroAddress);
   await reviews.waitForDeployment();
 
   const reviewsAddress = await reviews.getAddress();
@@ -56,7 +51,6 @@ async function main() {
   console.log("MovieTicket:", movieTicketAddress);
   console.log("Reviews:", reviewsAddress);
   console.log("SeederCredits:", seederCreditsAddress);
-  console.log("FilmmakerCampaign:", filmmakerCampaignAddress);
 
   // Get deploy tx for logging
   const deployTx = movieTicket.deploymentTransaction();
@@ -68,7 +62,6 @@ async function main() {
     movieTicket: movieTicketAddress,
     reviews: reviewsAddress,
     seederCredits: seederCreditsAddress,
-    filmmakerCampaign: filmmakerCampaignAddress,
     deployer: deployer.address,
     timestamp: new Date().toISOString(),
     txHash: deployTx ? deployTx.hash : undefined,
@@ -87,7 +80,6 @@ async function main() {
   console.log(`NEXT_PUBLIC_MOVIE_TICKET_ADDRESS=${movieTicketAddress}`);
   console.log(`NEXT_PUBLIC_REVIEWS_ADDRESS=${reviewsAddress}`);
   console.log(`NEXT_PUBLIC_SEEDER_CREDITS_ADDRESS=${seederCreditsAddress}`);
-  console.log(`NEXT_PUBLIC_FILMMAKER_CAMPAIGN_ADDRESS=${filmmakerCampaignAddress}`);
 
   // Auto-verify on live networks if API key is present
   const isLiveNetwork = network.chainId !== 31337n;

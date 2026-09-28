@@ -176,7 +176,7 @@ function MintPageInner() {
             </div>
             <div className="border-t border-white/10 pt-4 flex justify-between">
               <span className="text-white/50">Creator receives</span>
-              <span className="text-emerald-400">{(100 - parseInt(feePct))}% instantly</span>
+              <span className="text-emerald-400">{(100 - parseInt(feePct))}% to the creator</span>
             </div>
             <div className="flex justify-between text-xl font-semibold">
               <span>Total</span>

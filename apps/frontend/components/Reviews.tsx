@@ -233,7 +233,7 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
           </div>
         )}
         <p className="text-sm text-white/60 mb-4 leading-relaxed">
-          Only verified owners — MovieTicket holders <span className="text-sky-400">🎟️</span> and crowdfund InvestmentNFT backers <span className="text-violet-400">💎</span> — can leave public critiques. 
+          Only verified owners — MovieTicket holders — can leave public critiques. 
           Because you own this film on-chain, your voice carries real weight. This is the decentralized, owner-first version of reviews.
         </p>
 
@@ -279,12 +279,12 @@ export default function Reviews({ videoHash, reviews = [], onReviewSubmitted, is
         <div className="p-5 bg-zinc-900 border border-white/10 rounded-2xl text-sm">
           <div className="font-medium text-white/80 mb-1">Ownership required to participate</div>
           <div className="text-white/70 leading-snug">
-            You must hold a MovieTicket or a crowdfund InvestmentNFT for this film.<br />
+            You must hold a MovieTicket for this film.<br />
             Your on-chain stake is what gives your voice authenticity and permanence here — your voice carries real weight because you own it.
           </div>
           <div className="mt-3 text-xs">
             <a href="/mint" className="text-emerald-400 hover:underline">Mint a ticket</a> <span className="text-white/40 mx-1">·</span> 
-            <a href="/crowdfund" className="text-emerald-400 hover:underline">Back a crowdfund campaign</a>
+            
           </div>
         </div>
       )}

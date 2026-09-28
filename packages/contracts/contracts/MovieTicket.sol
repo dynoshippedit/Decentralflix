@@ -40,7 +40,7 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     // We no longer shadow ERC721A's totalSupply() or _nextTokenId().
     uint256 private _videoCounter;
     bool private _paused;
-    uint256 public platformFeeBps; // e.g. 3000 = 30%
+    uint256 public platformFeeBps; // e.g. 2500 = 25% (75% creator share)
 
     // URI storage (ERC721A does not include ERC721URIStorage by default)
     mapping(uint256 => string) private _tokenURIs;
@@ -111,7 +111,7 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     event ContentRestored(string indexed videoHash, uint256 timestamp, address by);
 
     constructor(uint256 _initialPlatformFeeBps) ERC721A("Decentralflix Movie Ticket", "DFMT") Ownable(msg.sender) {
-        require(_initialPlatformFeeBps <= 5000, "Fee too high (max 50%)");
+        require(_initialPlatformFeeBps <= 2500, "Fee too high (max 25%)");
         platformFeeBps = _initialPlatformFeeBps;
     }
 
@@ -183,7 +183,7 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     }
 
     function setPlatformFee(uint256 newFeeBps) public onlyOwner {
-        require(newFeeBps <= 5000, "Fee too high (max 50%)");
+        require(newFeeBps <= 2500, "Fee too high (max 25%)");
         uint256 oldFee = platformFeeBps;
         platformFeeBps = newFeeBps;
         emit PlatformFeeUpdated(oldFee, newFeeBps);
