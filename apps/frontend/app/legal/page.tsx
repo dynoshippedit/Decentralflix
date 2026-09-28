@@ -13,7 +13,7 @@ export default function LegalCompliancePage() {
             SECTION 230 • DMCA SAFE HARBOR • NON-CUSTODIAL DESIGN
           </div>
           <h1 className="text-6xl font-semibold tracking-[-2.5px]">Legal &amp; Compliance</h1>
-          <p className="mt-3 text-xl text-white/70">Maximum liability protection posture for a decentralized NFT access platform.</p>
+          <p className="mt-3 text-xl text-white/70">Our legal posture, stated plainly — including what registration alone does not cover.</p>
         </div>
 
         <div className="mt-12 grid gap-8">
@@ -21,7 +21,7 @@ export default function LegalCompliancePage() {
             <h2 className="text-2xl font-semibold tracking-tight mb-4">Core Legal Foundations</h2>
             <ul className="space-y-4 text-[15px] text-white/90">
               <li><span className="font-medium text-emerald-400">Section 230 (47 U.S.C. § 230)</span> — Strong immunity for interactive computer services regarding third-party user-generated content. Decentralflix qualifies as it does not materially contribute to films or reviews.</li>
-              <li><span className="font-medium text-emerald-400">DMCA Safe Harbor (17 U.S.C. § 512)</span> — Registered Copyright Agent + repeat-infringer policy + expeditious delisting of access links (blockchain immutability respected — data itself is not removed).</li>
+              <li><span className="font-medium text-emerald-400">DMCA Safe Harbor (17 U.S.C. § 512)</span> — Designating a copyright agent is one element of safe harbor, not the whole program. Full compliance also requires a repeat-infringer policy, expeditious takedown handling, and the other statutory conditions; registration alone does not confer immunity. We delist access links expeditiously (blockchain immutability respected — data itself is not removed).</li>
               <li><span className="font-medium text-emerald-400">Non-Custodial Architecture</span> — Zero custody of funds, NFTs, or keys. All value movement is direct wallet-to-wallet via audited smart contracts on Arbitrum. No money transmission surface under FinCEN or Ohio law.</li>
               <li><span className="font-medium text-emerald-400">Utility-Only NFTs</span> — Basic / Deluxe / Producer tiers grant access, review rights, and crowdfunding participation only. No profit expectations, no securities classification under Howey for pure access utility.</li>
             </ul>

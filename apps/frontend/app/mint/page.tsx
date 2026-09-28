@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { MOVIE_TICKET_ADDRESS, MOVIE_TICKET_ABI, useMovieTicket } from '@/lib/contracts';
 import LegalConsentModal, { hasLegalConsent, acceptLegalConsent } from '@/components/LegalConsentModal';
 import { getDemoFilm } from '@/lib/demo-content';
+import { LICENSE_TABLE, APPLE_NFT_NOTE, BUNDLES_BEFORE_WALLET_NOTE } from '@/lib/licensing';
 import Link from 'next/link';
 
 const hardhatLocal = defineChain({
@@ -20,17 +21,17 @@ const hardhatLocal = defineChain({
 const TIER_INFO = {
   BASIC: {
     label: 'Standard Access',
-    description: 'Watch this film forever. One-time purchase.',
+    description: 'Streaming access under the film\u2019s license terms. One-time purchase.',
     badge: null,
   },
   DELUXE: {
     label: 'Premium Access',
-    description: 'Watch forever + behind-the-scenes content.',
+    description: 'Streaming access + behind-the-scenes content.',
     badge: 'POPULAR',
   },
   PRODUCER: {
     label: 'Producer Credit',
-    description: 'Watch forever + credit + community access.',
+    description: 'Streaming access + on-screen credit + community access.',
     badge: 'LIMITED',
   },
 };
@@ -126,10 +127,12 @@ function MintPageInner() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
           <div className="text-6xl mb-6">🎬</div>
-          <h1 className="text-4xl font-semibold tracking-tight mb-3">You own it.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight mb-3">It’s yours to watch.</h1>
           <p className="text-white/60 mb-8 leading-relaxed">
-            Your access to <strong>{demoFilm?.title || videoHash}</strong> is now permanent. No one can take it away.
-            Watch it as many times as you want, forever.
+            Your license for <strong>{demoFilm?.title || videoHash}</strong> is recorded.
+            Watch on web and mobile under the film’s license terms — streaming access
+            depends on the licensed service, and where the filmmaker allows downloads your copy
+            plays offline without us.
           </p>
           {txHash && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 font-mono text-xs text-white/40 break-all">
@@ -182,8 +185,9 @@ function MintPageInner() {
           </div>
 
           <p className="text-white/40 text-xs mb-6 leading-relaxed">
-            This is a one-time utility access token — not an investment, not a security.
-            You are purchasing permanent access to view this specific film.
+            This is a one-time purchase of a viewing license plus an optional collector token —
+            not an investment, not a security, not a stored balance. Your viewing rights come from
+            the license, under the terms in “What your purchase includes” below.
           </p>
 
           <button
@@ -212,8 +216,8 @@ function MintPageInner() {
             </>
           ) : (
             <>
-              <h1 className="text-5xl font-semibold tracking-tight mb-3">Get Permanent Access</h1>
-              <p className="text-white/60">Buy once. Own forever. No subscription required.</p>
+              <h1 className="text-5xl font-semibold tracking-tight mb-3">Get Access</h1>
+              <p className="text-white/60">Buy once under a clear license. No subscription required.</p>
             </>
           )}
         </div>
@@ -270,8 +274,27 @@ function MintPageInner() {
           </div>
           <div className="border-t border-white/10 pt-3 flex justify-between font-semibold">
             <span>You pay</span>
-            <span>{price} ETH — once, forever</span>
+            <span>{price} ETH — one-time</span>
           </div>
+        </div>
+
+        {/* What your purchase includes — the license model */}
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+          <div className="text-xs text-white/40 tracking-widest mb-4">WHAT YOUR PURCHASE INCLUDES</div>
+          <div className="space-y-4">
+            {LICENSE_TABLE.map((row) => (
+              <div key={row.offer} className="text-sm">
+                <div className="font-semibold text-white/90">{row.offer}</div>
+                <div className="text-white/55 mt-0.5">{row.receives}</div>
+                <div className="text-white/35 text-xs mt-0.5">{row.mustBeTrue}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-5 text-xs text-amber-200/80 leading-relaxed space-y-2">
+          <p>{APPLE_NFT_NOTE}</p>
+          <p>{BUNDLES_BEFORE_WALLET_NOTE}</p>
         </div>
 
         {/* CTA */}
@@ -279,7 +302,7 @@ function MintPageInner() {
           onClick={handleGetAccess}
           className="w-full px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition text-lg"
         >
-          {!authenticated ? 'Sign In to Continue' : 'Get Permanent Access'}
+          {!authenticated ? 'Sign In to Continue' : 'Get Access'}
         </button>
 
         <p className="text-center text-white/30 text-xs mt-4">

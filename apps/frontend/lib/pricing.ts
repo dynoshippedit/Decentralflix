@@ -19,6 +19,18 @@ export const PRICING_DISCLAIMER =
 export const CREATOR_SHARE = 0.75;
 export const CREATOR_SHARE_PCT = "75%";
 
+/**
+ * Migration pilot cap (research update 2026-09-28): the free pilot is 10
+ * titles within a FIXED migration budget. "Zero platform fee" is not zero
+ * cost — storage, delivery, claim review, and support still cost money, and
+ * the cap covers a bounded share of them.
+ */
+export const MIGRATION_PILOT_CAP =
+  "Migration Pilot, capped on purpose: free migration help for up to 10 titles per filmmaker, " +
+  "inside a fixed pilot migration budget. The cap covers storage, delivery, and manual claim " +
+  "review for the pilot period. Zero platform fee does not mean zero cost — open-ended free " +
+  "hosting would be a promise we can't keep, so we don't make it.";
+
 export const ECONOMICS_WARNING =
   "Collector Pass economics (draft model, not final): a $10/mo pass with two $8 credits " +
   "costs $12 in creator payouts at a 75% creator share — before card processing and delivery. " +
@@ -66,7 +78,7 @@ export const FILMMAKER_TIERS: FilmmakerTier[] = [
       "75% creator share on every sale",
       "Analytics dashboard (views, sales, geography)",
       "Priority review queue (24h)",
-      "Same-seller bundles + Collector Pass eligibility",
+      "Same-seller bundles",
       "Custom film pages",
     ],
     cta: "Start creating",
@@ -108,9 +120,10 @@ export const VIEWER_OPTIONS: ViewerOption[] = [
     name: "Pay-per-film",
     price: "From $3.99",
     priceNote: "Filmmaker sets the price",
-    tagline: "Buy once. Yours to keep, forever.",
+    tagline: "Buy once under a clear license.",
     features: [
-      "Permanent access — never a rental window",
+      "Licensed streaming access — never a rental window",
+      "Honest limits: streaming depends on the licensed service",
       "Signed receipt, verifiable offline",
       "Watch on web and mobile",
       "No account lock-in on your library",
@@ -128,24 +141,81 @@ export const VIEWER_OPTIONS: ViewerOption[] = [
       "Single signed receipt per film",
       "15% bundle discount (draft)",
       "Same-seller only — no cross-creator splits yet",
+      "No stored balance needed — the processing-fee saving happens at checkout",
     ],
     cta: "Browse films",
   },
+];
+
+export interface ContributionRow {
+  scenario: string;
+  creatorPayout: number;
+  cardCost: number;
+  deliveryAllowance: number;
+  opsAllowance: number;
+  platformContribution: number;
+}
+
+/**
+ * Per-order contribution after variable costs (research update 2026-09-28).
+ * Basis: creator gets 75% of pre-tax price; platform bears US domestic card
+ * processing (2.9% + $0.30), a delivery allowance, and a $0.20 variable-ops
+ * placeholder. Before storage, ingest/transcoding, payout fees, taxes, FX,
+ * legal, acquisition, and fixed overhead.
+ */
+export const CONTRIBUTION_TABLE: ContributionRow[] = [
+  { scenario: "$4 at 75%", creatorPayout: 3.0, cardCost: 0.416, deliveryAllowance: 0.1, opsAllowance: 0.2, platformContribution: 0.284 },
+  { scenario: "$4 at 90% (loss-making — never offered)", creatorPayout: 3.6, cardCost: 0.416, deliveryAllowance: 0.1, opsAllowance: 0.2, platformContribution: -0.316 },
+  { scenario: "$8 at 75%", creatorPayout: 6.0, cardCost: 0.532, deliveryAllowance: 0.1, opsAllowance: 0.2, platformContribution: 1.168 },
+  { scenario: "$12 at 75%", creatorPayout: 9.0, cardCost: 0.648, deliveryAllowance: 0.15, opsAllowance: 0.2, platformContribution: 2.002 },
+];
+
+export interface DeferredItem {
+  name: string;
+  reason: string;
+}
+
+/**
+ * Full defer list (research update 2026-09-28, "What to keep / defer or
+ * redesign"). Each item carries its one-line reason for deferral. None of
+ * these are built, priced, or implied as existing anywhere on the site.
+ */
+export const DEFERRED_ITEMS: DeferredItem[] = [
   {
-    id: "collector-pass",
-    name: "Collector Pass",
-    price: "$10/mo",
-    priceNote: "Draft price — not final",
-    tagline: "Two films a month, on us-ish.",
-    features: [
-      "2 × $8 credits every month",
-      "Redeem for any film priced $8 or less",
-      "Unused credits expire monthly",
-      "Cancel anytime; kept films stay yours",
-    ],
-    cta: "Get the pass",
-    featured: true,
-    warning: ECONOMICS_WARNING,
+    name: "Stored credits & Collector Pass",
+    reason: "Deferred until repeat-purchase evidence exists and the redemption allocation has a reviewed provider/legal design.",
+  },
+  {
+    name: "Stored-value wallet",
+    reason: "Deferred — unspent balances create refunds, liabilities, and legal obligations a checkout bundle avoids.",
+  },
+  {
+    name: "Seeder rewards",
+    reason: "Deferred until measured net bandwidth savings exist; rewards pay only for validated useful delivery.",
+  },
+  {
+    name: "Native NFT access",
+    reason: "Deferred — Apple's rules: NFT ownership must not unlock app functionality. Viewing owned NFTs is allowed; gating features on them is not.",
+  },
+  {
+    name: "AI cinema lane",
+    reason: "Deferred until there is paying-audience evidence and defensible rights; an AI-provenance label alone clears nothing.",
+  },
+  {
+    name: "Community-funded originals",
+    reason: "Deferred until an engaged audience, financing terms, production capability, and a lawful funding structure exist.",
+  },
+  {
+    name: "International rollout",
+    reason: "Deferred until demand, payment acceptance, rights coverage, and delivery economics are proven per country.",
+  },
+  {
+    name: "Stablecoin checkout",
+    reason: "Deferred — product-specific rates, refund behavior, and eligible locations must be designed first.",
+  },
+  {
+    name: "Cross-filmmaker bundles",
+    reason: "Deferred — multi-seller bundles need explicit revenue allocation and a supported payment flow.",
   },
 ];
 
@@ -160,4 +230,6 @@ export const DEFERRED_FEATURE_PHRASES = [
   "stablecoin",
   "pay with USDC",
   "native NFT access",
+  "AI cinema",
+  "community-funded",
 ];

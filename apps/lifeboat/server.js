@@ -413,12 +413,42 @@ async function fileClaim(req, res) {
   if (typeof body.vimeo_receipt_ref !== 'string' || body.vimeo_receipt_ref.trim() === '')
     return sendError(res, 400, 'vimeo_receipt_ref is required');
 
+  // Research update (2026-09-28): Vimeo's audience export is OPT-IN CONTACTS,
+  // not a verified purchase ledger. A claim must carry verifiable evidence:
+  // title (via film_id), buyer email, transaction reference, purchase type,
+  // and date. No entitlement is ever granted on email match alone.
+  const purchaseType =
+    typeof body.purchase_type === 'string' ? body.purchase_type.trim().toLowerCase() : '';
+  if (purchaseType !== 'buy' && purchaseType !== 'rent')
+    return sendError(res, 400, 'purchase_type must be "buy" or "rent"');
+  const purchaseDate =
+    typeof body.purchase_date === 'string' ? body.purchase_date.trim() : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(purchaseDate) || Number.isNaN(Date.parse(purchaseDate)))
+    return sendError(res, 400, 'purchase_date must be a valid ISO date (YYYY-MM-DD)');
+  if (purchaseDate > nowIso().slice(0, 10))
+    return sendError(res, 400, 'purchase_date cannot be in the future');
+
+  const email = body.email.trim().toLowerCase();
+  // Deduplicate: one open claim per buyer per film.
+  const open = store
+    .all('claims')
+    .some(
+      (c) =>
+        c.film_id === film.film_id &&
+        c.email === email &&
+        (c.status === 'pending' || c.status === 'needs_review')
+    );
+  if (open) return sendError(res, 409, 'a claim for this film and email is already open');
+
   const claim = {
     claim_id: 'claim_' + crypto.randomBytes(6).toString('hex'),
     film_id: film.film_id,
-    email: body.email.trim().toLowerCase(),
-    email_sha256: sha256Hex(body.email.trim().toLowerCase()),
+    film_title: film.title,
+    email,
+    email_sha256: sha256Hex(email),
     vimeo_receipt_ref: body.vimeo_receipt_ref.trim(),
+    purchase_type: purchaseType,
+    purchase_date: purchaseDate,
     status: 'pending',
     created_at: nowIso(),
   };
@@ -426,10 +456,30 @@ async function fileClaim(req, res) {
   return sendJson(res, 201, claim);
 }
 
+// Uncertain receipts go to a manual review queue instead of being approved.
+async function reviewClaim(req, res, claimId) {
+  const claim = store.get('claims', claimId);
+  if (!claim) return sendError(res, 404, 'claim not found');
+  if (claim.status !== 'pending' && claim.status !== 'needs_review')
+    return sendError(res, 409, `claim already ${claim.status}`);
+  const body = await readJson(req, res);
+  const reason =
+    body && typeof body.reason === 'string' && body.reason.trim() !== ''
+      ? body.reason.trim()
+      : 'uncertain receipt — manual review required';
+  store.update('claims', claimId, {
+    status: 'needs_review',
+    review_reason: reason,
+    decided_at: nowIso(),
+  });
+  return sendJson(res, 200, store.get('claims', claimId));
+}
+
 async function approveClaim(req, res, claimId) {
   const claim = store.get('claims', claimId);
   if (!claim) return sendError(res, 404, 'claim not found');
-  if (claim.status !== 'pending') return sendError(res, 409, `claim already ${claim.status}`);
+  if (claim.status !== 'pending' && claim.status !== 'needs_review')
+    return sendError(res, 409, `claim already ${claim.status}`);
   const film = store.get('films', claim.film_id);
   if (!film) return sendError(res, 404, 'film not found');
 
@@ -948,6 +998,13 @@ async function handleApi(req, res, url, seg, method) {
     const filmId = url.searchParams.get('film_id');
     const claims = store.all('claims').filter((c) => !filmId || c.film_id === filmId);
     return sendJson(res, 200, claims);
+  }
+  if (seg[0] === 'claims' && seg[1] === 'review-queue' && seg.length === 2 && method === 'GET') {
+    const queue = store.all('claims').filter((c) => c.status === 'needs_review');
+    return sendJson(res, 200, queue);
+  }
+  if (seg[0] === 'claims' && seg[2] === 'review' && seg.length === 3 && method === 'POST') {
+    return reviewClaim(req, res, seg[1]);
   }
   if (seg[0] === 'claims' && seg[2] === 'approve' && seg.length === 3 && method === 'POST') {
     return approveClaim(req, res, seg[1]);

@@ -45,9 +45,11 @@ Frontend contract details (aligned with `public/`):
 | GET | `/api/films/:id/stream` | Video bytes via CDN abstraction; honors `Range` (206 Partial Content) |
 | GET | `/api/films/:id/download` | File download **only if `download_allowed`**; else 403 with the AB 2426 message |
 | POST | `/api/buyers/import` | `{film_id, emails[]}` — records Vimeo audience-export contacts for migration **NOTICES ONLY**. The export is opt-in contacts, not a purchase ledger; **no entitlement is granted**. Buyers claim access with their Vimeo receipt; the filmmaker approves. |
-| POST | `/api/claims` | `{film_id, email, vimeo_receipt_ref}` — creates a PENDING claim |
-| GET | `/api/claims?film_id=` | Filmmaker view of pending claims |
-| POST | `/api/claims/:id/approve` | Approves → entitlement + signed receipt |
+| POST | `/api/claims` | `{film_id, email, vimeo_receipt_ref, purchase_type: buy|rent, purchase_date: YYYY-MM-DD}` — creates a PENDING claim. Verification fields required; duplicates (same film+email, open claim) rejected 409 |
+| GET | `/api/claims?film_id=` | Filmmaker view of claims |
+| POST | `/api/claims/:id/review` | Routes an uncertain receipt to the manual review queue (status `needs_review`) |
+| GET | `/api/claims/review-queue` | Manual review queue: claims with uncertain receipts |
+| POST | `/api/claims/:id/approve` | Approves (from `pending` or `needs_review`) → entitlement + signed receipt |
 | POST | `/api/purchases/test` | **TEST-ONLY** simulated completed purchase `{film_id, email}` → entitlement + signed receipt, response carries `"test_mode": true` |
 | POST | `/api/purchases/bundle/test` | **TEST-ONLY** same-seller multi-film bundle `{film_ids[], email}` → one checkout for N films from ONE filmmaker, explicit per-film allocation recorded in the sales ledger (`orders`), one signed receipt per film. Multi-seller bundles rejected (400). |
 | POST | `/api/webhooks/stripe` | Real webhook shape; verifies `Stripe-Signature` against `STRIPE_WEBHOOK_SECRET`; **503 "not configured" when the secret is unset** |

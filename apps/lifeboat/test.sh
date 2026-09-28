@@ -125,17 +125,63 @@ code=$(curl -s -o "$TMPD/aud-pre.csv" -w "%{http_code}" "$BASE/api/films/$FILM1/
 ! grep -q "^buyer1@example.com," "$TMPD/aud-pre.csv" && ! grep -q "^buyer2@example.com," "$TMPD/aud-pre.csv" \
   && pass "imported export rows grant no entitlements (no access from export alone)" || fail "no auto-grant from export"
 
-# --- vimeo claim flow ----------------------------------------------------------------
+# --- vimeo claim flow (verified claims: title, email, receipt ref, purchase type, date) --
 code=$(curl -s -o "$TMPD/claim.json" -w "%{http_code}" -X POST "$BASE/api/claims" \
   -H 'Content-Type: application/json' \
-  -d "{\"film_id\":\"$FILM1\",\"email\":\"claimer@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-123\"}")
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"claimer@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-123\",\"purchase_type\":\"buy\",\"purchase_date\":\"2026-09-01\"}")
 [ "$code" = "201" ] && [ "$(jget "$TMPD/claim.json" status)" = "pending" ] \
-  && pass "claim filed as pending" || fail "file claim" "http=$code"
+  && [ "$(jget "$TMPD/claim.json" purchase_type)" = "buy" ] \
+  && pass "claim filed as pending with verification fields" || fail "file claim" "http=$code"
 CLAIM1=$(jget "$TMPD/claim.json" claim_id)
+
+# Claim without verification fields is rejected
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"noref@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-999\"}")
+[ "$code" = "400" ] && pass "claim without purchase_type/purchase_date rejected" || fail "claim field validation" "http=$code"
+
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"badtype@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-100\",\"purchase_type\":\"gift\",\"purchase_date\":\"2026-09-01\"}")
+[ "$code" = "400" ] && pass "claim with invalid purchase_type rejected" || fail "purchase_type validation" "http=$code"
+
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"futured@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-101\",\"purchase_type\":\"buy\",\"purchase_date\":\"2099-01-01\"}")
+[ "$code" = "400" ] && pass "claim with future purchase_date rejected" || fail "purchase_date validation" "http=$code"
+
+# Duplicate open claim for the same film + email is rejected
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"claimer@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-124\",\"purchase_type\":\"rent\",\"purchase_date\":\"2026-09-02\"}")
+[ "$code" = "409" ] && pass "duplicate open claim rejected" || fail "claim dedupe" "http=$code"
 
 code=$(curl -s -o "$TMPD/claims.json" -w "%{http_code}" "$BASE/api/claims?film_id=$FILM1")
 [ "$code" = "200" ] && grep -q "$CLAIM1" "$TMPD/claims.json" \
   && pass "filmmaker claim list shows pending claim" || fail "claim list" "http=$code"
+
+# Uncertain receipt -> manual review queue
+code=$(curl -s -o "$TMPD/claim2.json" -w "%{http_code}" -X POST "$BASE/api/claims" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"email\":\"uncertain@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-555\",\"purchase_type\":\"rent\",\"purchase_date\":\"2026-08-15\"}")
+[ "$code" = "201" ] && pass "second claim filed" || fail "file claim 2" "http=$code"
+CLAIM2=$(jget "$TMPD/claim2.json" claim_id)
+
+code=$(curl -s -o "$TMPD/review.json" -w "%{http_code}" -X POST "$BASE/api/claims/$CLAIM2/review" \
+  -H 'Content-Type: application/json' \
+  -d '{"reason":"receipt ref format unfamiliar"}')
+[ "$code" = "200" ] && [ "$(jget "$TMPD/review.json" status)" = "needs_review" ] \
+  && pass "uncertain claim routed to manual review" || fail "review queue routing" "http=$code"
+
+code=$(curl -s -o "$TMPD/queue.json" -w "%{http_code}" "$BASE/api/claims/review-queue")
+[ "$code" = "200" ] && grep -q "$CLAIM2" "$TMPD/queue.json" && ! grep -q "$CLAIM1" "$TMPD/queue.json" \
+  && pass "review queue lists only needs_review claims" || fail "review queue" "http=$code"
+
+# Reviewed claims can still be approved after manual review
+code=$(curl -s -o "$TMPD/approve2.json" -w "%{http_code}" -X POST \
+  -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM2/approve")
+[ "$code" = "200" ] && [ -n "$(jget "$TMPD/approve2.json" signature)" ] \
+  && pass "manually reviewed claim approved" || fail "approve after review" "http=$code"
 
 code=$(curl -s -o "$TMPD/approve.json" -w "%{http_code}" -X POST \
   -H 'Content-Type: application/json' -d '{}' "$BASE/api/claims/$CLAIM1/approve")

@@ -4,6 +4,9 @@ import {
   VIEWER_OPTIONS,
   PRICING_DISCLAIMER,
   ECONOMICS_WARNING,
+  MIGRATION_PILOT_CAP,
+  CONTRIBUTION_TABLE,
+  DEFERRED_ITEMS,
 } from "@/lib/pricing";
 
 export const metadata = {
@@ -80,9 +83,7 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-sm text-white/50 leading-relaxed">
-          <span className="text-white font-medium">Migration Pilot, capped on purpose. </span>
-          Free migration help for up to 10 titles per filmmaker, within a fixed pilot budget.
-          Unlimited free hosting would be a promise we can&rsquo;t keep — so we don&rsquo;t make it.
+          {MIGRATION_PILOT_CAP}
         </div>
       </section>
 
@@ -91,10 +92,11 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-10">
             <div className="text-red-500 text-xs tracking-[3px] mb-2">FOR VIEWERS</div>
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-[-2px]">Three ways to watch.</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold tracking-[-2px]">Two ways to watch.</h2>
             <p className="text-white/50 mt-3 max-w-2xl text-sm leading-relaxed">
-              Everything you buy is permanent — a signed receipt, verifiable offline,
-              yours even if we disappeared tomorrow.
+              Everything you buy comes with a clear license: a signed receipt, verifiable
+              offline, that proves exactly what you purchased — streaming access under the
+              film's terms, never a promise of perpetual operation.
             </p>
           </div>
 
@@ -147,6 +149,51 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* ── The math ─────────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 pb-20">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10">
+          <h2 className="text-2xl font-semibold tracking-tight mb-2">What a sale contributes.</h2>
+          <p className="text-sm text-white/55 leading-relaxed mb-6">
+            Per-order contribution after variable costs, at the tested 75% creator-share basis.
+            The platform bears card processing (2.9% + $0.30), a delivery allowance, and a $0.20
+            operations placeholder — before storage, ingest, payout fees, taxes, and overhead.
+            This is the model, not a configured payment account.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-white/40 text-xs tracking-wider">
+                  <th className="py-2 pr-4 font-medium">Scenario</th>
+                  <th className="py-2 pr-4 font-medium text-right">Creator payout</th>
+                  <th className="py-2 pr-4 font-medium text-right">Card cost</th>
+                  <th className="py-2 pr-4 font-medium text-right">Delivery</th>
+                  <th className="py-2 pr-4 font-medium text-right">Ops</th>
+                  <th className="py-2 font-medium text-right">Platform contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CONTRIBUTION_TABLE.map((r) => (
+                  <tr key={r.scenario} className="border-t border-white/10">
+                    <td className="py-3 pr-4 text-white/80">{r.scenario}</td>
+                    <td className="py-3 pr-4 text-right text-white/60">${r.creatorPayout.toFixed(3)}</td>
+                    <td className="py-3 pr-4 text-right text-white/60">${r.cardCost.toFixed(3)}</td>
+                    <td className="py-3 pr-4 text-right text-white/60">${r.deliveryAllowance.toFixed(3)}</td>
+                    <td className="py-3 pr-4 text-right text-white/60">${r.opsAllowance.toFixed(3)}</td>
+                    <td className={`py-3 text-right font-semibold ${r.platformContribution < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                      {r.platformContribution < 0 ? "−" : ""}${Math.abs(r.platformContribution).toFixed(3)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-white/40 mt-4 leading-relaxed">
+            A 90% gross share at $4 loses $0.316 per order — which is why 90% is never offered.
+            Prices, fees, and allowances are modeled drafts, not final terms.
+          </p>
+        </div>
+      </section>
+
       {/* ── Not yet built ─────────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10">
@@ -155,20 +202,21 @@ export default function PricingPage() {
             These are on the long-term roadmap. They are not built, not priced, and not
             implied anywhere on this page:
           </p>
-          <ul className="grid sm:grid-cols-2 gap-3 text-sm text-white/50">
-            {[
-              "Stored credit balances",
-              "Seeder rewards for P2P",
-              "Native NFT access tokens",
-              "P2P delivery savings",
-              "Stablecoin checkout",
-              "Cross-filmmaker bundles",
-            ].map((x) => (
-              <li key={x} className="flex gap-2.5 items-center">
-                <span className="text-white/25">○</span> {x}
+          <ul className="grid gap-4 text-sm text-white/50">
+            {DEFERRED_ITEMS.map((x) => (
+              <li key={x.name} className="flex gap-2.5 items-start">
+                <span className="text-white/25 mt-0.5">○</span>
+                <span>
+                  <span className="text-white/80 font-medium">{x.name}.</span>{" "}
+                  {x.reason}
+                </span>
               </li>
             ))}
           </ul>
+          <div className="mt-6 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-5 text-xs text-amber-200/80 leading-relaxed">
+            <span className="font-semibold text-amber-300">Why the Collector Pass stays deferred: </span>
+            {ECONOMICS_WARNING}
+          </div>
         </div>
       </section>
 

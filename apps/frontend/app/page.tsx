@@ -42,7 +42,7 @@ export default async function HomePage() {
 
           <p className="text-xl md:text-2xl text-white/60 tracking-tight max-w-2xl mx-auto mb-10 leading-snug">
             Independent films, sold directly by the people who made them.
-            Buy once, own forever — or upload your work and keep 75% of every sale.
+            Buy once under a clear license — or upload your work and keep 75% of every sale.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -76,7 +76,7 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-xs text-white/40 tracking-widest">
           <span>75% CREATOR PAYOUT — INSTANT</span>
           <span>NO CENTRAL AUTHORITY</span>
-          <span>BUY ONCE, OWN FOREVER</span>
+          <span>BUY ONCE, LICENSED CLEARLY</span>
           <span>SIGNED RECEIPTS, VERIFIABLE OFFLINE</span>
         </div>
       </div>
@@ -92,9 +92,9 @@ export default async function HomePage() {
             <div className="text-4xl mb-6">🎟️</div>
             <h3 className="text-2xl font-semibold tracking-tight mb-3">For viewers</h3>
             <p className="text-white/55 leading-relaxed mb-8">
-              Pay per film from $3.99, bundle a filmmaker&rsquo;s catalog, or take the
-              Collector Pass for two films a month. Every purchase is permanent —
-              backed by a signed receipt you can verify offline, forever.
+              Pay per film from $3.99, or bundle a filmmaker&rsquo;s catalog —
+              two ways to watch under a clear license. Every purchase comes with
+              a signed receipt you can verify offline.
             </p>
             <Link href="/pricing#viewers" className="inline-flex items-center gap-2 text-white font-medium group-hover:gap-3 transition-all">
               Viewer pricing <span>→</span>
@@ -157,7 +157,7 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5 mb-12">
+          <div className="grid md:grid-cols-2 gap-5 mb-12 max-w-4xl">
             {VIEWER_OPTIONS.map((o) => (
               <div key={o.id} className={`rounded-3xl border p-8 ${o.featured ? "border-red-500/60 bg-red-500/[0.04]" : "border-white/10 bg-white/[0.02]"}`}>
                 <div className="text-xs tracking-[2px] text-white/40 mb-2">VIEWERS</div>
@@ -211,7 +211,7 @@ export default async function HomePage() {
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-3">The Collector Pass, honestly</h3>
+              <h3 className="text-lg font-semibold mb-3">The Collector Pass: deferred until the math works</h3>
               <p className="text-sm text-white/55 leading-relaxed">
                 $10 a month, two $8 credits. At a 75% creator share that&rsquo;s $12 in
                 creator payouts — before card processing and video delivery. The pass only
@@ -219,7 +219,10 @@ export default async function HomePage() {
                 we won&rsquo;t pretend breakage pays the bills.
               </p>
               <p className="text-xs text-white/40 mt-4 leading-relaxed">
-                It&rsquo;s a draft. If the numbers don&rsquo;t work, the pass changes before launch.
+                It&rsquo;s deferred, not launching: stored credits stay off the roadmap
+                until repeat-purchase evidence and a reviewed allocation/legal design
+                exist. If the numbers work with a different price, allocation, or
+                catalog design, it comes back.
               </p>
             </div>
           </div>
@@ -300,7 +303,7 @@ export default async function HomePage() {
             { q: "Is this launched? Can I pay real money today?", a: "No. Decentralflix is in development and testing. The storefront, checkout, and passes you see here run in test mode — no real payments are processed." },
             { q: "What does “permanent access” actually mean?", a: "Your purchase comes with a cryptographically signed receipt. Even if the platform disappeared, the receipt proves your license and can be verified offline. We don’t sell copyright — you’re buying a permanent viewing license." },
             { q: "I’m on Vimeo. What happens to my audience?", a: "Vimeo exports create contacts only — never automatic access. Your fans get an invitation to claim their access, and you approve each claim. Nobody is migrated without consent on both sides." },
-            { q: "Why only 75% to creators? Others promise 90%.", a: "Because we did the math in public. At a $4 sale, a 90% share loses money on every order after processing and delivery. We’d rather pay 75% forever than 90% until we go broke." },
+            { q: "Why only 75% to creators? Others promise 90%.", a: "Because we did the math in public. At a $4 sale, a 90% share loses money on every order after processing and delivery. We’d rather pay 75% sustainably than 90% until we go broke." },
             { q: "What about NFTs, crypto, and P2P?", a: "Access tokens and decentralized storage are part of the long-term architecture, but native NFT access, seeder rewards, P2P delivery savings, and stablecoin checkout are deferred. We won’t market what isn’t built." },
           ].map((f) => (
             <div key={f.q} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
