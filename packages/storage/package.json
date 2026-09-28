@@ -1,0 +1,18 @@
+{
+  "name": "@decentralflix/storage",
+  "version": "0.1.0",
+  "description": "Reusable encrypted-fragment storage layer for Decentralflix (Phase 2): AES-256-GCM fragment encryption, Kubo/IPFS content mirror, Arweave permanent manifests/proofs. Zero runtime dependencies.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.js'"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
