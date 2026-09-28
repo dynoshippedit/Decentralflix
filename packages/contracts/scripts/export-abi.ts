@@ -10,7 +10,7 @@ import path from "path";
  * Output: apps/frontend/lib/contracts/abis.generated.ts
  */
 
-const CONTRACTS = ["MovieTicket", "FilmmakerCampaign", "Reviews", "SeederCredits"] as const;
+const CONTRACTS = ["MovieTicket", "FilmmakerCampaign", "Reviews", "SeederCredits", "TicketNFT", "SubscriptionManager", "PayPerView", "DFLIX"] as const;
 
 // exported const name per contract (e.g. MovieTicket -> MOVIE_TICKET_ABI_FULL)
 function constName(contract: string): string {

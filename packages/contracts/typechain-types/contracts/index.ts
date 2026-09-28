@@ -3,7 +3,11 @@
 /* eslint-disable */
 import type * as mocks from "./mocks";
 export type { mocks };
+export type { DFLIX } from "./DFLIX";
 export type { FilmmakerCampaign } from "./FilmmakerCampaign";
 export type { MovieTicket } from "./MovieTicket";
+export type { PayPerView } from "./PayPerView";
 export type { Reviews } from "./Reviews";
 export type { SeederCredits } from "./SeederCredits";
+export type { SubscriptionManager } from "./SubscriptionManager";
+export type { TicketNFT } from "./TicketNFT";

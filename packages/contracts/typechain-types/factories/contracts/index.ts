@@ -2,7 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as mocks from "./mocks";
+export { DFLIX__factory } from "./DFLIX__factory";
 export { FilmmakerCampaign__factory } from "./FilmmakerCampaign__factory";
 export { MovieTicket__factory } from "./MovieTicket__factory";
+export { PayPerView__factory } from "./PayPerView__factory";
 export { Reviews__factory } from "./Reviews__factory";
 export { SeederCredits__factory } from "./SeederCredits__factory";
+export { SubscriptionManager__factory } from "./SubscriptionManager__factory";
+export { TicketNFT__factory } from "./TicketNFT__factory";
