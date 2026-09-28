@@ -114,6 +114,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PayPerView__factory>;
     getContractFactory(
+      name: "ProofRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ProofRegistry__factory>;
+    getContractFactory(
       name: "Reviews",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Reviews__factory>;
@@ -121,6 +125,10 @@ declare module "hardhat/types/runtime" {
       name: "SeederCredits",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SeederCredits__factory>;
+    getContractFactory(
+      name: "SeederReputation",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SeederReputation__factory>;
     getContractFactory(
       name: "SubscriptionManager",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -268,6 +276,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.PayPerView>;
     getContractAt(
+      name: "ProofRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ProofRegistry>;
+    getContractAt(
       name: "Reviews",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -277,6 +290,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.SeederCredits>;
+    getContractAt(
+      name: "SeederReputation",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SeederReputation>;
     getContractAt(
       name: "SubscriptionManager",
       address: string | ethers.Addressable,
@@ -404,6 +422,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PayPerView>;
     deployContract(
+      name: "ProofRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ProofRegistry>;
+    deployContract(
       name: "Reviews",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Reviews>;
@@ -411,6 +433,10 @@ declare module "hardhat/types/runtime" {
       name: "SeederCredits",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SeederCredits>;
+    deployContract(
+      name: "SeederReputation",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SeederReputation>;
     deployContract(
       name: "SubscriptionManager",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -558,6 +584,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PayPerView>;
     deployContract(
+      name: "ProofRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ProofRegistry>;
+    deployContract(
       name: "Reviews",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -567,6 +598,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SeederCredits>;
+    deployContract(
+      name: "SeederReputation",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SeederReputation>;
     deployContract(
       name: "SubscriptionManager",
       args: any[],

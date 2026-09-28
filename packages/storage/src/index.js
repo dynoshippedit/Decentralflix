@@ -24,6 +24,8 @@ export {
 
 export { sha256Hex, buildManifest, validateManifest, MANIFEST_VERSION } from './hash.js';
 
+export { buildMerkleRoot, getProof, verifyMerkleProof } from './merkle.js';
+
 export { IpfsClient, DEFAULT_IPFS_ENDPOINT } from './ipfs.js';
 
 export {
