@@ -1,0 +1,43 @@
+{
+  "network": "hardhat",
+  "chainId": "31337",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "contracts": {
+    "DFLIX": {
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "txHash": "0x42b033b09291c123998cd63378e795244e1adc99d59da8f600c26855db8856d4",
+      "gasUsed": "2697947",
+      "estCostEth": "0.005058650625"
+    },
+    "TicketNFT": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "txHash": "0x6f9085796a97a54aa63ed15ba5098b7430c1ea9613acbf1501241d56258207b9",
+      "gasUsed": "3452829",
+      "estCostEth": "0.006474054375"
+    },
+    "SubscriptionManager": {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "txHash": "0xaabfca16c158628e925a7b900db2c66875f07172b8a5a8165003365d87b1ac9e",
+      "gasUsed": "1552764",
+      "estCostEth": "0.0029114325"
+    },
+    "PayPerView": {
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "txHash": "0xcf5659e054bf5cf17e6d6884dd794ada373edf1332e33404d7d5cb2fd3a681f5",
+      "gasUsed": "1292386",
+      "estCostEth": "0.00242322375"
+    },
+    "ProofRegistry": {
+      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "txHash": "0x2fd8f654154ec7db90abde74f6d002921731ada4d44315251c94eb39f2b35171",
+      "gasUsed": "1309793",
+      "estCostEth": "0.002455861875"
+    },
+    "SeederReputation": {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x04b1b4b01864082ef7712aea2eb2c947760a7b61e9ad2a56c99313c160db3d84",
+      "gasUsed": "861716",
+      "estCostEth": "0.0016157175"
+    }
+  }
+}

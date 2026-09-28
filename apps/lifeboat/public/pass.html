@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Collector Pass</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Collector <span class="accent">Pass.</span></h1>
+      <p>$9.99/month for one credit a month. Each credit redeems any one film — and redeemed films come with a permanent DRM-free download, yours to keep in your library. <em>(License wording pending counsel review; a permanent download is not copyright ownership.)</em></p>
+    </div>
+
+    <div class="status error" id="legal-banner"></div>
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">The rules, up front</h3>
+      <ul class="meta-list">
+        <li><span class="k">Credits</span> Non-transferable. They stay on your pass — no gifting, no selling, no moving them to another account. Ever.</li>
+        <li><span class="k">Cash value</span> $0. Credits are non-cashable: they can't be refunded, paid out, or converted back to money.</li>
+        <li><span class="k">Redemption</span> 1 credit = 1 film of your choice, at any price. The film then comes with a permanent DRM-free download — yours to keep (license wording pending counsel review; not copyright ownership).</li>
+        <li><span class="k">Billing</span> Test mode only right now — no real charges. Real billing arrives with Stripe, after legal review.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">The economics, honestly</h3>
+      <p>This pass is in test mode because the math isn't settled yet. A $10/month pass with two $8 credits costs <strong>$12 in creator payouts alone</strong> at a 75% creator share &mdash; before card processing and delivery. A subscription like this only works with a different price, allocation basis, included catalog, or usage design, and it must not quietly rely on subscribers forgetting to redeem. Before any real launch, creator allocations, credit expiration/rollover, refunds, cancellation, and whether redeemed films survive membership end must all be defined.</p>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">Subscribe (test mode)</h3>
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="kv">
+          <input type="email" id="email" placeholder="you@example.com" style="flex:1">
+          <button class="btn" id="sub-btn">Subscribe — test mode</button>
+        </div>
+        <div class="hint">Simulated subscription: no money moves, Stripe is not involved.</div>
+      </div>
+      <div id="pass-info" hidden>
+        <ul class="meta-list">
+          <li><span class="k">Pass ID</span> <span class="mono" id="pass-id"></span></li>
+          <li><span class="k">Credit balance</span> <strong id="pass-balance"></strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel" id="redeem-panel" hidden>
+      <h3 style="margin-top:0">Redeem a credit</h3>
+      <div class="field">
+        <label for="film-select">Film</label>
+        <select id="film-select"></select>
+      </div>
+      <button class="btn" id="redeem-btn">Redeem 1 credit</button>
+      <div class="hint" style="margin-top:0.5rem">Redemption email must match the pass holder — credits are non-transferable.</div>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; Collector Pass: <span id="legal-footer"></span></p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("pass.html");
+
+      // Legal label on every Collector Pass surface.
+      document.getElementById("legal-banner").textContent = D.PASS_LEGAL;
+      document.getElementById("legal-footer").textContent = D.PASS_LEGAL;
+
+      var currentPass = null;
+
+      function refreshFilms() {
+        D.getJSON("/api/films").then(function (films) {
+          var sel = document.getElementById("film-select");
+          sel.innerHTML = (films || []).map(function (f) {
+            return '<option value="' + D.esc(f.film_id) + '">' + D.esc(f.title) +
+              " — " + D.money(f.price_usd_cents) + "</option>";
+          }).join("");
+        });
+      }
+
+      document.getElementById("sub-btn").addEventListener("click", function () {
+        var email = document.getElementById("email").value.trim();
+        if (!email) {
+          D.showStatus("status", "Enter an email for the test subscription.", "error");
+          return;
+        }
+        D.hideStatus("status");
+        D.postJSON("/api/passes/test", { email: email })
+          .then(function (r) {
+            currentPass = r.pass;
+            document.getElementById("pass-info").hidden = false;
+            document.getElementById("redeem-panel").hidden = false;
+            document.getElementById("pass-id").textContent = r.pass.pass_id;
+            document.getElementById("pass-balance").textContent = r.balance + " credit(s)";
+            D.showStatus("status",
+              "Test subscription active (test_mode). " + r.legal_notice, "ok");
+            refreshFilms();
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Subscribe failed: " + err.message, "error");
+          });
+      });
+
+      document.getElementById("redeem-btn").addEventListener("click", function () {
+        if (!currentPass) return;
+        var email = document.getElementById("email").value.trim();
+        var filmId = document.getElementById("film-select").value;
+        D.postJSON("/api/passes/" + encodeURIComponent(currentPass.pass_id) + "/redeem", {
+          film_id: filmId,
+          email: email
+        })
+          .then(function (r) {
+            document.getElementById("pass-balance").textContent = r.balance + " credit(s)";
+            var msg = r.already_owned
+              ? "You already have this film — no credit spent."
+              : "Redeemed! The film now includes a permanent DRM-free download — yours to keep — and is in your library.";
+            D.showStatus("status", msg + " " + D.PASS_LEGAL, "ok");
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Redeem failed: " + err.message, "error");
+          });
+      });
+
+      refreshFilms();
+    })();
+  </script>
+</body>
+</html>

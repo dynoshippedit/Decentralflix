@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Filmmaker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div id="status" class="status" hidden></div>
+
+    <div id="profile" hidden>
+      <div class="hero">
+        <h1 id="fmk-name"></h1>
+        <p>Independent filmmaker on Decentralflix Lifeboat. Every title below is sold directly by them.</p>
+      </div>
+      <div id="grid" class="grid"></div>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; filmmakers keep their masters and their audience.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("");
+
+      var id = D.queryParam("id");
+      if (!id) {
+        D.showStatus("status", "No filmmaker selected.", "error");
+        return;
+      }
+
+      D.getJSON("/api/filmmakers/" + encodeURIComponent(id) + "/profile")
+        .then(function (p) {
+          document.getElementById("profile").hidden = false;
+          document.title = "Decentralflix Lifeboat — " + p.display_name;
+          document.getElementById("fmk-name").textContent = p.display_name;
+          var grid = document.getElementById("grid");
+          if (!p.films || p.films.length === 0) {
+            grid.innerHTML = '<div class="empty">No films yet from this filmmaker.</div>';
+            return;
+          }
+          grid.innerHTML = p.films.map(D.filmCard).join("");
+        })
+        .catch(function (err) {
+          D.showStatus("status", "Could not load filmmaker: " + err.message, "error");
+        });
+    })();
+  </script>
+</body>
+</html>

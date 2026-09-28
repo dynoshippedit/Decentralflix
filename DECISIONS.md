@@ -1,0 +1,7 @@
+# DECISIONS.md — Decision Log
+
+Log important decisions here.
+
+## Decisions Made
+- **2026-05-29** — **STORAGE_STREAMING_ARCHITECTURE_DECISION.md (ADR-001)**: Full production-grade hybrid storage & streaming architecture accepted for clean rewrite. Arweave strictly demoted to metadata/proofs/archival only. Primary: Filecoin/IPFS (Onchain Cloud + Saturn/Beam) for storage/retrieval, Livepeer for transcoding, Theta for P2P delivery/seeding. P2P credits (SeederCredits evolution) as first-class incentive. All ownership/gating/reviews/crowdfunding strictly event-driven + indexer-first (no linear on-chain scans in prod paths). Detailed comparison, text architecture diagram, migration plan, risks, and 8 prioritized engineering spikes included. Supersedes prior ARCHITECTURE.md / ROADMAP storage sections. File: /home/dino/Decentralflix/STORAGE_STREAMING_ARCHITECTURE_DECISION.md. All future work must align. See GROK.md for mandate.
+- **2026-05-29** — **SPIKE 2 COMPLETE (ADR-001 §7)**: Theta P2P + seeding metrics prototype delivered. Isolated hook + `/spike2` demo with live metrics, report generation (Arweave-anchored), and exact `submitSeedingReport` claim flow demo. Quantified incentives (42 credits/GB base + tier multipliers). Full browser vs. native feasibility doc. Zero impact on main flows. See `apps/frontend/spikes/spike-2/README.md`. Foundation for P2P credits as first-class layer.

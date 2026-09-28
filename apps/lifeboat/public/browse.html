@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Browse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Browse the <span class="accent">catalog.</span></h1>
+      <p>Search titles and descriptions, or filter by genre. The offer on each card tells you exactly what you're getting — "Buy — permanent DRM-free download, yours to keep" only where a permanent download is included (AB 2426; wording pending counsel review).</p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel">
+      <div class="field" style="margin-bottom:0.6rem">
+        <label for="q">Search</label>
+        <input type="text" id="q" placeholder="Title or description…" autocomplete="off">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Genres</label>
+        <div id="genres" class="kv"></div>
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; filmmakers keep their masters and their audience.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("browse.html");
+
+      var qInput = document.getElementById("q");
+      var grid = document.getElementById("grid");
+      var genresBox = document.getElementById("genres");
+      var activeGenre = D.queryParam("genre") || "";
+      var timer = null;
+
+      function load() {
+        var params = [];
+        var q = qInput.value.trim();
+        if (q) params.push("q=" + encodeURIComponent(q));
+        if (activeGenre) params.push("genre=" + encodeURIComponent(activeGenre));
+        D.getJSON("/api/films" + (params.length ? "?" + params.join("&") : ""))
+          .then(function (films) {
+            if (!films || films.length === 0) {
+              grid.innerHTML = '<div class="empty">No films match. <a href="import.html">Import a title</a>.</div>';
+              return;
+            }
+            grid.innerHTML = films.map(D.filmCard).join("");
+          })
+          .catch(function (err) {
+            D.showStatus("status", "Could not load films: " + err.message, "error");
+          });
+      }
+
+      function loadGenres() {
+        D.getJSON("/api/films")
+          .then(function (films) {
+            var seen = {};
+            (films || []).forEach(function (f) {
+              (f.genres || []).forEach(function (g) { seen[g] = true; });
+            });
+            var list = Object.keys(seen).sort();
+            var html = '<button class="btn small' + (activeGenre ? " secondary" : "") + '" data-g="">All</button>';
+            html += list.map(function (g) {
+              var cls = g === activeGenre ? "btn small" : "btn small secondary";
+              return '<button class="' + cls + '" data-g="' + D.esc(g) + '">' + D.esc(g) + "</button>";
+            }).join("");
+            genresBox.innerHTML = html || '<span class="empty">No genres yet.</span>';
+            Array.prototype.forEach.call(genresBox.querySelectorAll("button"), function (b) {
+              b.addEventListener("click", function () {
+                activeGenre = b.getAttribute("data-g");
+                loadGenres();
+                load();
+              });
+            });
+          })
+          .catch(function () { /* genres are best-effort */ });
+      }
+
+      qInput.addEventListener("input", function () {
+        clearTimeout(timer);
+        timer = setTimeout(load, 250);
+      });
+
+      var presetQ = D.queryParam("q");
+      if (presetQ) qInput.value = presetQ;
+
+      loadGenres();
+      load();
+    })();
+  </script>
+</body>
+</html>

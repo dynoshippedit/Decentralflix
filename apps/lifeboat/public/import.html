@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Import a film</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Import your film</h1>
+      <p>Upload your master file and set your terms. Design goal: <span class="accent">import in under 15 minutes per title</span> &mdash; no encoding farm, no gatekeepers.</p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <form id="import-form" class="panel" novalidate>
+      <div class="field">
+        <label for="f-title">Title</label>
+        <input type="text" id="f-title" name="title" required maxlength="200" placeholder="The Long Night">
+      </div>
+
+      <div class="field">
+        <label for="f-description">Description</label>
+        <textarea id="f-description" name="description" placeholder="Logline, synopsis, festival laurels&hellip;"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="f-price">Price (USD)</label>
+        <input type="number" id="f-price" name="price" required min="0" step="0.01" placeholder="9.99">
+        <div class="hint">What a buyer pays. Charged in whole cents on the backend.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-territories">Territories</label>
+        <input type="text" id="f-territories" name="territories" placeholder="US, CA, GB (comma-separated; leave blank for worldwide)">
+        <div class="hint">ISO country codes, comma-separated.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-genres">Genres</label>
+        <input type="text" id="f-genres" placeholder="documentary, indie">
+        <div class="hint">Comma-separated. Powers the browse filters.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-email">Filmmaker email</label>
+        <input type="email" id="f-email" name="filmmaker_email" required placeholder="you@yourstudio.com">
+      </div>
+
+      <div class="check">
+        <input type="checkbox" id="f-download" name="download_allowed">
+        <label for="f-download">Allow buyers to download this title (otherwise stream-only license)</label>
+      </div>
+
+      <div class="check">
+        <input type="checkbox" id="f-music" name="cleared_music_attested" required>
+        <label for="f-music">I attest that all music in this film is cleared for distribution. <span class="req">(required)</span></label>
+      </div>
+
+      <div class="field">
+        <label for="f-master">Master video file</label>
+        <input type="file" id="f-master" name="master" accept="video/*" required>
+        <div class="hint">Your final master. Upload progress is shown below; large files are fine.</div>
+      </div>
+
+      <button type="submit" class="btn" id="submit-btn">Import film</button>
+
+      <div class="progress" id="progress" hidden>
+        <div id="progress-bar"></div>
+      </div>
+      <div class="progress-label" id="progress-label" hidden></div>
+    </form>
+
+    <div id="result" class="panel" hidden>
+      <h2 style="margin-top:0">Import complete</h2>
+      <p>Your film is live. Share this watch page:</p>
+      <p class="kv">
+        <a id="result-watch" class="btn" href="#">Open watch page</a>
+        <span class="mono" id="result-id"></span>
+      </p>
+      <p style="color:var(--muted);font-size:0.9rem">Playback URL: <span class="mono" id="result-url"></span></p>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; imports are yours: you keep the master, you set the price.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("import.html");
+
+      var form = document.getElementById("import-form");
+      var progress = document.getElementById("progress");
+      var progressBar = document.getElementById("progress-bar");
+      var progressLabel = document.getElementById("progress-label");
+      var submitBtn = document.getElementById("submit-btn");
+
+      function setProgress(pct, label) {
+        progress.hidden = false;
+        progressLabel.hidden = false;
+        progressBar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+        progressLabel.textContent = label;
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        D.hideStatus("status");
+        document.getElementById("result").hidden = true;
+
+        var title = document.getElementById("f-title").value.trim();
+        var email = document.getElementById("f-email").value.trim();
+        var priceRaw = document.getElementById("f-price").value;
+        var attested = document.getElementById("f-music").checked;
+        var file = document.getElementById("f-master").files[0];
+
+        if (!title) return D.showStatus("status", "Title is required.", "error");
+        if (!email) return D.showStatus("status", "Filmmaker email is required.", "error");
+        if (!attested) return D.showStatus("status", "You must attest that the music is cleared before importing.", "error");
+        if (!file) return D.showStatus("status", "Choose a master video file.", "error");
+
+        var priceCents = Math.round(parseFloat(priceRaw) * 100);
+        if (!isFinite(priceCents) || priceCents < 0) {
+          return D.showStatus("status", "Enter a valid price in USD (0 or more).", "error");
+        }
+
+        var territories = document.getElementById("f-territories").value
+          .split(",").map(function (t) { return t.trim(); })
+          .filter(function (t) { return t.length > 0; });
+
+        var genres = document.getElementById("f-genres").value
+          .split(",").map(function (g) { return g.trim(); })
+          .filter(function (g) { return g.length > 0; });
+
+        var meta = {
+          title: title,
+          description: document.getElementById("f-description").value.trim(),
+          price_usd_cents: priceCents,
+          territories: territories,
+          genres: genres,
+          download_allowed: document.getElementById("f-download").checked,
+          cleared_music_attested: true,
+          filmmaker_email: email
+        };
+
+        // Contract: multipart with "master" (file) + "meta" (JSON).
+        var fd = new FormData();
+        fd.append("master", file, file.name);
+        fd.append("meta", JSON.stringify(meta));
+
+        submitBtn.disabled = true;
+        setProgress(0, "Uploading " + file.name + " …");
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", D.api("/api/films/import"));
+        xhr.upload.addEventListener("progress", function (ev) {
+          if (ev.lengthComputable) {
+            setProgress((ev.loaded / ev.total) * 100, "Uploading… " + Math.round((ev.loaded / ev.total) * 100) + "%");
+          } else {
+            setProgress(100, "Uploading… (" + Math.round(ev.loaded / 1024 / 1024) + " MB sent)");
+          }
+        });
+        xhr.addEventListener("load", function () {
+          submitBtn.disabled = false;
+          var data;
+          try { data = JSON.parse(xhr.responseText); }
+          catch (err) { data = null; }
+          if (xhr.status >= 200 && xhr.status < 300 && data) {
+            setProgress(100, "Done.");
+            var watch = document.getElementById("result-watch");
+            watch.href = "film.html?id=" + encodeURIComponent(data.film_id);
+            document.getElementById("result-id").textContent = "film_id: " + data.film_id;
+            document.getElementById("result-url").textContent = data.playback_url || "(see watch page)";
+            document.getElementById("result").hidden = false;
+            D.showStatus("status", "Import succeeded — your film is live.", "ok");
+          } else {
+            var msg = (data && (data.error || data.message)) || xhr.responseText || ("HTTP " + xhr.status);
+            D.showStatus("status", "Import failed: " + msg, "error");
+          }
+        });
+        xhr.addEventListener("error", function () {
+          submitBtn.disabled = false;
+          D.showStatus("status", "Upload failed: network error.", "error");
+        });
+        xhr.send(fd);
+      });
+    })();
+  </script>
+</body>
+</html>

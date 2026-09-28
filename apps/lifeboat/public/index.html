@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Catalog</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Films, <span class="accent">owned by the people who made them.</span></h1>
+      <p>Every title here is sold directly by its filmmaker. Some include a permanent DRM-free download — yours to keep; others are licensed to stream. The offer on each card tells you exactly which. <em>(License wording pending counsel review; a permanent download is not copyright ownership.)</em></p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; a 90-day execution build. Filmmakers keep their masters and their audience. <em>License wording pending counsel review — a permanent download is not copyright ownership.</em></p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("index.html");
+
+      function card(film) {
+        // AB 2426: "Buy — permanent DRM-free download, yours to keep" ONLY when download_allowed; else "License to stream".
+        var label = D.offerLabel(film.download_allowed);
+        var tag = film.download_allowed
+          ? '<span class="tag dl">Download included</span>'
+          : '<span class="tag stream">Streaming only</span>';
+        return (
+          '<article class="card">' +
+            "<h3>" + D.esc(film.title) + "</h3>" +
+            (film.description ? '<p class="desc">' + D.esc(film.description) + "</p>" : '<p class="desc"></p>') +
+            '<div class="foot">' +
+              '<span class="price">' + D.money(film.price_usd_cents) + "</span>" + tag +
+            "</div>" +
+            '<a class="btn" href="film.html?id=' + encodeURIComponent(film.film_id) + '">' + D.esc(label) + "</a>" +
+          "</article>"
+        );
+      }
+
+      D.getJSON("/api/films")
+        .then(function (films) {
+          var grid = document.getElementById("grid");
+          if (!films || films.length === 0) {
+            grid.innerHTML = '<div class="empty">No films yet. <a href="import.html">Import the first title</a>.</div>';
+            return;
+          }
+          grid.innerHTML = films.map(card).join("");
+        })
+        .catch(function (err) {
+          D.showStatus("status", "Could not load the catalog: " + err.message, "error");
+        });
+    })();
+  </script>
+</body>
+</html>

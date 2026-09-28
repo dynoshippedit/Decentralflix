@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decentralflix Lifeboat — Verify receipt</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="dfl-nav"></div>
+
+  <main>
+    <div class="hero">
+      <h1>Verify a <span class="accent">receipt.</span></h1>
+      <p>Paste a portable receipt below. The Ed25519 signature is checked <strong>offline, in your browser</strong> — a pure-JavaScript implementation of RFC 8032, no server trust needed. The public key is fetched once from <span class="mono">/api/receipts/pubkey</span>; the math after that is all local.</p>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="panel">
+      <div class="field">
+        <label for="receipt-input">Receipt JSON</label>
+        <textarea id="receipt-input" class="mono" placeholder='{"receipt": {...}, "signature": "..."}'></textarea>
+        <div class="hint">Accepts the wrapped shape <span class="mono">{receipt, signature}</span> or the receipt object itself with <span class="mono">signature</span> inline.</div>
+      </div>
+      <button class="btn" id="verify-btn">Verify offline</button>
+      <span id="verify-badge"></span>
+    </div>
+
+    <div class="panel" id="details-panel" hidden>
+      <h3 style="margin-top:0">Entitlement details</h3>
+      <ul class="meta-list" id="details"></ul>
+    </div>
+  </main>
+
+  <footer class="site">
+    <p>Decentralflix Lifeboat &mdash; receipts are signed entitlements: non-transferable, non-cashable, never tokens.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="ed25519.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var D = window.DFL;
+      D.renderNav("verify.html");
+
+      var E = window.Ed25519Pure;
+      if (!E) {
+        D.showStatus("status", "Could not load the offline verifier (ed25519.js).", "error");
+        return;
+      }
+
+      function sha512(data) {
+        return crypto.subtle.digest("SHA-512", data).then(function (buf) {
+          return new Uint8Array(buf);
+        });
+      }
+
+      var pubkeyB64 = null;
+      var termsHash = null;
+
+      function ensureKey() {
+        if (pubkeyB64) return Promise.resolve();
+        return D.getJSON("/api/receipts/pubkey").then(function (k) {
+          pubkeyB64 = k.public_key;
+          return D.getJSON("/api/receipts/terms").then(function (t) {
+            termsHash = t.terms_hash;
+          });
+        });
+      }
+
+      function row(k, v, mono) {
+        return "<li><span class=\"k\">" + D.esc(k) + "</span> " +
+          (mono ? '<span class="mono">' + D.esc(v) + "</span>" : "<strong>" + D.esc(v) + "</strong>") + "</li>";
+      }
+
+      function verify() {
+        D.hideStatus("status");
+        document.getElementById("verify-badge").innerHTML = "";
+        document.getElementById("details-panel").hidden = true;
+
+        var raw;
+        try {
+          raw = JSON.parse(document.getElementById("receipt-input").value);
+        } catch (e) {
+          D.showStatus("status", "That is not valid JSON.", "error");
+          return;
+        }
+
+        var receipt = raw.receipt;
+        var signature = raw.signature;
+        if ((!receipt || typeof receipt !== "object") && typeof signature === "string") {
+          var sig = signature;
+          receipt = {};
+          for (var k in raw) {
+            if (Object.prototype.hasOwnProperty.call(raw, k) && k !== "signature") receipt[k] = raw[k];
+          }
+          signature = sig;
+        }
+        if (!receipt || typeof receipt !== "object" || typeof signature !== "string") {
+          D.showStatus("status", "Could not find {receipt, signature} in the pasted JSON.", "error");
+          return;
+        }
+
+        ensureKey().then(function () {
+          var der = E.base64ToBytes(pubkeyB64);
+          var pubRaw = E.parseSpkiDerPublicKey(der);
+          if (!pubRaw) {
+            D.showStatus("status", "The server's public key is not a valid Ed25519 SPKI blob.", "error");
+            return;
+          }
+          var msg = E.canonicalJsonBytes(receipt);
+          return E.verify(pubRaw, E.base64ToBytes(signature), msg, sha512).then(function (ok) {
+            var badge = document.getElementById("verify-badge");
+            if (ok) {
+              badge.innerHTML = '<span class="badge verified">signature valid</span>';
+              D.showStatus("status", "Valid receipt — signature verifies offline against the Lifeboat public key.", "ok");
+            } else {
+              badge.innerHTML = '<span class="badge failed">invalid</span>';
+              D.showStatus("status", "Invalid — the signature does not verify. The receipt may be tampered with or forged.", "error");
+              return;
+            }
+            var termsOk = termsHash && receipt.terms_hash === termsHash;
+            var html =
+              row("Receipt ID", receipt.receipt_id, true) +
+              row("Film ID", receipt.film_id, true) +
+              row("Buyer (sha256)", receipt.buyer_email_sha256, true) +
+              row("Price", D.money(receipt.price_usd_cents)) +
+              row("Granted at", receipt.granted_at || "—") +
+              row("Transferable", String(receipt.transferable)) +
+              row("Terms hash", (receipt.terms_hash || "—") + (termsOk ? " ✓ matches published terms v2" : " ⚠ does not match published terms"), true);
+            document.getElementById("details").innerHTML = html;
+            document.getElementById("details-panel").hidden = false;
+            // Best-effort film title lookup (server-assisted, not part of verification).
+            if (receipt.film_id) {
+              D.getJSON("/api/films/" + encodeURIComponent(receipt.film_id)).then(function (film) {
+                document.getElementById("details").innerHTML =
+                  row("Film", film.title) + document.getElementById("details").innerHTML;
+              }, function () {});
+            }
+          });
+        }).catch(function (err) {
+          D.showStatus("status", "Verification failed: " + err.message, "error");
+        });
+      }
+
+      document.getElementById("verify-btn").addEventListener("click", verify);
+
+      // Deep link from the library: verify.html#receipt=<urlencoded JSON>
+      if (window.location.hash.indexOf("#receipt=") === 0) {
+        try {
+          document.getElementById("receipt-input").value = decodeURIComponent(window.location.hash.slice(9));
+          verify();
+        } catch (e) { /* leave the paste box for manual use */ }
+      }
+    })();
+  </script>
+</body>
+</html>
