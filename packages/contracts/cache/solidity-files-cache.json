@@ -1456,6 +1456,82 @@
       "artifacts": [
         "PayPerView"
       ]
+    },
+    "/home/dino/Decentralflix/packages/contracts/contracts/SeederReputation.sol": {
+      "lastModificationDate": 1790628333799,
+      "contentHash": "18a6b17a5abe184fb6bd9f76aef6b906",
+      "sourceName": "contracts/SeederReputation.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SeederReputation"
+      ]
+    },
+    "/home/dino/Decentralflix/packages/contracts/contracts/ProofRegistry.sol": {
+      "lastModificationDate": 1790628369291,
+      "contentHash": "6984e9a6be4f1617c1c96fbcc6dd899c",
+      "sourceName": "contracts/ProofRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ProofRegistry"
+      ]
     }
   }
 }
