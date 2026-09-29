@@ -68,7 +68,7 @@
   ],
   "project_id": "decentralflix",
   "project_root": "/home/dino/Decentralflix",
-  "proposed_status": "IMPLEMENTED",
+  "proposed_status": "VERIFIED",
   "schema_version": "1.0",
   "source_identity": {
     "after": "a657618 (implementation commit; cycle JSON committed separately)",
@@ -76,5 +76,10 @@
     "method": "git rev-parse HEAD + git status --porcelain on the Threadripper working repo"
   },
   "summary": "df-cycle-11: (1) TEST-CREDIT MINT GATING per owner decision - the three TEST-ONLY endpoints (POST /api/passes/test, /api/purchases/test, /api/purchases/bundle/test) exist only when DECENTRALFLIX_TEST_MINTS=1 (dev builds), OFF by default; no per-user cap by design. (2) BUG-011 FIXED - GET /api/passes/:id now requires auth and the holder check (401 unauth, 403 foreign, 200 holder). (3) PAYOUT STATUS reported per contract; scope question (SubscriptionManager vs PayPerView/MovieTicket) is evidence-insufficient - no payout code changed beyond the resolved scope. (4) NINE-ROUTE SWEEP ownership question answered from the committed DF-AUDIT-CREDITS report: ownership was verified per route (cross-user 403s live-probed). Lifeboat suite 145/145 green on a fresh port; falsification confirms the new tests fail without the fix.",
-  "task_id": "DF-011"
+  "task_id": "DF-011",
+  "controller_verification": {
+    "date": "2026-09-29",
+    "note": "mint gating + pass-detail auth",
+    "result": "VERIFIED"
+  }
 }
