@@ -1,27 +1,29 @@
 /**
- * W3B-001 / SEC-012 REPRO — SeederCredits.submitSeedingReport signature replay.
+ * W3B-001 / SEC-012 — SeederCredits.submitSeedingReport signature replay.
  *
- * The attestor-signed message is keccak256(seeder, arweaveTxId, claimedAmount, chainId):
- * NO nonce, NO timestamp, NO expiry. The only replay throttle is the 1-day
- * per-seeder cooldown. A seeder who earns ONE legitimate attestor signature can
- * replay the identical (txid, amount, signature) tuple every cooldown window,
- * minting fresh credits each time without doing any further seeding.
+ * PRE-FIX (documented on df-cycle-03 before the fix): the attestor-signed message was
+ * keccak256(seeder, arweaveTxId, claimedAmount, chainId) — NO nonce, NO timestamp, NO
+ * expiry. The only replay throttle was the 1-day per-seeder cooldown. Replaying the
+ * identical (txid, amount, signature) tuple after the cooldown minted 2000 credits
+ * from ONE signature (this test asserted `credits == amount * 2n` and passed).
  *
- * Expected (buggy) behavior: the second submitSeedingReport with the SAME
- * signature succeeds after the cooldown, doubling credits from one signature.
- * Fixed behavior would be: second submission reverts (replay protection).
+ * POST-FIX (df-cycle-03): the signed message is
+ * keccak256(seeder, arweaveTxId, claimedAmount, reportTimestamp, nonce, chainId);
+ * the report must be within MAX_REPORT_AGE (7 days) and not from the future, and each
+ * signed message hash is consume-once on-chain. The assertions below verify the fix:
+ * the second submission of the IDENTICAL signed report reverts with
+ * "Report already claimed", while a FRESH signed report (new nonce) still succeeds.
  *
  * Run: cd packages/contracts && npx hardhat test ../../devteam/repro/w3b-signature-replay.test.ts
- * (repo is read-only in review; this file lives under devteam/repro/ only)
  */
+
+import { loadFixture, time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { expect } from "chai";
 
 const TXID = "ar://seeding-report-001";
 const DAY = 24 * 60 * 60;
 
-// loadFixture is provided by the hardhat toolbox (imported explicitly here
-// because this repro lives outside test/ and has no shared setup file).
-const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { expect } = require("chai");
+let nonceSeq = 9000n;
 
 async function deployFixture() {
   const [owner, seeder] = await ethers.getSigners();
@@ -35,45 +37,56 @@ async function deployFixture() {
   return { seederCredits, owner, seeder, chainId };
 }
 
-async function signClaim(attestor: any, seederAddr: string, txid: string, amount: bigint, chainId: bigint) {
+async function signClaim(attestor, seederAddr, txid, amount, chainId, reportTimestamp, nonce) {
+  const ts = reportTimestamp ?? BigInt(await time.latest());
+  const n = nonce ?? (nonceSeq = nonceSeq + 1n);
   const messageHash = ethers.solidityPackedKeccak256(
-    ["address", "string", "uint256", "uint256"],
-    [seederAddr, txid, amount, chainId]
+    ["address", "string", "uint256", "uint256", "uint256", "uint256"],
+    [seederAddr, txid, amount, ts, n, chainId]
   );
-  return attestor.signMessage(ethers.getBytes(messageHash));
+  const sig = await attestor.signMessage(ethers.getBytes(messageHash));
+  return { sig, reportTimestamp: ts, nonce: n };
 }
 
-describe("W3B-001 repro: attestor signature replay across cooldowns", () => {
-  it("REPLAYS one attestor signature after the cooldown -> credits minted twice", async () => {
-    const { seederCredits, owner, seeder, chainId } = await loadFixture(deployFixture as any);
+describe("W3B-001 fixed: attestor signature replay blocked across cooldowns", () => {
+  it("replaying ONE attestor signature after the cooldown now reverts; a fresh report still works", async () => {
+    const { seederCredits, owner, seeder, chainId } = await loadFixture(deployFixture);
     const amount = 1000n;
 
     // ONE legitimate attestor signature for this seeder/claim.
-    const sig = await signClaim(owner, seeder.address, TXID, amount, chainId);
+    const signed = await signClaim(owner, seeder.address, TXID, amount, chainId);
 
     // First claim: succeeds, credits == amount.
-    await seederCredits.connect(seeder).submitSeedingReport(TXID, amount, sig);
+    await seederCredits
+      .connect(seeder)
+      .submitSeedingReport(TXID, amount, signed.reportTimestamp, signed.nonce, signed.sig);
     expect(await seederCredits.credits(seeder.address)).to.equal(amount);
 
-    // Immediate replay is blocked by the cooldown (expected).
-    let reverted = false;
+    // Advance past the 1-day cooldown and replay the IDENTICAL signed report.
+    await time.increase(DAY + 1);
+
+    // FIXED: the replay reverts — one signature can no longer mint twice.
+    // (try/catch style: this file lives outside test/ and resolves a different
+    // chai copy than the hardhat-chai-matchers plugin patches, so matcher
+    // assertions like revertedWith are unavailable here.)
+    let replayReverted = false;
     try {
-      await seederCredits.connect(seeder).submitSeedingReport(TXID, amount, sig);
+      await seederCredits
+        .connect(seeder)
+        .submitSeedingReport(TXID, amount, signed.reportTimestamp, signed.nonce, signed.sig);
     } catch (e: any) {
-      reverted = /Claim cooldown active/.test(String(e && e.message));
+      replayReverted = /Report already claimed/.test(String(e && e.message));
     }
-    expect(reverted, "immediate replay should revert with 'Claim cooldown active'").to.equal(true);
+    expect(replayReverted, "replay of the identical signed report should revert").to.equal(true);
+    expect(await seederCredits.credits(seeder.address)).to.equal(amount);
 
-    // Advance past the 1-day cooldown and replay the IDENTICAL signature.
-    await ethers.provider.send("evm_increaseTime", [DAY + 1]);
-    await ethers.provider.send("evm_mine", []);
+    // A FRESH attestor-signed report (new nonce + timestamp) is not a replay: succeeds.
+    const fresh = await signClaim(owner, seeder.address, TXID, amount, chainId);
+    await seederCredits
+      .connect(seeder)
+      .submitSeedingReport(TXID, amount, fresh.reportTimestamp, fresh.nonce, fresh.sig);
+    expect(await seederCredits.credits(seeder.address)).to.equal(amount * 2n);
 
-    // BUG: the same signature is accepted again -> credits double from one signature.
-    await seederCredits.connect(seeder).submitSeedingReport(TXID, amount, sig);
-    const credits = await seederCredits.credits(seeder.address);
-
-    console.log(`      credits after replaying ONE signature twice: ${credits} (claimed amount: ${amount})`);
-    // This assertion documents the vulnerable behavior: 2x credits from 1 signature.
-    expect(credits).to.equal(amount * 2n);
+    console.log("      replay of one signature blocked (credits stayed 1000); fresh report credited (2000)");
   });
 });

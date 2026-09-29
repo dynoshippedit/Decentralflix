@@ -28,6 +28,10 @@ contract SeederCredits is Ownable, ReentrancyGuard {
 
     mapping(address => uint256) public credits;
     mapping(address => uint256) public lastClaimTimestamp;
+    // Consume-once registry: each attestor-signed report hash can be claimed exactly once.
+    // Replay protection (W3B-001): a signed report cannot be resubmitted after the
+    // cooldown window, so one attestor signature can never mint credits twice.
+    mapping(bytes32 => bool) public consumedReports;
 
     // Emergency switch: when true, new seeding-credit claims are blocked (owner-controlled).
     bool public claimsPaused;
@@ -64,12 +68,17 @@ contract SeederCredits is Ownable, ReentrancyGuard {
 
     /**
      * @dev Claim credits from a signed Arweave report.
-     * Report must be recent, signed by platformAttestor, and seeder must hold at least one ticket for referenced content.
+     * Report must be recent (signed within MAX_REPORT_AGE), signed by platformAttestor,
+     * and seeder must hold at least one ticket for referenced content.
+     * Each signed report is consume-once: the attestor signs a fresh nonce per report,
+     * and the message hash can never be claimed twice (W3B-001).
      * Credits = (uptime + bandwidth + peers) * tierMultiplier (from highest owned tier).
      */
     function submitSeedingReport(
         string calldata arweaveTxId,
         uint256 claimedAmount,
+        uint256 reportTimestamp,
+        uint256 nonce,
         bytes calldata platformSignature
     ) external nonReentrant {
         require(!claimsPaused, "Claims paused");
@@ -79,10 +88,20 @@ contract SeederCredits is Ownable, ReentrancyGuard {
             block.timestamp >= lastClaimTimestamp[msg.sender] + MIN_CLAIM_COOLDOWN,
             "Claim cooldown active"
         );
+        // The signed report must be fresh: not from the future, and not older than MAX_REPORT_AGE.
+        require(reportTimestamp <= block.timestamp, "Report from the future");
+        require(block.timestamp - reportTimestamp <= MAX_REPORT_AGE, "Report too old");
 
         // Verify platform signature (simple ECDSA for Phase 0/1)
         bytes32 messageHash = keccak256(
-            abi.encodePacked(msg.sender, arweaveTxId, claimedAmount, block.chainid)
+            abi.encodePacked(
+                msg.sender,
+                arweaveTxId,
+                claimedAmount,
+                reportTimestamp,
+                nonce,
+                block.chainid
+            )
         );
         bytes32 ethSignedMessageHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
@@ -90,6 +109,12 @@ contract SeederCredits is Ownable, ReentrancyGuard {
 
         address signer = recoverSigner(ethSignedMessageHash, platformSignature);
         require(signer == platformAttestor, "Invalid platform signature");
+
+        // Consume-once: the identical signed report can never be claimed again.
+        // Checked AFTER signature verification so an invalid signature cannot burn
+        // someone else's valid report.
+        require(!consumedReports[messageHash], "Report already claimed");
+        consumedReports[messageHash] = true;
 
         // Apply tier multiplier (reuses existing MovieTicket tier logic)
         uint256 multiplier = getTierMultiplier(msg.sender); // 100 = 1.0x, 125 = 1.25x, 150 = 1.5x

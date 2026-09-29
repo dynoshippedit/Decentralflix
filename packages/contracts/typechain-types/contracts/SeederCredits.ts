@@ -29,6 +29,7 @@ export interface SeederCreditsInterface extends Interface {
       | "MAX_REPORT_AGE"
       | "MIN_CLAIM_COOLDOWN"
       | "claimsPaused"
+      | "consumedReports"
       | "credits"
       | "emergencySlash"
       | "getTierMultiplier"
@@ -65,6 +66,10 @@ export interface SeederCreditsInterface extends Interface {
   encodeFunctionData(
     functionFragment: "claimsPaused",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "consumedReports",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "credits",
@@ -109,7 +114,7 @@ export interface SeederCreditsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "submitSeedingReport",
-    values: [string, BigNumberish, BytesLike]
+    values: [string, BigNumberish, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -130,6 +135,10 @@ export interface SeederCreditsInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "claimsPaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "consumedReports",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "credits", data: BytesLike): Result;
@@ -318,6 +327,8 @@ export interface SeederCredits extends BaseContract {
 
   claimsPaused: TypedContractMethod<[], [boolean], "view">;
 
+  consumedReports: TypedContractMethod<[arg0: BytesLike], [boolean], "view">;
+
   credits: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
 
   emergencySlash: TypedContractMethod<
@@ -360,6 +371,8 @@ export interface SeederCredits extends BaseContract {
     [
       arweaveTxId: string,
       claimedAmount: BigNumberish,
+      reportTimestamp: BigNumberish,
+      nonce: BigNumberish,
       platformSignature: BytesLike
     ],
     [void],
@@ -387,6 +400,9 @@ export interface SeederCredits extends BaseContract {
   getFunction(
     nameOrSignature: "claimsPaused"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "consumedReports"
+  ): TypedContractMethod<[arg0: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "credits"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
@@ -434,6 +450,8 @@ export interface SeederCredits extends BaseContract {
     [
       arweaveTxId: string,
       claimedAmount: BigNumberish,
+      reportTimestamp: BigNumberish,
+      nonce: BigNumberish,
       platformSignature: BytesLike
     ],
     [void],

@@ -962,8 +962,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/SeederCredits.sol": {
-      "lastModificationDate": 1790633644463,
-      "contentHash": "f038d00f9efacfda87f11585bbecb23f",
+      "lastModificationDate": 1790649945618,
+      "contentHash": "940303c83bc68de21e9f75018942dc82",
       "sourceName": "contracts/SeederCredits.sol",
       "solcConfig": {
         "version": "0.8.28",

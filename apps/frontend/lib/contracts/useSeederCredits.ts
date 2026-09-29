@@ -358,7 +358,7 @@ export function useSeederCredits(userAddress?: `0x${string}`) {
     (report: MultiSourceSeedingReport, useV2 = true) => {
       const finalAmount = computeClaimWithTier(report.totalBaseCredits);
       const anchor = report.arweaveReportTxId || 'ar://pending-v2-report';
-      const sigNote = '(platformAttestor signs keccak(seeder + anchor + amount + chainId))';
+      const sigNote = '(platformAttestor signs keccak(seeder + anchor + amount + reportTimestamp + nonce + chainId); each signed report is consume-once)';
 
       if (useV2) {
         return {
@@ -371,7 +371,7 @@ export function useSeederCredits(userAddress?: `0x${string}`) {
       // Legacy compat
       return {
         functionName: 'submitSeedingReport',
-        argsPreview: [anchor, finalAmount, '0x' + '00'.repeat(65)],
+        argsPreview: [anchor, finalAmount, '<unix reportTimestamp>', '<fresh nonce>', '0x' + '00'.repeat(65)],
         note: `Legacy single-source claim (for Arweave-only reports). ${sigNote}`,
         finalCredits: finalAmount,
       };
