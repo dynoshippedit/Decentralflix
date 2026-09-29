@@ -13,7 +13,7 @@ const ADDR = '0x1111111111111111111111111111111111111111';
 const ADDR2 = '0x2222222222222222222222222222222222222222';
 
 const FIXTURES: Record<string, unknown> = {
-  getPlan: { name: 'Pro', priceWei: BigInt(200), durationSecs: BigInt(2592000), active: true, exists: true },
+  getPlan: { name: 'Pro', priceWei: BigInt(200), durationSecs: BigInt(2592000), creator: ADDR2, active: true, exists: true },
   subscriptionOf: { planId: BigInt(3), expiresAt: BigInt(999999) },
 };
 
@@ -59,16 +59,18 @@ async function expectCall(key: string, expectedArgs: unknown[][], fn: () => Prom
 
 describe('subscriptionManager wrappers call the right methods', () => {
   it('cancel', () => expectCall('cancel', [[{}]], () => w.cancel(RUNNER)));
-  it('createPlan', () =>
+  it('createPlan passes the creator (immutable at creation)', () =>
     expectCall(
       'createPlan',
-      [[BigInt(2), 'Pro', BigInt(200), BigInt(2592000), {}]],
-      () => w.createPlan(RUNNER, 2, 'Pro', BigInt(200), 2592000),
+      [[BigInt(2), 'Pro', BigInt(200), BigInt(2592000), ADDR2, {}]],
+      () => w.createPlan(RUNNER, 2, 'Pro', BigInt(200), 2592000, ADDR2),
     ));
   it('deactivatePlan', () => expectCall('deactivatePlan', [[BigInt(2), {}]], () => w.deactivatePlan(RUNNER, 2)));
   it('hasActiveSubscription', () =>
     expectCall('hasActiveSubscription', [[ADDR]], () => w.hasActiveSubscription(RUNNER, ADDR)));
   it('owner', () => expectCall('owner', [[]], () => w.owner(RUNNER)));
+  it('platformFeeBps reads the immutable on-chain constant', () =>
+    expectCall('PLATFORM_FEE_BPS', [[]], () => w.platformFeeBps(RUNNER)));
   it('renew passes value', () =>
     expectCall('renew', [[BigInt(2), { value: BigInt(200) }]], () => w.renew(RUNNER, 2, BigInt(200))));
   it('renounceOwnership', () => expectCall('renounceOwnership', [[{}]], () => w.renounceOwnership(RUNNER)));
@@ -76,13 +78,12 @@ describe('subscriptionManager wrappers call the right methods', () => {
     expectCall('subscribe', [[BigInt(2), { value: BigInt(200) }]], () => w.subscribe(RUNNER, 2, BigInt(200))));
   it('transferOwnership', () =>
     expectCall('transferOwnership', [[ADDR2, {}]], () => w.transferOwnership(RUNNER, ADDR2)));
-  it('withdraw', () => expectCall('withdraw', [[{}]], () => w.withdraw(RUNNER)));
 
-  it('getPlan maps the tuple', async () => {
+  it('getPlan maps the tuple (including creator)', async () => {
     stubState.instances.length = 0;
     const plan = await w.getPlan(RUNNER, 2);
     expect(lastCalls()['getPlan']).toEqual([[BigInt(2)]]);
-    expect(plan).toEqual({ name: 'Pro', priceWei: BigInt(200), durationSecs: BigInt(2592000), active: true, exists: true });
+    expect(plan).toEqual({ name: 'Pro', priceWei: BigInt(200), durationSecs: BigInt(2592000), creator: ADDR2, active: true, exists: true });
   });
 
   it('subscriptionOf maps the tuple', async () => {
@@ -95,10 +96,13 @@ describe('subscriptionManager wrappers call the right methods', () => {
 
 describe('subscriptionManager input validation', () => {
   it('rejects zero-duration plans', async () => {
-    await expect(w.createPlan(RUNNER, 1, 'P', BigInt(5), 0)).rejects.toThrow(/duration/);
+    await expect(w.createPlan(RUNNER, 1, 'P', BigInt(5), 0, ADDR2)).rejects.toThrow(/duration/);
   });
   it('rejects empty plan name', async () => {
-    await expect(w.createPlan(RUNNER, 1, '', BigInt(5), 60)).rejects.toThrow(/name/);
+    await expect(w.createPlan(RUNNER, 1, '', BigInt(5), 60, ADDR2)).rejects.toThrow(/name/);
+  });
+  it('rejects bad creator address', async () => {
+    await expect(w.createPlan(RUNNER, 1, 'P', BigInt(5), 60, 'bad')).rejects.toThrow(/creator.*address/i);
   });
   it('rejects bad holder address', async () => {
     await expect(w.hasActiveSubscription(RUNNER, 'bad')).rejects.toThrow(/holder.*address/i);

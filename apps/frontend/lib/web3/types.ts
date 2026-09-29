@@ -61,6 +61,7 @@ export interface SubscriptionPlan {
   name: string;
   priceWei: bigint;
   durationSecs: bigint;
+  creator: string;
   active: boolean;
   exists: boolean;
 }

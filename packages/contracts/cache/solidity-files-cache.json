@@ -1385,8 +1385,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/SubscriptionManager.sol": {
-      "lastModificationDate": 1790627977446,
-      "contentHash": "e9298b8042bbf11c25781fee1fac3566",
+      "lastModificationDate": 1790651528937,
+      "contentHash": "444c480f1c4267cbbe60523cbab5915c",
       "sourceName": "contracts/SubscriptionManager.sol",
       "solcConfig": {
         "version": "0.8.28",

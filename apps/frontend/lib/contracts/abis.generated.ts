@@ -4290,8 +4290,14 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "NoFundsToWithdraw",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "planId",
+        "type": "uint256"
+      }
+    ],
+    "name": "MissingCreator",
     "type": "error"
   },
   {
@@ -4394,7 +4400,7 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
   },
   {
     "inputs": [],
-    "name": "WithdrawFailed",
+    "name": "TransferFailed",
     "type": "error"
   },
   {
@@ -4471,6 +4477,12 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
         "internalType": "uint256",
         "name": "durationSecs",
         "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
       }
     ],
     "name": "PlanCreated",
@@ -4509,6 +4521,24 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
         "internalType": "uint256",
         "name": "newExpiresAt",
         "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
       }
     ],
     "name": "Renewed",
@@ -4534,29 +4564,54 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
         "internalType": "uint256",
         "name": "expiresAt",
         "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
       }
     ],
     "name": "Subscribed",
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
+    "inputs": [],
+    "name": "BPS_DENOMINATOR",
+    "outputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "Withdrawn",
-    "type": "event"
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PLATFORM_FEE_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -4586,6 +4641,11 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
         "internalType": "uint256",
         "name": "durationSecs",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
       }
     ],
     "name": "createPlan",
@@ -4632,6 +4692,11 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
             "internalType": "uint256",
             "name": "durationSecs",
             "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
           },
           {
             "internalType": "bool",
@@ -4750,13 +4815,6 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

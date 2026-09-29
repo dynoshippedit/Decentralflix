@@ -16,8 +16,13 @@ export const PRICING_STATUS = "draft" as const;
 export const PRICING_DISCLAIMER =
   "All prices are proposed drafts. Decentralflix has not launched and no pricing is final.";
 
-export const CREATOR_SHARE = 0.75;
-export const CREATOR_SHARE_PCT = "75%";
+import { SUBSCRIPTION_CREATOR_SHARE_BPS } from "./contracts/config";
+
+// MUS-001: derived from the immutable SubscriptionManager.PLATFORM_FEE_BPS
+// split (75% creator / 25% platform) via the shared contract config — never
+// a hardcoded literal, so copy and code cannot drift.
+export const CREATOR_SHARE = SUBSCRIPTION_CREATOR_SHARE_BPS / 10000;
+export const CREATOR_SHARE_PCT = `${SUBSCRIPTION_CREATOR_SHARE_BPS / 100}%`;
 
 /**
  * Migration pilot cap (research update 2026-09-28): the free pilot is 10

@@ -8,6 +8,7 @@ import {
   CONTRIBUTION_TABLE,
   DEFERRED_ITEMS,
 } from "@/lib/pricing";
+import { CreatorShareHeadline } from "@/components/CreatorShareHeadline";
 
 export const metadata = {
   title: "Pricing — Decentralflix",
@@ -33,14 +34,7 @@ export default function PricingPage() {
 
       {/* ── Filmmakers ─────────────────────────────────────────────── */}
       <section id="filmmakers" className="max-w-7xl mx-auto px-6 pb-20 scroll-mt-24">
-        <div className="mb-10">
-          <div className="text-red-500 text-xs tracking-[3px] mb-2">FOR FILMMAKERS</div>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-[-2px]">Upload. Set your price. Keep 75%.</h2>
-          <p className="text-white/50 mt-3 max-w-2xl text-sm leading-relaxed">
-            Every tier pays the same 75% creator share on every sale.
-            The tiers differ in catalog size and tooling — never in your cut.
-          </p>
-        </div>
+        <CreatorShareHeadline />
 
         <div className="grid md:grid-cols-3 gap-5">
           {FILMMAKER_TIERS.map((t) => (

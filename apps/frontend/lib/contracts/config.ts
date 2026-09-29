@@ -23,6 +23,14 @@ export const FILMMAKER_CAMPAIGN_ADDRESS = (process.env.NEXT_PUBLIC_FILMMAKER_CAM
 // a contract handle that would send calls into the void.
 export const TICKET_NFT_ADDRESS = (process.env.NEXT_PUBLIC_TICKET_NFT_ADDRESS || '0x0000000000000000000000000000000000000000') as Address;
 export const SUBSCRIPTION_MANAGER_ADDRESS = (process.env.NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS || '0x0000000000000000000000000000000000000000') as Address;
+
+// ── MUS-001: canonical fee constants ────────────────────────────────────────
+// Mirror of the immutable SubscriptionManager.PLATFORM_FEE_BPS on-chain
+// constant (2500 = 25% platform, 75% creator). The useSubscriptionManager hook
+// reads the live on-chain value when a deployment exists; this is the
+// build-time source of truth so marketing copy and code cannot drift.
+export const SUBSCRIPTION_PLATFORM_FEE_BPS = 2500;
+export const SUBSCRIPTION_CREATOR_SHARE_BPS = 10000 - SUBSCRIPTION_PLATFORM_FEE_BPS; // 7500
 export const PAY_PER_VIEW_ADDRESS = (process.env.NEXT_PUBLIC_PAY_PER_VIEW_ADDRESS || '0x0000000000000000000000000000000000000000') as Address;
 export const DFLIX_ADDRESS = (process.env.NEXT_PUBLIC_DFLIX_ADDRESS || '0x0000000000000000000000000000000000000000') as Address;
 

@@ -38,7 +38,7 @@ A film is registered on-chain with a `filmId`, title, price, filmmaker payout ad
 
 ### 3.2 Subscriptions (SubscriptionManager)
 
-Filmmakers or the operator define **plans** (`planId → name, price, duration`). `subscribe(planId)` grants the caller access until `block.timestamp + duration`. `renew(planId)` extends from the current expiry; `cancel()` ends access immediately with no refund (stated upfront, enforced in code). This is the on-chain primitive behind the Collector Pass product: a subscription is a time-boxed access right, and the pass's credit mechanics live in the off-chain service layer where they can carry the required economics disclosures.
+Filmmakers or the operator define **plans** (`planId → name, price, duration, creator`). Each plan names its creator once at creation — the address is immutable afterward. `subscribe(planId)` grants the caller access until `block.timestamp + duration`; every payment is split immediately and non-custodially: **75% to the plan's creator, 25% to the platform** (the immutable `PLATFORM_FEE_BPS = 2500` constant; the owner cannot change the split, and the creator's share is never redirected to the owner). `renew(planId)` extends from the current expiry and splits the same way; `cancel()` ends access immediately with no refund (stated upfront, enforced in code). This is the on-chain primitive behind the Collector Pass product: a subscription is a time-boxed access right, and the pass's credit mechanics live in the off-chain service layer where they can carry the required economics disclosures.
 
 ### 3.3 Pay-per-view (PayPerView)
 

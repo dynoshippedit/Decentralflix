@@ -61,6 +61,13 @@ dust favors the *recipient*, never the fee-taker. All withdrawals are pull-patte
 - Boundary: `hasActiveSubscription` = `expiresAt > block.timestamp` (strict); renew reverts
   when `expiresAt <= block.timestamp` — consistent, no one-second gap bug.
 
+**Update 2026-09-29 (MUS-001, owner decision: fix the contract, keep the copy):**
+Path 3 is now a non-custodial 75/25 splitter — `PLATFORM_FEE_BPS = 2500`
+(immutable constant, no setter), creator set once at `createPlan` (immutable,
+zero address reverts), `subscribe`/`renew` push 75% (+ rounding remainder) to
+the creator and 25% to the owner immediately. `withdraw()` is gone; no
+subscription balance accrues. Diagnosis above describes the pre-fix contract.
+
 ### Path 4 — TicketNFT: ticket mint → direct filmmaker forward
 `packages/contracts/contracts/TicketNFT.sol` (241 lines, full read)
 - `mintTicket` (L289–312): exact payment; **forwards 100% of `msg.value` to the filmmaker**;

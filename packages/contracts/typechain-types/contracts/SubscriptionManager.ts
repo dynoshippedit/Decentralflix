@@ -28,6 +28,7 @@ export declare namespace SubscriptionManager {
     name: string;
     priceWei: BigNumberish;
     durationSecs: BigNumberish;
+    creator: AddressLike;
     active: boolean;
     exists: boolean;
   };
@@ -36,12 +37,14 @@ export declare namespace SubscriptionManager {
     name: string,
     priceWei: bigint,
     durationSecs: bigint,
+    creator: string,
     active: boolean,
     exists: boolean
   ] & {
     name: string;
     priceWei: bigint;
     durationSecs: bigint;
+    creator: string;
     active: boolean;
     exists: boolean;
   };
@@ -50,6 +53,8 @@ export declare namespace SubscriptionManager {
 export interface SubscriptionManagerInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "BPS_DENOMINATOR"
+      | "PLATFORM_FEE_BPS"
       | "cancel"
       | "createPlan"
       | "deactivatePlan"
@@ -61,7 +66,6 @@ export interface SubscriptionManagerInterface extends Interface {
       | "subscribe"
       | "subscriptionOf"
       | "transferOwnership"
-      | "withdraw"
   ): FunctionFragment;
 
   getEvent(
@@ -72,13 +76,20 @@ export interface SubscriptionManagerInterface extends Interface {
       | "PlanDeactivated"
       | "Renewed"
       | "Subscribed"
-      | "Withdrawn"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "BPS_DENOMINATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "PLATFORM_FEE_BPS",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "cancel", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "createPlan",
-    values: [BigNumberish, string, BigNumberish, BigNumberish]
+    values: [BigNumberish, string, BigNumberish, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "deactivatePlan",
@@ -110,8 +121,15 @@ export interface SubscriptionManagerInterface extends Interface {
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "BPS_DENOMINATOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "PLATFORM_FEE_BPS",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "cancel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "createPlan", data: BytesLike): Result;
   decodeFunctionResult(
@@ -138,7 +156,6 @@ export interface SubscriptionManagerInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
 export namespace CancelledEvent {
@@ -172,19 +189,22 @@ export namespace PlanCreatedEvent {
     planId: BigNumberish,
     name: string,
     priceWei: BigNumberish,
-    durationSecs: BigNumberish
+    durationSecs: BigNumberish,
+    creator: AddressLike
   ];
   export type OutputTuple = [
     planId: bigint,
     name: string,
     priceWei: bigint,
-    durationSecs: bigint
+    durationSecs: bigint,
+    creator: string
   ];
   export interface OutputObject {
     planId: bigint;
     name: string;
     priceWei: bigint;
     durationSecs: bigint;
+    creator: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -208,17 +228,26 @@ export namespace RenewedEvent {
   export type InputTuple = [
     holder: AddressLike,
     planId: BigNumberish,
-    newExpiresAt: BigNumberish
+    newExpiresAt: BigNumberish,
+    creator: AddressLike,
+    creatorShare: BigNumberish,
+    platformFee: BigNumberish
   ];
   export type OutputTuple = [
     holder: string,
     planId: bigint,
-    newExpiresAt: bigint
+    newExpiresAt: bigint,
+    creator: string,
+    creatorShare: bigint,
+    platformFee: bigint
   ];
   export interface OutputObject {
     holder: string;
     planId: bigint;
     newExpiresAt: bigint;
+    creator: string;
+    creatorShare: bigint;
+    platformFee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -230,26 +259,26 @@ export namespace SubscribedEvent {
   export type InputTuple = [
     holder: AddressLike,
     planId: BigNumberish,
-    expiresAt: BigNumberish
+    expiresAt: BigNumberish,
+    creator: AddressLike,
+    creatorShare: BigNumberish,
+    platformFee: BigNumberish
   ];
-  export type OutputTuple = [holder: string, planId: bigint, expiresAt: bigint];
+  export type OutputTuple = [
+    holder: string,
+    planId: bigint,
+    expiresAt: bigint,
+    creator: string,
+    creatorShare: bigint,
+    platformFee: bigint
+  ];
   export interface OutputObject {
     holder: string;
     planId: bigint;
     expiresAt: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace WithdrawnEvent {
-  export type InputTuple = [owner: AddressLike, amount: BigNumberish];
-  export type OutputTuple = [owner: string, amount: bigint];
-  export interface OutputObject {
-    owner: string;
-    amount: bigint;
+    creator: string;
+    creatorShare: bigint;
+    platformFee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -300,6 +329,10 @@ export interface SubscriptionManager extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  BPS_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
+
+  PLATFORM_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
+
   cancel: TypedContractMethod<[], [void], "nonpayable">;
 
   createPlan: TypedContractMethod<
@@ -307,7 +340,8 @@ export interface SubscriptionManager extends BaseContract {
       planId: BigNumberish,
       name: string,
       priceWei: BigNumberish,
-      durationSecs: BigNumberish
+      durationSecs: BigNumberish,
+      creator: AddressLike
     ],
     [void],
     "nonpayable"
@@ -351,12 +385,16 @@ export interface SubscriptionManager extends BaseContract {
     "nonpayable"
   >;
 
-  withdraw: TypedContractMethod<[], [void], "nonpayable">;
-
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "BPS_DENOMINATOR"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "PLATFORM_FEE_BPS"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "cancel"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -367,7 +405,8 @@ export interface SubscriptionManager extends BaseContract {
       planId: BigNumberish,
       name: string,
       priceWei: BigNumberish,
-      durationSecs: BigNumberish
+      durationSecs: BigNumberish,
+      creator: AddressLike
     ],
     [void],
     "nonpayable"
@@ -407,9 +446,6 @@ export interface SubscriptionManager extends BaseContract {
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "withdraw"
-  ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
     key: "Cancelled"
@@ -453,13 +489,6 @@ export interface SubscriptionManager extends BaseContract {
     SubscribedEvent.OutputTuple,
     SubscribedEvent.OutputObject
   >;
-  getEvent(
-    key: "Withdrawn"
-  ): TypedContractEvent<
-    WithdrawnEvent.InputTuple,
-    WithdrawnEvent.OutputTuple,
-    WithdrawnEvent.OutputObject
-  >;
 
   filters: {
     "Cancelled(address,uint256)": TypedContractEvent<
@@ -484,7 +513,7 @@ export interface SubscriptionManager extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "PlanCreated(uint256,string,uint256,uint256)": TypedContractEvent<
+    "PlanCreated(uint256,string,uint256,uint256,address)": TypedContractEvent<
       PlanCreatedEvent.InputTuple,
       PlanCreatedEvent.OutputTuple,
       PlanCreatedEvent.OutputObject
@@ -506,7 +535,7 @@ export interface SubscriptionManager extends BaseContract {
       PlanDeactivatedEvent.OutputObject
     >;
 
-    "Renewed(address,uint256,uint256)": TypedContractEvent<
+    "Renewed(address,uint256,uint256,address,uint256,uint256)": TypedContractEvent<
       RenewedEvent.InputTuple,
       RenewedEvent.OutputTuple,
       RenewedEvent.OutputObject
@@ -517,7 +546,7 @@ export interface SubscriptionManager extends BaseContract {
       RenewedEvent.OutputObject
     >;
 
-    "Subscribed(address,uint256,uint256)": TypedContractEvent<
+    "Subscribed(address,uint256,uint256,address,uint256,uint256)": TypedContractEvent<
       SubscribedEvent.InputTuple,
       SubscribedEvent.OutputTuple,
       SubscribedEvent.OutputObject
@@ -526,17 +555,6 @@ export interface SubscriptionManager extends BaseContract {
       SubscribedEvent.InputTuple,
       SubscribedEvent.OutputTuple,
       SubscribedEvent.OutputObject
-    >;
-
-    "Withdrawn(address,uint256)": TypedContractEvent<
-      WithdrawnEvent.InputTuple,
-      WithdrawnEvent.OutputTuple,
-      WithdrawnEvent.OutputObject
-    >;
-    Withdrawn: TypedContractEvent<
-      WithdrawnEvent.InputTuple,
-      WithdrawnEvent.OutputTuple,
-      WithdrawnEvent.OutputObject
     >;
   };
 }

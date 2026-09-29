@@ -2,6 +2,11 @@
  * Typed wrappers for the SubscriptionManager contract (recurring plans).
  * One function per contract function. All inputs validated before any
  * chain interaction; writes need a signer, reads accept signer or provider.
+ *
+ * MUS-001: SubscriptionManager is a non-custodial 75/25 splitter. Every
+ * payment is split immediately — 75% (+ rounding remainder) to the plan's
+ * creator, 25% to the platform. The split is the immutable
+ * PLATFORM_FEE_BPS constant; there is no fee setter and no withdraw.
  */
 import type {
   Contract,
@@ -23,13 +28,18 @@ export async function cancel(
   return c.cancel({ ...(overrides ?? {}) });
 }
 
-/** Create a plan (owner only). durationSecs must be > 0. */
+/**
+ * Create a plan (owner only). durationSecs must be > 0.
+ * The creator is set ONCE here and can never be changed — the owner cannot
+ * redirect the creator's 75% share later. Zero address reverts on-chain.
+ */
 export async function createPlan(
   signer: ContractRunner,
   planId: number | bigint | string,
   name: string,
   priceWei: bigint,
   durationSecs: number | bigint | string,
+  creator: string,
   overrides?: WriteOverrides,
 ): Promise<ContractTransactionResponse> {
   const c: Contract = getSubscriptionManager(signer);
@@ -40,11 +50,12 @@ export async function createPlan(
     reqNonEmptyString(name, 'name'),
     reqWei(priceWei, 'priceWei'),
     duration,
+    reqAddress(creator, 'creator'),
     { ...(overrides ?? {}) },
   );
 }
 
-/** Deactivate a plan (owner only). */
+/** Deactivate a plan (owner only). Moves no funds. */
 export async function deactivatePlan(
   signer: ContractRunner,
   planId: number | bigint | string,
@@ -60,11 +71,12 @@ export async function getPlan(
 ): Promise<SubscriptionPlan> {
   const c: Contract = getSubscriptionManager(runner);
   const r = (await c.getPlan(reqUint(planId, 'planId'))) as {
-    name: string; priceWei: bigint; durationSecs: bigint; active: boolean; exists: boolean;
+    name: string; priceWei: bigint; durationSecs: bigint; creator: string;
+    active: boolean; exists: boolean;
   };
   return {
     name: r.name, priceWei: BigInt(r.priceWei), durationSecs: BigInt(r.durationSecs),
-    active: r.active, exists: r.exists,
+    creator: r.creator, active: r.active, exists: r.exists,
   };
 }
 
@@ -76,6 +88,15 @@ export async function hasActiveSubscription(runner: ContractRunner, holder: stri
 export async function owner(runner: ContractRunner): Promise<string> {
   const c: Contract = getSubscriptionManager(runner);
   return c.owner() as Promise<string>;
+}
+
+/**
+ * Read the immutable platform fee (basis points) from the contract.
+ * 2500 = 25% platform, 75% creator. No setter exists on-chain by design.
+ */
+export async function platformFeeBps(runner: ContractRunner): Promise<bigint> {
+  const c: Contract = getSubscriptionManager(runner);
+  return c.PLATFORM_FEE_BPS() as Promise<bigint>;
 }
 
 /** Renew an existing subscription. `valueWei` must cover the plan price. */
@@ -129,13 +150,4 @@ export async function transferOwnership(
 ): Promise<ContractTransactionResponse> {
   const c: Contract = getSubscriptionManager(signer);
   return c.transferOwnership(reqAddress(newOwner, 'newOwner'), { ...(overrides ?? {}) });
-}
-
-/** Withdraw collected subscription revenue (owner only). */
-export async function withdraw(
-  signer: ContractRunner,
-  overrides?: WriteOverrides,
-): Promise<ContractTransactionResponse> {
-  const c: Contract = getSubscriptionManager(signer);
-  return c.withdraw({ ...(overrides ?? {}) });
 }
