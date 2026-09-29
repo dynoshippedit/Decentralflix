@@ -1,0 +1,21 @@
+{
+  "review_id": "checkup-df13-2026-09-29b",
+  "spec_digest": "0cf23e8e037678683af75bacc9537e4685648594b138024d82d1da5e500ab3f9",
+  "check_id": "check-drift-refusal",
+  "phase": "baseline",
+  "argv": [
+    "bash",
+    "../../devteam/checkups/checkup-df13-2026-09-29b/scripts/drift_refusal.sh"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T07:10:22.314593+00:00",
+  "finished_at": "2026-09-29T07:10:23.487855+00:00",
+  "source_before": "f945fee0f5d9d44097fe7fd1e325ddebe8efe968b408b61cfad7238f9b427d83",
+  "source_after": "f945fee0f5d9d44097fe7fd1e325ddebe8efe968b408b61cfad7238f9b427d83",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df13-2026-09-29b/receipts/baseline-004.json.log",
+    "sha256": "15b25c9f888e405ea95a58661a3df43eb521793b6e859cdabaeb93421fe62a53"
+  }
+}

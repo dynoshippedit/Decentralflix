@@ -1,0 +1,4 @@
+CHECK check-drift-refusal
+tampered: removed first ABI entry of TICKET_NFT_ABI_FULL
+REFUSAL OBSERVED: drift guard failed as expected (vitest exit 1)
+[31m[1mAssertionError[22m: expected [ { …(3) }, { …(3) }, { …(3) }, …(57) ] to deeply equal [ { inputs: [], …(2) }, …(60) ][39m

@@ -1,0 +1,31 @@
+{
+  "review_id": "checkup-df13-2026-09-29b",
+  "spec_digest": "0cf23e8e037678683af75bacc9537e4685648594b138024d82d1da5e500ab3f9",
+  "source_digest": "f945fee0f5d9d44097fe7fd1e325ddebe8efe968b408b61cfad7238f9b427d83",
+  "files": {
+    "packages/contracts/contracts/TicketNFT.sol": "54e95f83919517f47eb221f55e87e8592b1d70b179d653a36667c943355262cd",
+    "packages/contracts/contracts/RevenueSplitter.sol": "478dd919cd587920d029089d2a02dc7044a8ced305c7fabc5ceb0d2b72b87f46",
+    "packages/contracts/test/TicketNFT.test.ts": "be48f9babcab4df4e95a7f2610cd15a464a59bc986ff273647278b49607f6d0b",
+    "packages/contracts/scripts/export-abi.ts": "5d5af3a0d409b5651c2c1b5f2c06e067bb49e7066e27dcb9f93bd53abe596c25",
+    "packages/contracts/package.json": "4cc18e7a7fb13f922d050cb32de02cc41b30b280e9d0cb35e13f5065c2570479",
+    "apps/frontend/lib/web3/wrappers/payPerView.ts": "37d88b4132fcc67e86d6770ffe63bf12b3c67186e6603cd27b121d41489e5c4e",
+    "apps/frontend/lib/web3/wrappers/payPerView.test.ts": "0f3d351ef2608d41aa08b55b8ec8e54f991ab8980c276f1c04bdb4e4648cba3b",
+    "apps/frontend/lib/contracts/useMovieTicket.ts": "b0986fd6266770f5a1d595aa60d6eb8b83a997e0f7bee79ce71e39fda9d7ce38",
+    "apps/frontend/lib/contracts/config.ts": "5cfd133a02ea141276dabde29989ecc06db76d8a682ceee8df99a146abca8a5c",
+    "apps/frontend/lib/contracts/abi-drift.test.ts": "2d7f7ad3b9999f2d7bd439916be3762f5536c0b2bca5873d596087079145697b",
+    "apps/frontend/app/mint/page.tsx": "3180a6ec2ec41afc4a594298180dcd16dadba4e291e998464881519a8f128c2a",
+    "devteam/notes/payout-math.md": "e52f3335b3ddc1517880fee3a357b0a01298a4c35d61b952cf819dc3c605d792",
+    "devteam/notes/flows/payout-withdrawal.md": "63b3fc14d6725fb33390c3921a319605af7481690dd863f3a4396bda816dac55",
+    "devteam/notes/contracts.md": "dc6faa95a1beb8814e1bad6fadcfd04cb77422ee97f90825d728c92052f4e525",
+    "docs/WHITEPAPER.md": "b4f1a7818b2bddc7fc4ccd473d285f61b8a8a08e6b038c0e16aef3f981d4d8b3",
+    "devteam/QUESTIONS.md": "096844ceaeb70f5c32674d081f475ff91b6ef5f83eb83bc54d7880c52d2de42b"
+  },
+  "unit_digests": {
+    "contract-ticketnft": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+    "contract-splitter": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+    "frontend-wrappers": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+    "frontend-mint-page": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+    "abi-pipeline": "2241f9b58ea6a7b43dda38450926227377e9399f0f23b148eb6e6b58bfd230a1",
+    "docs-payout": "724f75ac7f7d74805d090771d61991dd09bdb39a77c25bafe21e09ff5cb6dafc"
+  }
+}

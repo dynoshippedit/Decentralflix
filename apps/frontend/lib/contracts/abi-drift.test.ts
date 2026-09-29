@@ -93,6 +93,21 @@ describe('ABI-drift guard', () => {
     expect(extended.slice(0, full.length)).toEqual(full);
   });
 
+  it('export pipeline and drift guard cover the same contract list', () => {
+    // FIND-01 (checkup-df13-2026-09-29b): export-abi.ts and this guard each
+    // hardcode a CONTRACTS list. If a future change updates one list but not
+    // the other, an ABI ships unchecked by the guard. This test pins the two
+    // lists together so that drift fails the gate.
+    const scriptPath = path.resolve(__dirname, '../../../../packages/contracts/scripts/export-abi.ts');
+    expect(fs.existsSync(scriptPath), `export-abi.ts not found at ${scriptPath}`).toBe(true);
+    const script = fs.readFileSync(scriptPath, 'utf8');
+    const m = script.match(/const CONTRACTS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+    expect(m, 'could not parse CONTRACTS from export-abi.ts').toBeTruthy();
+    const exported = [...m![1].matchAll(/"([^"]+)"/g)].map((g) => g[1]).sort();
+    const guarded = CONTRACTS.map(([name]) => name).sort();
+    expect(guarded, 'drift guard CONTRACTS != export-abi.ts CONTRACTS').toEqual(exported);
+  });
+
   it('no removed fee-setter/withdraw functions linger in any generated ABI', () => {
     const dead = ['setPlatformFeeBps', 'setPlatformFee', 'withdrawPlatformFees', 'withdrawRevenue', 'withdraw'];
     for (const [contract, generated] of CONTRACTS) {

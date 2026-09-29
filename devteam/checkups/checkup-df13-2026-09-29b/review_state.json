@@ -1,0 +1,710 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df13-2026-09-29b",
+  "spec_digest": "0cf23e8e037678683af75bacc9537e4685648594b138024d82d1da5e500ab3f9",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df13-2026-09-29b/initial.json",
+    "sha256": "5653402a1d1a3904db3843b1bb71c87a825737766b760d5089e6a7689641efd1"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Change checkup on df-cycle-13 (76c08f7), revision b: r1 amended for a broken check argv path (exit 127); purpose unchanged, r1 receipts discarded. 6 review units, 16 source files, 4 behavior-bearing checks frozen. Tree clean at 277820e.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s0-scope.md",
+          "sha256": "369f7af546138bf4c5c79d95bc3d359608bfe6a05bcb103c033b370a39b64fc9"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline: hardhat 236/236, frontend 210/210, tsc clean, drift-guard refusal proven (tampered ABI rejected, file restored). Live mint-flow probe: 7 wei -> platform 1, filmmaker 6, contract 0. No environment faults.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s1-baseline.md",
+          "sha256": "907739c861cf9f00e36e7a613282bfbb523a6df3dbf471b95595a02120552a33"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "As-is map: RevenueSplitter (immutable 75/25) <- TicketNFT mint path; export-abi pipeline -> generated ABIs -> drift guard; wrappers/hook/config frontend layer; docs. Primary mint->split path traced and S1-executed; failure paths fail closed (atomic revert). One wrinkle for S4: the two hardcoded contract lists (export script vs guard) can drift apart.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s2-architecture.md",
+          "sha256": "c19d68b666035d788bc6e8ee10b3512d31817f5511465842c58e0f2cffde2864"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "33/33 cells filled across 6 units. All lenses reviewed except two justified NOT_APPLICABLE (page-level TST: no harness; docs TST: no executable behavior). No confirmed defects; one wrinkle carried to S4 (dual hardcoded contract lists).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "4 candidates challenged: FIND-01 SUPPORTED_IMPROVEMENT (dual hardcoded contract lists can drift; queued for S5 with fault-injection proof); FIND-02/03/04 REJECTED_LEAD with traced counter-evidence (reentrancy ordering safe under the guard; owner price front-run is fail-closed by design; per-render client is pre-existing and out of scope).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s4-findings.md",
+          "sha256": "fca5cc2eb77ac47e8196350f285f9eb3a2af16a88867337f15cd935ac77c62ca"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "FIND-01 repaired with the smallest coherent change: one test pinning the export-abi.ts CONTRACTS list to the drift-guard CONTRACTS list. Proven by fault injection in both directions (each failed, restored, green). Full suites green after the change.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "All four frozen final checks run through the recorder with real wall-clock durations, all exit 0: check-hardhat 236 passing (4.0s), check-frontend 211 passing (1.3s), check-tsc clean (5.6s), check-drift-refusal refusal observed and restored (1.2s). Receipts in checks/final/.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-hardhat.json",
+          "sha256": "5cec690495f4e4f4d764e5eee1bde61770035057eea1c782ef96c8ad8acbdfa3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-frontend.json",
+          "sha256": "c2e3cc306302ec63fc9ce4242900437b35b1e407684e0c53e3ee465a3120edef"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-tsc.json",
+          "sha256": "15f7fb523709b1855271edfc23f195396bf1d3291f6a658fc14aad6bb3684ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-drift-refusal.json",
+          "sha256": "bf3b45609df6846e64f3bef30877df75a259a51a16018050c494268302a56347"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Re-read the full post-fix diff: exactly one addition (the FIND-01 list-pinning test in abi-drift.test.ts); no other source file changed (git status confirms). abi-pipeline coverage cells already refreshed to the new unit digest with the new test documented; all other units unchanged, their digests and cells stand.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PENDING",
+      "summary": "",
+      "evidence": []
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "mintTicket L140-161: exact-payment check reverts IncorrectPayment; free films skip the split; fee=floor(v*2500/10000), creator=v-fee; _update L213-229 syncs _validTickets on transfers; redeemTicket burns exactly once. S1 probe: 7 wei -> 1/6/0.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "ERC721 + RevenueSplitter + ReentrancyGuard; Ownable(msg.sender) resolves via RevenueSplitter; filmmaker immutable post-registration (no setter); owner-only registry vs permissionless minting vs ticket-owner redemption separated.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "changeEtherBalances asserts [creatorShare, fee, 0n] (nothing retained); refusal paths IncorrectPayment/FilmInactive/FilmNotFound/ZeroAddress covered; falsification: 3 failing with contract stashed, green on restore.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Contract and mintTicket @notice accurately describe 75/25 at purchase, remainder to filmmaker, MissingCreator revert; inline comments match code.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "Registry functions onlyOwner; mintTicket nonReentrant so the _safeMint external call cannot reenter guarded functions before _splitRevenue; no withdraw exists; owner price changes affect future mints only (documented).",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "uint256 wei throughout; creator=msg.value-fee (remainder by construction); 0.8.20 checked arithmetic; ticket counts use checked decrement; no floating point.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-ticketnft",
+      "lens": "DOM",
+      "status": "REVIEWED",
+      "reason": "Owner registers, anyone mints, only ticket owner redeems; no signatures (no replay surface); reentrancy guarded; split-at-purchase, no withdrawal path; hasValidTicket tracks unredeemed mints.",
+      "unit_digest": "49ff22c75a7ec65a7fda2e0cb4fb12fe2ea89c8f8ec517b34a99a1b00cfbe624",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Unchanged since df-cycle-12 (git diff ff010bf..76c08f7 empty); re-read: PLATFORM_FEE_BPS=2500 constant, no setter; MissingCreator on zero; floor-division fee; creator=msg.value-fee; .call with TransferFailed; RevenueSplit event.",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Abstract base inherited by all four payment contracts; the split rule defined exactly once; Ownable supplies owner() as fee recipient.",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Exercised via inheritors (TicketNFT 6 new split tests + df-cycle-10/12 suites); no standalone unit \u2014 acceptable since the base is abstract and every public path runs through inheritors.",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "NatSpec states the four rules (immutable, remainder to creator, MissingCreator, no owner redirect); matches implementation.",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "No setter by design; MissingCreator blocks zero-address diversion; owner receives the fee but cannot alter the split or redirect the creator share.",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "Basis-point uint256 arithmetic; floor division favors the creator by construction (creator = msg.value - fee).",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-splitter",
+      "lens": "DOM",
+      "status": "REVIEWED",
+      "reason": "fee + creatorShare == msg.value exactly; nothing accrues in the contract (asserted 0n in tests).",
+      "unit_digest": "d6d340aa3d181ca2d1199e5476f6c7b2f9aaecd89c7623793210bb38a92550ba",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-wrappers",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "platformFeeBps() reads the immutable on-chain constant; buyAccess passes value via reqWei unchanged; getFilm maps (filmmaker, priceWei, exists); useMovieTicket fee=floor(price*bps/10000), creator=price-fee mirrors the chain; config mirrors 2500/7500.",
+      "unit_digest": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-wrappers",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Thin validated adapters over ethers Contract; hook separates chain reads from UI state with canonical-mirror fallback; config centralizes fee mirrors and ABI aliases (all = _FULL except the documented SEEDER_CREDITS deviation).",
+      "unit_digest": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-wrappers",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "11 tests: expectCall pins method names/args per wrapper; validation suite rejects bad addresses/ids; immutable-constant read asserted. Mocks sit at the chain boundary; wrapper logic is real.",
+      "unit_digest": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-wrappers",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "payPerView.ts header accurately states no fee setter/withdraw/accrued balance exist on-chain; useMovieTicket header documents the mirror fallback.",
+      "unit_digest": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-wrappers",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "Wrappers are the frontend<->chain boundary: inputs validated via validate.ts before any chain call; writes require a signer, reads accept a provider; contract errors propagate to callers.",
+      "unit_digest": "c44df99e79bf5409a01849e6168eb96065881472c89cab56b970ea2e9bb64bcd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-mint-page",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "feePct always defined from hook state (stale 30 fallback removed); priceWei=parseEther(price||0.01); fee/creator shares derive from the same hook math as the chain.",
+      "unit_digest": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-mint-page",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Composes useMovieTicket reads + viem wallet client writes + Privy auth; step machine choose/confirm/success; chain selected by address match (hardhat local vs arbitrumSepolia).",
+      "unit_digest": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-mint-page",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "Next.js page component; the repo has no page-level test harness. Fee math is covered at hook/config level plus tsc; the df-cycle-13 change here is display-only. Structural reason, not a risk judgment.",
+      "unit_digest": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-mint-page",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Tier labels describe current access tiers; fee display now reflects the immutable 25%; no stale copy remains on the page.",
+      "unit_digest": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-mint-page",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Fee breakdown shown before confirm; step states for choose/confirm/success; auth gate prompts login; legal-consent modal. Touch/keyboard specifics are manual-playtest surface.",
+      "unit_digest": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-pipeline",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "export-abi exits 1 (run npx hardhat compile) on a missing artifact; guard does order- and length-sensitive deep equality per contract and fails closed on missing artifact/const/changed entry.",
+      "unit_digest": "5faa0023577d47eb082d35ccd63ba7326574f29d8e7fcb02c8a9aef928443a40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-pipeline",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "compile -> export-abi -> abis.generated.ts (do-not-edit) -> drift guard under npm test; the generated file is the single ABI source for the frontend.",
+      "unit_digest": "5faa0023577d47eb082d35ccd63ba7326574f29d8e7fcb02c8a9aef928443a40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-pipeline",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "14 guard tests (13 original + 1 new FIND-01 list-pinning test asserting export-abi.ts CONTRACTS == guard CONTRACTS). Refusal proven four ways: worker (removed RevenueSplit -> 1 failed/12 passed), this checkup (tampered entry -> guard failed, file restored), and both fault-injection directions on the new test (bogus entry in either list -> new test failed, restored -> green).",
+      "unit_digest": "5faa0023577d47eb082d35ccd63ba7326574f29d8e7fcb02c8a9aef928443a40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-pipeline",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Generated header: AUTO-GENERATED / DO NOT EDIT / regenerate command; guard docstring states the fail-closed contract and the single documented SEEDER_CREDITS deviation.",
+      "unit_digest": "5faa0023577d47eb082d35ccd63ba7326574f29d8e7fcb02c8a9aef928443a40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-pipeline",
+      "lens": "BLD",
+      "status": "REVIEWED",
+      "reason": "Reproducible via `npm run export:abi` in packages/contracts (auto-runs on compile); deterministic output path; the guard runs inside the standard `npm test` gate.",
+      "unit_digest": "5faa0023577d47eb082d35ccd63ba7326574f29d8e7fcb02c8a9aef928443a40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ]
+    },
+    {
+      "unit_id": "docs-payout",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Superseded banners state 75/25 at purchase, remainder to filmmaker, MissingCreator, no redirect \u2014 matches TicketNFT.sol L140-161 and RevenueSplitter; WHITEPAPER 3.1 matches the code.",
+      "unit_digest": "724f75ac7f7d74805d090771d61991dd09bdb39a77c25bafe21e09ff5cb6dafc",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "docs-payout",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Consistent supersede-in-place convention across the three notes; Q-df12-001 RESOLVED with decision and date; whitepaper is the normative copy.",
+      "unit_digest": "724f75ac7f7d74805d090771d61991dd09bdb39a77c25bafe21e09ff5cb6dafc",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "docs-payout",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "Documentation unit: no executable behavior exists to test. Accuracy verified by cross-reference against the contract sources (see COR cell).",
+      "unit_digest": "724f75ac7f7d74805d090771d61991dd09bdb39a77c25bafe21e09ff5cb6dafc",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    },
+    {
+      "unit_id": "docs-payout",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "History preserved while current truth is marked; grep finds SUPERSEDED banners in all three notes files; no unmarked stale 100%-to-filmmaker claim remains.",
+      "unit_digest": "724f75ac7f7d74805d090771d61991dd09bdb39a77c25bafe21e09ff5cb6dafc",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s3-matrix.md",
+          "sha256": "937b2702682a2783ba4ab1286d7bd668bc67d03352624c95f24fd44275923ead"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/receipts/baseline-001.json",
+      "sha256": "456021f9a17ff77341c432e4377db8e8f3091e6430db4e2ed7d25e7369b2edd0"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/receipts/baseline-002.json",
+      "sha256": "1fc2b4fc57e633f87a10361e7291129d65efc4a5dcd93249b023e04674bc0820"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/receipts/baseline-003.json",
+      "sha256": "bdfc135e2f3fbd2531b656bf7d4615a256a5dc51914864de927845e2026f4992"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/receipts/baseline-004.json",
+      "sha256": "de378c213ec6e24eecd1294fae52b9e0e079fd5ce25381dbaf88603cb5cd56c8"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-hardhat.json",
+      "sha256": "5cec690495f4e4f4d764e5eee1bde61770035057eea1c782ef96c8ad8acbdfa3"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-frontend.json",
+      "sha256": "c2e3cc306302ec63fc9ce4242900437b35b1e407684e0c53e3ee465a3120edef"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-tsc.json",
+      "sha256": "15f7fb523709b1855271edfc23f195396bf1d3291f6a658fc14aad6bb3684ae3"
+    },
+    {
+      "path": "devteam/checkups/checkup-df13-2026-09-29b/checks/final/check-drift-refusal.json",
+      "sha256": "bf3b45609df6846e64f3bef30877df75a259a51a16018050c494268302a56347"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-01",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "The export-abi.ts CONTRACTS list and the abi-drift.test.ts CONTRACTS list are two independent hardcoded lists; a future contract addition/rename updating only one silently leaves an ABI unchecked by the guard.",
+      "location": "packages/contracts/scripts/export-abi.ts:14 vs apps/frontend/lib/contracts/abi-drift.test.ts:38-49 (HEAD 277820e)",
+      "challenge": "Alternative: developers will update both. Counter-check: both lists currently match (verified by reading both files), so the defect is latent; rejected the alternative on the df-cycle-12 history where a forgotten manual step caused exactly this drift.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s4-findings.md",
+          "sha256": "fca5cc2eb77ac47e8196350f285f9eb3a2af16a88867337f15cd935ac77c62ca"
+        },
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s5-fix.md",
+          "sha256": "87ea57d5ea0f5c5ce3a985f51a672e60b9afe19117c23fce5fbedbb3c92b6743"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-frontend",
+        "check-tsc",
+        "check-drift-refusal"
+      ],
+      "queue_task_id": "checkup-df13-2026-09-29b/S5",
+      "remaining_reason": ""
+    },
+    {
+      "id": "FIND-02",
+      "classification": "REJECTED_LEAD",
+      "claim": "mintTicket calls _safeMint (external buyer callback) before _splitRevenue; a malicious buyer might exploit the ordering.",
+      "location": "packages/contracts/contracts/TicketNFT.sol:150-157 (HEAD 277820e)",
+      "challenge": "Traced reentry paths: mintTicket is nonReentrant, so the buyer onERC721Received callback can only reach views or revert on guarded functions; mint and split are atomic in one tx, so any revert unwinds both. Reversing the order has identical atomicity. No reachable exploit.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s4-findings.md",
+          "sha256": "fca5cc2eb77ac47e8196350f285f9eb3a2af16a88867337f15cd935ac77c62ca"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    },
+    {
+      "id": "FIND-03",
+      "classification": "REJECTED_LEAD",
+      "claim": "Owner can front-run setFilmPrice against a buyer mint transaction.",
+      "location": "packages/contracts/contracts/TicketNFT.sol:130-135 (HEAD 277820e)",
+      "challenge": "Buyer tx reverts with IncorrectPayment (fail-closed); gas loss only, no fund movement; owner is the trusted platform by design and the function is documented future-mints-only. No fund risk.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s4-findings.md",
+          "sha256": "fca5cc2eb77ac47e8196350f285f9eb3a2af16a88867337f15cd935ac77c62ca"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    },
+    {
+      "id": "FIND-04",
+      "classification": "REJECTED_LEAD",
+      "claim": "useMovieTicket constructs a new viem publicClient on every render.",
+      "location": "apps/frontend/lib/contracts/useMovieTicket.ts (HEAD 277820e)",
+      "challenge": "Pre-existing pattern not introduced by df-cycle-13 (the change only swapped the fee constant read); trivial cost; out of this change-checkup scope.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s4-findings.md",
+          "sha256": "fca5cc2eb77ac47e8196350f285f9eb3a2af16a88867337f15cd935ac77c62ca"
+        }
+      ],
+      "resolution": "REJECTED",
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    }
+  ],
+  "reviewer_mode": null,
+  "next_action": "",
+  "record_shapes": {
+    "evidence_ref": {
+      "path": "actual/project-relative/artifact",
+      "sha256": "actual-sha256"
+    },
+    "coverage_cell": {
+      "unit_id": "actual-unit-id",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Concrete observation with inspected symbols/ranges in the referenced artifact",
+      "unit_digest": "actual-current-unit-digest",
+      "evidence": []
+    },
+    "finding": {
+      "id": "actual-finding-id",
+      "classification": "HYPOTHESIS",
+      "claim": "Source-backed claim",
+      "location": "actual/path:symbol-or-lines with source identity",
+      "challenge": "Alternative explanation and actual counter-check result",
+      "evidence": [],
+      "resolution": "QUEUED",
+      "verification_checks": [],
+      "queue_task_id": "actual-controller-task-id",
+      "remaining_reason": "Concrete investigation or external dependency"
+    }
+  },
+  "reviewer_identity": null,
+  "independent_review_evidence": []
+}
