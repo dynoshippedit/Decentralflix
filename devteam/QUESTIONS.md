@@ -35,3 +35,19 @@ Standing owner constraints for this run (from the Tech Lead's brief — not ques
 - **Recommendation:** (a) — "deferred" should be a boolean the code can see.
 - **Default meanwhile:** (b) until a deferred item is actually scheduled.
 - **Status:** OPEN
+
+
+## 2026-09-29 - Payout-decision scope (from df-cycle-11 worker)
+Dino: the 75/25 non-custodial hardening is implemented for SubscriptionManager only (df-cycle-10).
+Repo evidence is insufficient to extend it - your call:
+- PayPerView: `platformFeeBps` defaults to 0 (75/25 holds only after the owner sets 2500), owner can
+  change it up to the 2500 cap, fee taken at withdrawal time; platform fees accrue in-contract.
+- MovieTicket: `setPlatformFee` is onlyOwner (capped 2500); `withdraw()` lets the owner sweep the full
+  contract balance.
+- TicketNFT: forwards 100% to the filmmaker (no fee) - already consistent.
+- FilmmakerCampaign: crowdfunding escrow, not a sale split.
+The whitepaper/marketing claim 75% protocol-wide, but no recorded decision extends the
+immutable-split hardening (constant, no owner change, direct-to-creator, rounding to creator)
+beyond SubscriptionManager. Options: (a) extend the same hardening to PayPerView + MovieTicket,
+(b) keep them as-is (owner-adjustable, capped 25%), (c) something else. No payout code was
+changed in df-cycle-11 - waiting on your scope call.

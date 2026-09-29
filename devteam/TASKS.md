@@ -46,6 +46,7 @@ S1 in fix order, then S2/S3/S4. Within a band, order is dependency/effort, not I
 | 7 | MUS-001 | **IN PROGRESS** (df-cycle-10) | SubscriptionManager sends 100% to `owner()` while marketing promises 75% creator share. **Fix:** owner decision first (change contract vs change copy) → `devteam/QUESTIONS.md`. Effort: M after decision. |
 | 8 | STR-001 | **VERIFIED** (df-cycle-08; controller: UI auth repro 15/15 + lifeboat suite 136/136 on fresh port) | Lifeboat UI never sends auth (zero Bearer/localStorage hits in public/app.js) — every authed endpoint is unusable from the UI. **Fix:** wire login/logout + Authorization headers through the UI. Effort: M. Absorbs BUG-001. |
 | 9 | TST-001 | **VERIFIED** (df-cycle-09; triaged: package real 93/93, wiring infeasible this cycle, whitepaper 4 spots corrected) | Storage module (1 MiB fragments, AES-256-GCM, manifests) unwired vs whitepaper claims. **Fix:** triage — wire it (L) or correct the whitepaper/docs (XS). |
+| 10 | MINT-001 | **IMPLEMENTED** (df-cycle-11; owner decision 2026-09-29: dev-build-only, OFF by default, NO per-user cap - caps are farmable via extra accounts) | Test-credit minting (`POST /api/passes/test`, `POST /api/purchases/test`, `POST /api/purchases/bundle/test`) exists ONLY when `DECENTRALFLIX_TEST_MINTS=1`. **Fix:** `requireTestMints` gate in `apps/lifeboat/server.js` (checked after requireAuth, so unauth probes still 401); production credits only from the Stripe webhook with valid signature (503 when unconfigured). Tests: `apps/lifeboat/test.sh` runs the main suite in dev mode (145/145) plus a production-mode section proving all three endpoints 403 even authenticated, unauth 401, webhook 503. Falsified (stashed fix -> mint 201, detail 200). Awaiting controller verification. |
 
 ## S2 — fix after S1 (50)
 
@@ -69,7 +70,7 @@ S1 in fix order, then S2/S3/S4. Within a band, order is dependency/effort, not I
 - BUG-005 QUEUED — Purchase failure atomicity: debit-before-grant can strand credits. Fix: grant-before-debit or rollback.
 - BUG-006 QUEUED — Bundle "15% off / 3+ films" advertised vs full-price / ≥2 charged. Fix: align copy or pricing.
 - BUG-008 QUEUED — On-chain buyAccess grants no lifeboat streaming (two disjoint rails). Fix: architecture decision.
-- BUG-011 QUEUED — `GET /api/passes/:id` unauthenticated: leaks holder email + ledger. Fix: requireAuth + holder check. (Read-only; the mint side was SEC-001.)
+- BUG-011 **IMPLEMENTED** (df-cycle-11) - `GET /api/passes/:id` was unauthenticated: leaked holder email + ledger. **Fix:** requireAuth + holder check in passDetail (auth-first ordering, consistent with passRedeem; 401 unauth, 403 foreign pass, 200 holder, 404 authed unknown). Refusal tests: `apps/lifeboat/test.sh` (unauth 401, cross-account 403, holder 200). Regression: lifeboat suite 145/145 green on fresh port. Awaiting controller verification.
 - BUG-012 QUEUED — Pass-renewal webhook lacks the duplicate guard the sibling webhook has. Fix: idempotency (see DAT-009).
 
 **Build / deps**

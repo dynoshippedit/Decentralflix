@@ -26,6 +26,15 @@ const PUBLIC_DIR = path.join(__dirname, 'public'); // frontend static files
 const MAX_JSON_BYTES = 1 << 20; // 1 MiB
 const MAX_UPLOAD_BYTES = 1 << 30; // 1 GiB per master upload
 
+// DECIDED 2026-09-29 (Dino): test-credit minting exists ONLY in dev builds.
+// DECENTRALFLIX_TEST_MINTS=1 enables the three TEST-ONLY endpoints
+// (POST /api/passes/test, POST /api/purchases/test,
+// POST /api/purchases/bundle/test); anything else (including unset) disables
+// them. Deliberately NO per-user cap: a cap is farmable via extra accounts,
+// so in production the endpoints are simply dead. Production credits come
+// ONLY from confirmed payments (Stripe webhook with valid signature).
+const TEST_MINTS_ENABLED = process.env.DECENTRALFLIX_TEST_MINTS === '1';
+
 fs.mkdirSync(MASTERS_DIR, { recursive: true });
 
 const CDN = cdn.createCdn({ mastersDir: MASTERS_DIR });
@@ -235,6 +244,16 @@ function requireFilmmaker(req, res) {
   if (!account) return null;
   if (account.role !== 'filmmaker') { sendError(res, 403, 'filmmaker role required'); return null; }
   return account;
+}
+
+// Sends 403 when the TEST-ONLY mint endpoints are disabled (production mode).
+// Checked AFTER requireAuth so unauthenticated probes still get 401.
+function requireTestMints(req, res) {
+  if (!TEST_MINTS_ENABLED) {
+    sendError(res, 403, 'test minting is disabled in this build');
+    return false;
+  }
+  return true;
 }
 
 // True when the account owns the film (filmmaker_email matches account email).
@@ -666,6 +685,7 @@ async function approveClaim(req, res, claimId) {
 async function testPurchase(req, res) {
   const account = requireAuth(req, res);
   if (!account) return;
+  if (!requireTestMints(req, res)) return;
   const body = await readJson(req, res);
   if (body === null) return;
   const film = body.film_id ? store.get('films', body.film_id) : null;
@@ -695,6 +715,7 @@ async function testPurchase(req, res) {
 async function bundleTestPurchase(req, res) {
   const account = requireAuth(req, res);
   if (!account) return;
+  if (!requireTestMints(req, res)) return;
   const body = await readJson(req, res);
   if (body === null) return;
   const ids = body.film_ids;
@@ -906,6 +927,7 @@ async function passCheckout(req, res) {
 async function passTestSubscribe(req, res) {
   const account = requireAuth(req, res);
   if (!account) return;
+  if (!requireTestMints(req, res)) return;
   const body = await readJson(req, res);
   if (body === null) return;
   // SEC-001 (df-cycle-01): the pass is bound to the authenticated account.
@@ -936,8 +958,16 @@ async function passTestSubscribe(req, res) {
 }
 
 function passDetail(req, res, passId) {
+  // BUG-011: the pass detail (holder email + full credit ledger) is PII.
+  // Auth first (consistent with passRedeem: no existence leak to strangers),
+  // then the holder check - only the pass owner may read their own ledger.
+  const account = requireAuth(req, res);
+  if (!account) return;
   const p = passLib.getPass(passId);
   if (!p) return sendError(res, 404, 'pass not found');
+  if (p.email !== account.email) {
+    return sendError(res, 403, 'pass does not belong to this account');
+  }
   return sendJson(res, 200, {
     pass: p,
     balance: passLib.balance(passId),

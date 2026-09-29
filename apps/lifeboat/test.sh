@@ -39,7 +39,10 @@ jget() {
 }
 
 # --- start server -----------------------------------------------------------
-node server.js </dev/null >"$TMPD/server.log" 2>&1 &
+# DECIDED 2026-09-29 (Dino): this suite exercises the DEV build - the
+# TEST-ONLY mint endpoints are enabled here. Production-mode refusal is
+# covered by the dedicated section at the end of this file.
+DECENTRALFLIX_TEST_MINTS=1 node server.js </dev/null >"$TMPD/server.log" 2>&1 &
 SERVER_PID=$!
 trap 'kill "$SERVER_PID" 2>/dev/null; rm -rf "data"; if [ -n "$DATA_BACKUP" ]; then mv "$DATA_BACKUP" "data"; fi; rm -rf "$TMPD"' EXIT
 
@@ -616,10 +619,13 @@ node -e '
   if (!/do not rely on subscribers forgetting to redeem/i.test(j.economics_warning || "")) process.exit(1);
 ' "$TMPD/pass.json" \
   && pass "M2: pass subscribe carries the economics warning" || fail "M2: pass economics warning"
+# BUG-011: pass detail requires auth - existence is not revealed to strangers
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/passes/pass_nope")
-[ "$code" = "404" ] && pass "M2: unknown pass returns 404" || fail "M2: pass 404" "http=$code"
+[ "$code" = "401" ] && pass "M2: unauthenticated pass detail rejected (401)" || fail "M2: pass detail 401" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/pass_nope")
+[ "$code" = "404" ] && pass "M2: unknown pass returns 404 (authenticated)" || fail "M2: pass 404" "http=$code"
 
-code=$(curl -s -o "$TMPD/passdetail.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+code=$(curl -s -o "$TMPD/passdetail.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID")
 LEDGER1=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   const ok = j.ledger.every((e) => e.transferable === false && e.cash_value_usd_cents === 0);
@@ -645,9 +651,12 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/
   -H "Authorization: Bearer $OTHER_TOKEN" \
   -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
 [ "$code" = "403" ] && pass "M2: redemption by a different account rejected (403)" || fail "M2: non-transferable redeem" "http=$code"
-code=$(curl -s -o "$TMPD/passbal.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+code=$(curl -s -o "$TMPD/passbal.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID")
 [ "$(jget "$TMPD/passbal.json" balance)" = "1" ] \
   && pass "M2: balance unchanged after rejected redemption" || fail "M2: balance after 403"
+# BUG-011: only the pass holder may read the holder email + ledger
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $OTHER_TOKEN" "$BASE/api/passes/$PASSID")
+[ "$code" = "403" ] && pass "M2: pass detail by a different account rejected (403)" || fail "M2: pass detail cross-account 403" "http=$code"
 
 # redeem for real
 code=$(curl -s -o "$TMPD/redeem.json" -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
@@ -660,7 +669,7 @@ code=$(curl -s -o "$TMPD/redeem.json" -w "%{http_code}" -X POST "$BASE/api/passe
   && [ "$(jget "$TMPD/redeem.json" entitlement.test_mode)" = "true" ] \
   && pass "M2: credit redemption grants permanent test-mode license (balance 0)" || fail "M2: redeem" "http=$code"
 
-code=$(curl -s -o "$TMPD/passdetail2.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+code=$(curl -s -o "$TMPD/passdetail2.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID")
 LEDGER2=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   const ok = j.ledger.every((e) => e.transferable === false && e.cash_value_usd_cents === 0);
@@ -676,7 +685,7 @@ code=$(curl -s -o "$TMPD/redeem2.json" -w "%{http_code}" -X POST "$BASE/api/pass
   -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
 [ "$code" = "200" ] && [ "$(jget "$TMPD/redeem2.json" already_owned)" = "true" ] \
   && pass "M2: duplicate redemption returns already_owned (200)" || fail "M2: duplicate redeem" "http=$code"
-code=$(curl -s -o "$TMPD/passdetail3.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
+code=$(curl -s -o "$TMPD/passdetail3.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID")
 LEDGER3=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
   console.log(j.balance + ":" + j.ledger.length);
@@ -817,6 +826,42 @@ node ../../devteam/repro/dat-002-crash-recovery.js > "$TMPD/dat002.log" 2>&1
 node ../../devteam/repro/str-001-ui-auth.js > "$TMPD/str001.log" 2>&1
 [ "$?" = "0" ] && pass "STR-001 UI auth (login stores token, helpers send Bearer)" \
   || fail "STR-001 UI auth" "$(tail -3 "$TMPD/str001.log")"
+
+# --- MINT GATING (DECIDED 2026-09-29): test-mint endpoints are dev-only ---
+# Restart the server WITHOUT DECENTRALFLIX_TEST_MINTS (production mode) and
+# prove all three test endpoints refuse to mint, even when authenticated.
+# Production credits come ONLY from confirmed payments (Stripe webhook).
+kill "$SERVER_PID" 2>/dev/null
+rm -rf "data"
+env -u DECENTRALFLIX_TEST_MINTS PORT="$PORT" node server.js </dev/null >"$TMPD/server-prod.log" 2>&1 &
+SERVER_PID=$!
+ready=0
+for _ in $(seq 1 60); do
+  if curl -sf --max-time 2 "$BASE/api/films" >/dev/null 2>&1; then ready=1; break; fi
+  sleep 0.25
+done
+[ "$ready" = 1 ] && pass "prod-mode: server restarted without test mints" || fail "prod-mode: server restart"
+curl -s -o "$TMPD/prod-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"prodbuyer@example.com","password":"testpass123","role":"buyer"}'
+PROD_TOKEN=$(jget "$TMPD/prod-signup.json" token)
+[ -n "$PROD_TOKEN" ] && pass "prod-mode: buyer signup works" || fail "prod-mode: signup"
+for ep in passes/test purchases/test purchases/bundle/test; do
+  code=$(curl -s -o "$TMPD/prod-refused.json" -w "%{http_code}" -X POST "$BASE/api/$ep" \
+    -H "Authorization: Bearer $PROD_TOKEN" \
+    -H 'Content-Type: application/json' -d '{}')
+  [ "$code" = "403" ] && [ "$(jget "$TMPD/prod-refused.json" error)" = "test minting is disabled in this build" ] \
+    && pass "prod-mode: POST /api/$ep refused (403), mints nothing" \
+    || fail "prod-mode: /api/$ep not refused" "http=$code"
+done
+# unauthenticated probes still get 401 (auth is checked before the dev gate)
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/test" \
+  -H 'Content-Type: application/json' -d '{}')
+[ "$code" = "401" ] && pass "prod-mode: unauthenticated test mint rejected (401)" || fail "prod-mode: unauth 401" "http=$code"
+# no credit path without confirmed payments: the webhook without keys is dead
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/webhooks/stripe" \
+  -H 'Content-Type: application/json' -d '{}')
+[ "$code" = "503" ] && pass "prod-mode: stripe webhook without keys has no credit path (503)" || fail "prod-mode: webhook 503" "http=$code"
 
 # --- summary -----------------------------------------------------------------------------------
 echo "----------------------------------------"
