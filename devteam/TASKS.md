@@ -45,7 +45,7 @@ S1 in fix order, then S2/S3/S4. Within a band, order is dependency/effort, not I
 | 6 | DAT-013 | **VERIFIED** (df-cycle-06; controller: inspected diff, lifeboat suite 134/134 on fresh port) | `claim.html` broken — creator monetization path dead. **Fix:** repair the claim flow end-to-end. Effort: S. |
 | 7 | MUS-001 | QUEUED · **needs Dino decision** | SubscriptionManager sends 100% to `owner()` while marketing promises 75% creator share. **Fix:** owner decision first (change contract vs change copy) → `devteam/QUESTIONS.md`. Effort: M after decision. |
 | 8 | STR-001 | **VERIFIED** (df-cycle-08; controller: UI auth repro 15/15 + lifeboat suite 136/136 on fresh port) | Lifeboat UI never sends auth (zero Bearer/localStorage hits in public/app.js) — every authed endpoint is unusable from the UI. **Fix:** wire login/logout + Authorization headers through the UI. Effort: M. Absorbs BUG-001. |
-| 9 | TST-001 | QUEUED | Storage module (1 MiB fragments, AES-256-GCM, manifests) unwired vs whitepaper claims. **Fix:** triage — wire it (L) or correct the whitepaper/docs (XS). |
+| 9 | TST-001 | **VERIFIED** (df-cycle-09; triaged: package real 93/93, wiring infeasible this cycle, whitepaper 4 spots corrected) | Storage module (1 MiB fragments, AES-256-GCM, manifests) unwired vs whitepaper claims. **Fix:** triage — wire it (L) or correct the whitepaper/docs (XS). |
 
 ## S2 — fix after S1 (50)
 

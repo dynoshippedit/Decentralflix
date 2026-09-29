@@ -8,7 +8,7 @@
 
 Decentralflix is a decentralized video distribution protocol for independent film. The problem it addresses is structural: independent filmmakers depend on centralized platforms that take large revenue cuts, control discovery, and can remove content unilaterally. The protocol's answer is a set of open smart contracts, a content-addressed encrypted storage layer, and a web client that together let a filmmaker publish a film, sell access directly to viewers, and receive payment without an intermediary taking custody of funds.
 
-This paper describes the protocol as implemented in Phase 2: the on-chain contracts, the storage and retrieval mechanics, the DFLIX utility token, the cryptographic verification system, and the economic model. It also states plainly what the protocol does *not* do — the limitations are part of the design, not footnotes.
+This paper describes the Phase 2 protocol design: the on-chain contracts, the storage and retrieval mechanics, the DFLIX utility token, the cryptographic verification system, and the economic model. Implementation status varies by component and present-tense descriptions below describe the specified design, not a live deployment: the encrypted-fragment storage *library* (`@decentralflix/storage`) is implemented and unit-tested, but it is not yet wired into the product's upload or playback paths; the contracts are unaudited and not deployed to any network; no reference retrieval client exists yet. It also states plainly what the protocol does *not* do — the limitations are part of the design, not footnotes.
 
 A note on scope: the protocol handles **access control and payment**. It does not host a social network, does not perform content moderation on-chain, and does not promise returns of any kind to anyone. DFLIX is a utility token for protocol mechanics (staking, bandwidth rewards, fee discounts). Nothing in this paper should be read as a promise of profit.
 
@@ -20,7 +20,7 @@ A note on scope: the protocol handles **access control and payment**. It does no
 - **Viewers** purchase tickets (NFTs), subscriptions, or pay-per-view access; they hold cryptographic receipts.
 - **Seeders** store and serve encrypted video fragments, earning DFLIX rewards for measurable bandwidth contribution.
 - **Attestors** (bootstrap phase) are trusted reporters of off-chain seeding activity. The protocol starts with a single owner-appointed attestor and documents the path toward decentralized verification.
-- **The platform operator** deploys contracts and runs reference clients. It never takes custody of user funds or content keys.
+- **The platform operator** (intended role) deploys the contracts and runs reference clients. As of this writing the contracts are unaudited and undeployed, and no operator-run reference client exists. It never takes custody of user funds or content keys.
 
 ---
 
@@ -46,7 +46,7 @@ For one-time purchases without an NFT: `buyAccess(filmId)` records licensed stre
 
 ### 3.4 Storage layer (@decentralflix/storage)
 
-Video is never stored as a single blob. The storage package:
+In the Phase 2 design, video is never stored as a single blob. The storage package (`@decentralflix/storage` — implemented and unit-tested, but not yet wired into the product's upload path):
 
 1. **Fragments** the file (default 1 MiB fragments).
 2. **Encrypts** each fragment with AES-256-GCM under a fresh random key, with a unique 12-byte IV per fragment.
@@ -59,7 +59,7 @@ The decryption key is distributed out-of-band to entitled viewers (via the acces
 
 ### 3.5 Retrieval and playback
 
-The reference client resolves a film's manifest from Arweave, fetches fragments (IPFS → Arweave fallback), verifies hashes, decrypts, and streams via HTTP 206 partial content. The wallet layer (`apps/frontend/lib/web3/`) connects MetaMask or Coinbase Wallet via EIP-6963 discovery, checks `hasValidTicket` / subscription / PPV access on-chain, and only then requests the decryption key. When no wallet is present, the client degrades to the existing demo/test-mode flows — the protocol layer never blocks the product.
+The specified retrieval flow: a reference client resolves a film's manifest from Arweave, fetches fragments (IPFS → Arweave fallback), verifies hashes, decrypts, and streams via HTTP 206 partial content. No reference client implements this flow yet; the current product serves video from a local origin instead. The wallet layer (`apps/frontend/lib/web3/`) connects MetaMask or Coinbase Wallet via EIP-6963 discovery, checks `hasValidTicket` / subscription / PPV access on-chain, and only then requests the decryption key. When no wallet is present, the client degrades to the existing demo/test-mode flows — the protocol layer never blocks the product.
 
 ### 3.6 Seeding and rewards
 
