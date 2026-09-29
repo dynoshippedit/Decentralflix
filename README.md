@@ -1,6 +1,6 @@
 # Decentralflix
 
-Decentralized film distribution \u2014 a movie ticket as an NFT. Creators get paid directly, no middlemen.
+Decentralized film distribution — a movie ticket as an NFT. Creators get paid directly, no middlemen.
 
 ## The idea
 
@@ -10,4 +10,4 @@ Decentralized film distribution \u2014 a movie ticket as an NFT. Creators get pa
 
 ## Status
 
-In active development. Smart contracts are **unaudited** \u2014 do not use with real funds.
+In active development. Smart contracts are **unaudited** — do not use with real funds.
