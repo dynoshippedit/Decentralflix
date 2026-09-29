@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "cycle_id": "df-cycle-02",
+  "project_id": "decentralflix",
+  "task_id": "DF-002",
+  "project_root": "/home/dino/Decentralflix",
+  "proposed_status": "IMPLEMENTED",
+  "source_identity": {
+    "before": "58d39d945e74d0243fb23a5ed7d9e914c9ec5324 (clean tree, branch devteam/review-2026-09-29)",
+    "after": "0e734dc312533b032bacd80dcc1060d182c6bed7 (clean tree, branch devteam/review-2026-09-29)",
+    "method": "git rev-parse HEAD + git status --porcelain before edits and after commit"
+  },
+  "summary": "SEC-002 fixed: logout now revokes the bearer session. Root cause was a missing store.remove() in lib/store.js \u2014 the logout handler called it inside an empty catch, so the TypeError was swallowed and the session row survived (live-reproduced: post-logout /api/auth/me returned 200 before the fix, 401 after). Added remove(name,id) to the store (atomic tmp+rename write, returns boolean), rewrote logout() to revoke without swallowing errors (idempotent 200, session_revoked flag), and added 4 regression assertions to apps/lifeboat/test.sh. Full lifeboat suite: 133/133 PASS on fresh ports (129 baseline + 4 new). Multi-session challenge: logging out one token leaves a second session for the same account valid (200), confirming per-session revocation.",
+  "root_cause": "apps/lifeboat/lib/store.js exported {all,get,insert,update} but no remove(); server.js logout() called store.remove('sessions', token) inside try{}catch{}, so every logout threw TypeError: store.remove is not a function, the catch swallowed it, and the session row was never deleted. Same missing function also silently broke expired-session cleanup in getAuthAccount() (line 210) \u2014 fixed as a side effect.",
+  "changed_files": [
+    "apps/lifeboat/lib/store.js",
+    "apps/lifeboat/server.js",
+    "apps/lifeboat/test.sh",
+    "devteam/TASKS.md"
+  ],
+  "checks": [
+    {
+      "id": "repro-before",
+      "command": [
+        "curl signup/login/logout then GET /api/auth/me with the logged-out token"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+      "status": "PASS",
+      "exit_code": 0,
+      "tested_source_identity": "58d39d945e74d0243fb23a5ed7d9e914c9ec5324",
+      "artifacts": [],
+      "notes": "Fresh server on port 18091, pre-fix code. Post-logout /api/auth/me returned 200 \u2014 bug confirmed live before the fix."
+    },
+    {
+      "id": "repro-after",
+      "command": [
+        "curl signup/login x2/logout then GET /api/auth/me with both tokens"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+      "status": "PASS",
+      "exit_code": 0,
+      "tested_source_identity": "0e734dc312533b032bacd80dcc1060d182c6bed7",
+      "artifacts": [],
+      "notes": "Fresh server on port 18092, fixed code. logout -> {logged_out:true,session_revoked:true}; logged-out token -> 401 on /api/auth/me; second session for same account -> 200 (other sessions/devices unaffected); repeat logout -> 200 (idempotent)."
+    },
+    {
+      "id": "syntax",
+      "command": [
+        "node --check server.js/lib/store.js",
+        "bash -n test.sh"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+      "status": "PASS",
+      "exit_code": 0,
+      "tested_source_identity": "0e734dc312533b032bacd80dcc1060d182c6bed7",
+      "artifacts": [],
+      "notes": "All three files pass syntax check."
+    },
+    {
+      "id": "full-suite-18093",
+      "command": [
+        "PORT=18093 bash test.sh"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+      "status": "PASS",
+      "exit_code": 0,
+      "tested_source_identity": "0e734dc312533b032bacd80dcc1060d182c6bed7",
+      "artifacts": [],
+      "notes": "RESULT: PASS=133 FAIL=0. Never ran against :8080 demo service (stale pre-fix code); always a fresh port."
+    },
+    {
+      "id": "full-suite-18094",
+      "command": [
+        "PORT=18094 bash test.sh"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+      "status": "PASS",
+      "exit_code": 0,
+      "tested_source_identity": "0e734dc312533b032bacd80dcc1060d182c6bed7",
+      "artifacts": [],
+      "notes": "Repeat run; SEC-002 assertions individually confirmed: setup token ok; logout 200+session_revoked; logged-out token 401; other session 200. RESULT: PASS=133 FAIL=0."
+    }
+  ],
+  "blockers": [],
+  "lessons": [
+    "An empty catch{} around a call to a non-existent function silently disabled logout for the life of the feature; the same missing store.remove also silently broke expired-session cleanup in getAuthAccount. Prefer explicit boolean results over swallowed exceptions at auth boundaries.",
+    "BUG-002 and DAT-001 are absorbed by this fix (same root cause: store.remove missing on logout). DAT-002 (grant sequences spanning multiple non-atomic file writes) is NOT closed by this change \u2014 grant atomicity is a separate issue and stays QUEUED."
+  ],
+  "next_action": {
+    "disposition": "CONTINUE",
+    "reason": "SEC-002 is implemented and verified (133/133 green, before/after reproduction). Queue head is now W3B-001 (attestor signature replay, S1/Confirmed, effort M) \u2014 MUS-001 needs an owner decision first, so W3B-001 is the next ready S1.",
+    "task_id": "W3B-001"
+  }
+}
