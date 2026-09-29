@@ -280,9 +280,12 @@ async function signup(req, res) {
     name: typeof body.name === 'string' ? body.name.trim().slice(0, 100) : null,
     created_at: nowIso(),
   };
-  store.insert('accounts', account);
+  // DAT-002: the account and its signup session are one atomic unit.
+  const signupTxn = store.txnBegin('signup:' + account.account_id);
+  store.txnInsert(signupTxn, 'accounts', account);
   const session = authLib.newSession(account.account_id);
-  store.insert('sessions', session);
+  store.txnInsert(signupTxn, 'sessions', session);
+  store.txnCommit(signupTxn);
   return sendJson(res, 201, {
     token: session.token,
     expires_at: session.expires_at,
@@ -392,7 +395,7 @@ function fullFilm(film) {
 // Creates an entitlement AND its signed receipt (receipts are signed
 // entitlements — never transferable, never cashable). Returns
 // { entitlement, receipt, signature }.
-function grantEntitlement({ film, email, source, testMode }) {
+function grantEntitlement({ film, email, source, testMode, txn }) {
   const emailNorm = email.trim().toLowerCase();
   const grantedAt = nowIso();
   const receiptFields = {
@@ -406,13 +409,13 @@ function grantEntitlement({ film, email, source, testMode }) {
     transferable: false,
   };
   const { receipt, signature } = receipts.sign(receiptFields);
-  store.insert('receipts', {
+  const receiptRecord = {
     receipt_id: receipt.receipt_id,
     film_id: film.film_id,
     receipt,
     signature,
     created_at: grantedAt,
-  });
+  };
   const entitlement = {
     entitlement_id: 'ent_' + crypto.randomBytes(6).toString('hex'),
     film_id: film.film_id,
@@ -424,7 +427,15 @@ function grantEntitlement({ film, email, source, testMode }) {
     receipt_id: receipt.receipt_id,
   };
   if (testMode) entitlement.test_mode = true;
-  store.insert('entitlements', entitlement);
+  // DAT-002: the signed receipt and its entitlement are one atomic unit — a
+  // crash between the two writes must not leave a receipt with no
+  // entitlement (buyer holds proof, gets 403) or vice versa. Callers that
+  // need a wider unit (claim approval, bundle purchase, pass redemption)
+  // pass their own txn; standalone grants commit immediately.
+  const grantTxn = txn || store.txnBegin('grantEntitlement');
+  store.txnInsert(grantTxn, 'receipts', receiptRecord);
+  store.txnInsert(grantTxn, 'entitlements', entitlement);
+  if (!txn) store.txnCommit(grantTxn);
   return { entitlement, receipt, signature };
 }
 
@@ -630,12 +641,18 @@ async function approveClaim(req, res, claimId) {
   const film = store.get('films', claim.film_id);
   if (!film) return sendError(res, 404, 'film not found');
 
+  // DAT-002: the grant and the claim-status flip are one atomic unit — a
+  // crash between them left an approved entitlement with the claim still
+  // pending (re-approvable).
+  const approveTxn = store.txnBegin('approveClaim:' + claimId);
   const { entitlement, receipt, signature } = grantEntitlement({
     film,
     email: claim.email,
     source: 'claim',
+    txn: approveTxn,
   });
-  store.update('claims', claimId, { status: 'approved', decided_at: nowIso() });
+  store.txnUpdate(approveTxn, 'claims', claimId, { status: 'approved', decided_at: nowIso() });
+  store.txnCommit(approveTxn);
   return sendJson(res, 200, {
     claim_id: claimId,
     status: 'approved',
@@ -700,6 +717,10 @@ async function bundleTestPurchase(req, res) {
   const email = account.email.toLowerCase();
   const granted = [];
   const alreadyOwned = [];
+  // DAT-002: the N grants and the sales order are one atomic unit — a crash
+  // between them left entitlements with no order (sales ledger silently
+  // missing the bundle).
+  const bundleTxn = store.txnBegin('bundleTestPurchase:' + email);
   for (const film of films) {
     if (alreadyEntitled(film.film_id, email)) {
       alreadyOwned.push(film.film_id);
@@ -710,6 +731,7 @@ async function bundleTestPurchase(req, res) {
       email,
       source: 'bundle_purchase',
       testMode: true,
+      txn: bundleTxn,
     });
     granted.push({ film_id: film.film_id, entitlement, receipt, signature });
   }
@@ -743,7 +765,8 @@ async function bundleTestPurchase(req, res) {
     test_mode: true,
     created_at: nowIso(),
   };
-  store.insert('orders', order);
+  store.txnInsert(bundleTxn, 'orders', order);
+  store.txnCommit(bundleTxn);
   return sendJson(res, 201, {
     test_mode: true,
     note: 'TEST-ONLY simulated bundle purchase — no money moved, Stripe not involved',
@@ -954,16 +977,21 @@ async function passRedeem(req, res, passId) {
       economics_warning: passLib.ECONOMICS_WARNING,
     });
   }
+  // DAT-002: the credit debit and the entitlement grant are one atomic
+  // unit — a crash between them left a debited credit with no grant (buyer
+  // paid, got nothing).
+  const redeemTxn = store.txnBegin('passRedeem:' + passId + ':' + film.film_id);
   let redemption;
   try {
-    redemption = passLib.redeemCredit({ pass_id: passId, film_id: film.film_id, email });
+    redemption = passLib.redeemCredit({ pass_id: passId, film_id: film.film_id, email, txn: redeemTxn });
   } catch (err) {
     return sendError(res, err.status || 500, err.message, { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
   }
   // A redeemed film takes the same entitlement path as a purchase,
   // so it grants a permanent DRM-free download (yours to keep — wording
   // pending counsel review; NOT copyright ownership).
-  const { entitlement } = grantEntitlement({ film, email, source: 'pass_redemption', testMode: true });
+  const { entitlement } = grantEntitlement({ film, email, source: 'pass_redemption', testMode: true, txn: redeemTxn });
+  store.txnCommit(redeemTxn);
   return sendJson(res, 201, {
     pass_id: passId,
     film_id: film.film_id,
@@ -1331,6 +1359,13 @@ const server = http.createServer(async (req, res) => {
     return sendError(res, 500, 'internal error');
   }
 });
+
+// DAT-002: complete any multi-file write sequence a previous run staged
+// but never committed (crash between the writes), before serving traffic.
+const recovery = store.reconcileOnBoot();
+if (recovery.recovered > 0) {
+  console.log(`decentralflix-lifeboat: crash recovery completed ${recovery.recovered} interrupted transaction(s)`);
+}
 
 server.listen(PORT, HOST, () => {
   console.log(`decentralflix-lifeboat M2 listening on http://${HOST}:${PORT} (cdn=${CDN.constructor.name})`);

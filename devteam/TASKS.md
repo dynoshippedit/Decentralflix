@@ -79,7 +79,7 @@ S1 in fix order, then S2/S3/S4. Within a band, order is dependency/effort, not I
 - BLD-006 QUEUED — Downgraded S1→S2 (fail-closed env defaults; config hygiene).
 
 **Data / store**
-- DAT-002 QUEUED — Grant sequences span multiple non-atomic file writes — crash leaves divergent state. (Tied to SEC-002 logout; may close with it.)
+- DAT-002 **IN PROGRESS** (df-cycle-07) — Grant sequences span multiple non-atomic file writes — crash leaves divergent state. (Tied to SEC-002 logout; may close with it.)
 - DAT-003 QUEUED — (per dat.md). Re-read entry before fixing.
 - DAT-004 QUEUED — (per dat.md). Re-read entry before fixing.
 - DAT-005 QUEUED — (per dat.md). Re-read entry before fixing.

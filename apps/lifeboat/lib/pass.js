@@ -84,7 +84,7 @@ function createPass({ email, testMode }) {
 // Appends an immutable ledger entry. delta is +n (grant) or -n (redemption).
 // Every entry is stamped transferable:false and cash_value_usd_cents:0 —
 // credits can never be moved to another holder or converted to cash.
-function ledgerEntry({ pass_id, delta, reason, film_id, stripe_invoice_id }) {
+function ledgerEntry({ pass_id, delta, reason, film_id, stripe_invoice_id, txn }) {
   const entry = {
     ledger_id: 'led_' + crypto.randomBytes(6).toString('hex'),
     pass_id,
@@ -96,7 +96,10 @@ function ledgerEntry({ pass_id, delta, reason, film_id, stripe_invoice_id }) {
     cash_value_usd_cents: 0,
     created_at: nowIso(),
   };
-  store.insert('credit_ledger', entry);
+  // DAT-002: when a caller is building a wider atomic unit (pass redemption:
+  // debit + entitlement grant), stage the entry instead of writing it now.
+  if (txn) store.txnInsert(txn, 'credit_ledger', entry);
+  else store.insert('credit_ledger', entry);
   return entry;
 }
 
@@ -124,7 +127,7 @@ function ledger(pass_id) {
 //  - balance must cover the redemption (else 409)
 // Returns the redemption ledger entry. The caller converts it into a permanent
 // film entitlement via grantEntitlement().
-function redeemCredit({ pass_id, film_id, email }) {
+function redeemCredit({ pass_id, film_id, email, txn }) {
   const pass = getPass(pass_id);
   if (!pass) {
     const err = new Error('pass not found');
@@ -148,7 +151,7 @@ function redeemCredit({ pass_id, film_id, email }) {
     err.status = 409;
     throw err;
   }
-  return ledgerEntry({ pass_id, delta: -1, reason: 'redemption', film_id });
+  return ledgerEntry({ pass_id, delta: -1, reason: 'redemption', film_id, txn });
 }
 
 // Deliberately absent: there is NO transferCredits(). Credits cannot be moved

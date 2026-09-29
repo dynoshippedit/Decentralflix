@@ -800,6 +800,15 @@ node tools/verify-receipt.js --server "$BASE" "$TMPD/verify-body.json" > "$TMPD/
 
 # === end M2 tests ===============================================================
 
+# --- DAT-002: crash between multi-file grant writes converges on reboot ---
+# The node script stages a journaled txn, applies only part of it (simulating
+# a crash between the file writes), then asserts reconcileOnBoot completes
+# the missing writes idempotently. Uses a scratch data dir via
+# store.setDataDir — never touches the suite's data/.
+node ../../devteam/repro/dat-002-crash-recovery.js > "$TMPD/dat002.log" 2>&1
+[ "$?" = "0" ] && pass "DAT-002 crash-recovery converges (journal + reconcile)" \
+  || fail "DAT-002 crash recovery" "$(tail -3 "$TMPD/dat002.log")"
+
 # --- summary -----------------------------------------------------------------------------------
 echo "----------------------------------------"
 echo "RESULT: PASS=$PASS FAIL=$FAIL"
