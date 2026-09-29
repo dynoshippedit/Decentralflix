@@ -296,6 +296,34 @@ describe("MovieTicket", () => {
         "Not a burnable ticket"
       );
     });
+
+    it("totalMinted() counts every mint and is unaffected by burns (enumeration bound)", async () => {
+      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
+      // Mint 3 burnable tickets -> token IDs 0, 1, 2 (dense from 0).
+      for (let i = 0; i < 3; i++) {
+        await movieTicket
+          .connect(owner)
+          .mintBurnableTicket(buyer.address, creator.address, VIDEO_HASH, PRICE, Tier.BASIC, {
+            value: PRICE,
+          });
+      }
+      expect(await movieTicket.totalMinted()).to.equal(3n);
+      expect(await movieTicket.totalSupply()).to.equal(3n);
+
+      // Burn token 1: supply shrinks, the mint counter must not.
+      await movieTicket.connect(buyer).burnTicket(1);
+      expect(await movieTicket.totalSupply()).to.equal(2n);
+      expect(await movieTicket.totalMinted()).to.equal(3n);
+
+      // Minting again extends the counter (next ID = 3), independent of supply.
+      await movieTicket
+        .connect(owner)
+        .mintBurnableTicket(buyer.address, creator.address, VIDEO_HASH, PRICE, Tier.BASIC, {
+          value: PRICE,
+        });
+      expect(await movieTicket.totalMinted()).to.equal(4n);
+      expect(await movieTicket.ownerOf(3)).to.equal(buyer.address);
+    });
   });
 
   describe("Pausing", () => {

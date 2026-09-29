@@ -63,6 +63,7 @@ export interface MovieTicketInterface extends Interface {
       | "tierBalanceOf"
       | "tokenTiers"
       | "tokenURI"
+      | "totalMinted"
       | "totalSupply"
       | "transferFrom"
       | "transferOwnership"
@@ -222,6 +223,10 @@ export interface MovieTicketInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalMinted",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
   ): string;
@@ -345,6 +350,10 @@ export interface MovieTicketInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "tokenTiers", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "totalMinted",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -837,6 +846,8 @@ export interface MovieTicket extends BaseContract {
 
   tokenURI: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
+  totalMinted: TypedContractMethod<[], [bigint], "view">;
+
   totalSupply: TypedContractMethod<[], [bigint], "view">;
 
   transferFrom: TypedContractMethod<
@@ -1053,6 +1064,9 @@ export interface MovieTicket extends BaseContract {
   getFunction(
     nameOrSignature: "tokenURI"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "totalMinted"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "totalSupply"
   ): TypedContractMethod<[], [bigint], "view">;

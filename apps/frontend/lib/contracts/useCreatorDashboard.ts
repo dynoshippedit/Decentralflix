@@ -97,18 +97,20 @@ export function useCreatorDashboard(creatorAddress?: `0x${string}`) {
     try {
       const addrLower = creatorAddress.toLowerCase();
 
-      // 1. Created films: Phase 0 linear scan (same spirit as useOwnedFilms)
+      // 1. Created films: Phase 0 linear scan (same spirit as useOwnedFilms,
+      //    bounded by totalMinted — NOT totalSupply(), which shrinks on burn
+      //    and would hide created films minted after any burn).
       let onChainFilms: CreatedFilm[] = [];
       if (MOVIE_TICKET_ADDRESS && MOVIE_TICKET_ADDRESS !== '0x0000000000000000000000000000000000000000') {
         try {
-          const supply = await publicClient.readContract({
+          const minted = await publicClient.readContract({
             address: MOVIE_TICKET_ADDRESS,
             abi: MOVIE_TICKET_ABI,
-            functionName: 'totalSupply',
+            functionName: 'totalMinted',
           });
-          const supplyNum = Number(supply);
+          const mintedNum = Number(minted);
 
-          for (let i = 0; i < supplyNum; i++) {
+          for (let i = 0; i < mintedNum; i++) {
             try {
               const meta = await publicClient.readContract({
                 address: MOVIE_TICKET_ADDRESS,

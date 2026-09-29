@@ -357,6 +357,18 @@ contract MovieTicket is ERC721A, RevenueSplitter, ReentrancyGuard {
         return hasAccessToVideo(viewer, videoHash);
     }
 
+    /**
+     * @dev Number of tokens EVER minted (token IDs are dense from 0, so this is
+     * maxTokenId + 1). Unlike ERC721A's totalSupply() it does NOT shrink on
+     * burn. Off-chain enumerators (e.g. useOwnedFilms) must loop to this, NOT to
+     * totalSupply() — otherwise tokens minted after any burn are skipped and
+     * vanish from the UI. on-chain access itself is mapping-based
+     * (_filmAccessCount) and was never affected.
+     */
+    function totalMinted() public view returns (uint256) {
+        return _videoCounter;
+    }
+
     // === Fee Calculation Helpers (for frontend / off-chain use) ===
     // Wired to the shared immutable split — the owner cannot change these.
 
