@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29",
+  "spec_digest": "8adc49d952fa9f26fdf3676b6c11799192e870f0cc778d10cbcb223ac660ffaa",
+  "check_id": "check-compile",
+  "phase": "final",
+  "argv": [
+    "npx",
+    "hardhat",
+    "compile"
+  ],
+  "cwd": "/home/dino/Decentralflix/packages/contracts",
+  "started_at": "2026-09-29T22:48:02.542677+00:00",
+  "finished_at": "2026-09-29T22:48:03.559874+00:00",
+  "source_before": "e7bc7f69bd593153d7e2523aee202b13afcc093f51850a032b172be2ed1d1d32",
+  "source_after": "e7bc7f69bd593153d7e2523aee202b13afcc093f51850a032b172be2ed1d1d32",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29/receipts/final-compile-001.json.log",
+    "sha256": "a0001992ef9dfd3a3a4e778206ceb294bd96fa485e040007a71ed6cc3dba087d"
+  }
+}

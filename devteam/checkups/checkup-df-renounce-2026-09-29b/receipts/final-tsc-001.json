@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "check_id": "check-tsc",
+  "phase": "final",
+  "argv": [
+    "npx",
+    "tsc",
+    "--noEmit"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T22:51:43.394646+00:00",
+  "finished_at": "2026-09-29T22:51:48.975846+00:00",
+  "source_before": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "source_after": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-tsc-001.json.log",
+    "sha256": "b79718d57988731da7c8669d893ae14a9741ad3fe61dc2a742f94d078b82d636"
+  }
+}

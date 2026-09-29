@@ -1,0 +1,466 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/initial.json",
+    "sha256": "375b48f2578a4a69dd62ae8b5a8104ea1827facb85e024c8f7f6d4d998856bc4"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Amendment scope frozen: Repair 1 plus the regenerated frontend ABI file (abis.generated.ts, 106 insertions, 0 deletions). New review ID per the spec-amendment procedure; prior record retained. Initial snapshot taken; old unit digests identical to prior review (coverage reuse valid).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/initial.json",
+          "sha256": "375b48f2578a4a69dd62ae8b5a8104ea1827facb85e024c8f7f6d4d998856bc4"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/amendment.md",
+          "sha256": "4c9ecfa2dbddba0cafbc97adeace102ad003e93d16a697c0106c79a5afd7c0ce"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s0_scope.md",
+          "sha256": "05c0018215c9b0520ac2e2eb61cf9cd99b280d053985f44c764fc6496cc1edad"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline captured for all 5 checks: hardhat compile exit 0; hardhat tests 250/250; abi-drift guard 14/14; frontend vitest 232/232 (19 files); tsc --noEmit clean. Real chains, no environment faults, no source mutation.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-compile-001.json",
+          "sha256": "a7ea85186cc34ad37b355d15c09685a3438be4bf49f713ac3fb3e62ab7787707"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-tests-001.json",
+          "sha256": "e12bbabc87c50ceb2f505c5996ab5675747d5174ed5b77760b158369ae7cd914"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-abidrift-001.json",
+          "sha256": "2216d977fc48b48d2c2a8a21f6fda7d77b085f54f198490930f0fafa3dd5bc74"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-frontend-001.json",
+          "sha256": "0f2d5828c8f8f3404026f7a4225fbfe608e2361771bd8d713ad2737e4fe1fe52"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-tsc-001.json",
+          "sha256": "1304d953dba58c9a9719e9b95f181376727cdb670a05f98f66b6935907bed7f5"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s1_baseline.md",
+          "sha256": "4462832add2c03213cabc6f3e46bfb567763df8b30a19f2312569cf9d8e275bd"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s1b_baseline.md",
+          "sha256": "4106cbbabdb0d9f6735286002075ff7b21bdef91749b0edd8aec6f2d0b346a91"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "As-is architecture: prior S2 map reused (RevenueSplitter + 4 inheritors + renounce paths); ABI regen pipeline documented (export-abi.ts reads compiled artifacts, writes the generated consts; drift guard is the anti-drift invariant).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s2_architecture.md",
+          "sha256": "7adc21268acd3ebabb7431cef156d15fd52c530f117fdc04c00627c138125f27"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s2b_abi.md",
+          "sha256": "2cdd0d0e83f6f3d18b4384510a4d96b2ed6319baf22a7a5960ebe0f4571912e3"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "15 unit/lens cells REVIEWED: 11 reused from prior review (unit digests identical), 4 new for unit-abi-generated with source-bound observations (diff content, guard behavior, pipeline, header docs).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3b_abi_coverage.md",
+          "sha256": "98319eead7253bf6c631f8cda75c66a0e2d361ae4d2bf9474799b062f55f5f76"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "3 candidate leads rechallenged and remain REJECTED with counter-evidence; 0 confirmed defects, 0 supported improvements, 0 hypotheses. Read-only on source; nothing required editing.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s4_findings.md",
+          "sha256": "efad2f41c49033f9bc64ca6d2775b638a5b452b8e3d173566beff0331e03fb93"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "No code changes: 0 confirmed defects, 0 supported improvements, 0 hypotheses; the ABI regen is a pure 106-line addition proven faithful by the 14/14 drift guard. Worker is read-only on application source; no edit manufactured.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s5b_nochange.md",
+          "sha256": "f53c4b960f1ee21bb15c87d319822c760f4720d6df0358541e3fda20909463dd"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Final checks pass on unchanged source: hardhat compile clean, 250/250 hardhat tests, abi-drift guard 14/14, frontend vitest 232/232 (19 files), tsc clean. Zero delta baseline to final on every check.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-compile-001.json",
+          "sha256": "7924e0618d69e2cac8b5a8aa510496dae9ea3f0453f45ca81947670bf64d9517"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-tests-001.json",
+          "sha256": "a625955733cbc550ffc9a360d1b9d47b220d6b559b86e689c6468d8cc8b08a7d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-abi-drift-001.json",
+          "sha256": "dbd9c02e2a51b4976d0bbef2b9da5810a7e3bef10e07238ddc8a44fbc6e99f46"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-frontend-001.json",
+          "sha256": "cda5b20e0622883efae91a21a50a2b0a9e94d893ced3488fccff639079aa67dd"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-tsc-001.json",
+          "sha256": "63a84f496c6ba209323d178a5af77c54e6c33499735c07342fb8993bbb0680ea"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s6b_final.md",
+          "sha256": "e603c623c0152aecc7cf0e00149bb29f71b829713f9356a9bb4fd3ae3eed17ef"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Explicit SELF_REVIEW challenge pass: repair addresses the cause; tests discriminate both rejected designs; drift guard fails closed on any ABI change; no weakening of checks/assertions/spec; docs-vs-tree consistent; unaudited notices intact; 3 rejected leads stand.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s7b_challenge.md",
+          "sha256": "4cf94d6480a585aff53b5426827f074e6149550caa6161bfcc8347ace095907b"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Checkup complete for amended scope: full gate S0-S8 passed; 0 confirmed defects, 0 improvements, 0 hypotheses, 3 rejected leads; all acceptance items verified. Not an audit - contracts stay UNAUDITED. Handback to parent orchestrator.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s8b_handback.md",
+          "sha256": "2b8324ea396662bed65b5b01283a40f96e4d73b0b5f2f626622b9644ef277e6e"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Renounce branch: creatorShare=msg.value exact, fee=0, fee leg skipped (no call to zero owner), MissingCreator guard first; all 4 inheritors verified to route via _splitRevenue; OZ renounce has no revert path.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Split policy + renounce state colocated in abstract base; inheritors unchanged (no renounce/_splitRevenue overrides); MovieTicket reaches it via _splitMintPayment delegation; platformRenounced one-way public flag, per-contract storage.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "5 tests discriminate the decision: burn-design would fail creatorDelta==PRICE at 75%, revert-guard design would revert the post-renounce sale; pre-renounce 75/25 pins the baseline; MovieTicket revert-path documented (RL-02).",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "NatSpec matches implementation incl. DF-RENOUNCE-1 decision/rationale; event fields match returns; unaudited notice intact (grep-verified); one cosmetic title-line nit noted, not a finding.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "renounceOwnership onlyOwner; post-renounce no role holder (address(0) cannot sign) \u2014 irreversible exit; no reentrancy surface (single external call, nonReentrant entry points, emit-only after call); non-owner revert tested.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "Renounce branch has no division \u2014 100%=msg.value exact; push-only, contract balance 0 (asserted); return pair equals emitted event fields; callers use returns for logging only.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-revenuesplitter",
+      "lens": "DOM",
+      "status": "REVIEWED",
+      "reason": "Role authority enforced; no fee-accrual/insolvency vector; intended domain consequence verified: post-renounce owner-only fns revert for everyone, permissionless paid flows continue at 100% to creators.",
+      "unit_digest": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-renouncetest",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Fixtures match working-tree signatures (incl. new owner-only PPV.registerFilm 3-arg form); exact wei math (feeOf mirrors contract floor division); gas caveat handled (no exact owner-delta for owner-minter); user2 avoids AlreadySubscribed; event withArgs exact.",
+      "unit_digest": "38cef779b87dda30ec45bea9ebf729b4f16222d270e9575bad2c3d8343c4ce79",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-renouncetest",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Four describes mirror the four inheritors; shared helpers + loadFixture isolation; header documents decision, delegation path, and MovieTicket revert rationale; real chain, real ETH transfers, no wrong-boundary mocks.",
+      "unit_digest": "38cef779b87dda30ec45bea9ebf729b4f16222d270e9575bad2c3d8343c4ce79",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-renouncetest",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Assertions meaningful: exact balance deltas, 0 contract balance, event args, custom-error revert; would fail against both rejected designs (burn-to-zero, revert-guard); no unfalsifiable tests.",
+      "unit_digest": "38cef779b87dda30ec45bea9ebf729b4f16222d270e9575bad2c3d8343c4ce79",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-renouncetest",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Header documents decision, rationale, delegation, exact-split invariants, unaudited notice; every claim verified against source.",
+      "unit_digest": "38cef779b87dda30ec45bea9ebf729b4f16222d270e9575bad2c3d8343c4ce79",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3_coverage.md",
+          "sha256": "58c4e7d3ea6f191e3156011743485cf439adb1a04fa1bc708b3bfd79adee218a"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-abi-generated",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Diff vs HEAD is 106 insertions, 0 deletions. platformRenounced present in all four inheritor ABIs (MovieTicket L1034, TicketNFT L4071, SubscriptionManager L4907, PayPerView L5359); renounceOwnership in the same four. Drift guard 14/14 proves exact match to compiled artifacts. NewOwnerCannotReceive entries observed (F-DFLIX-1, out of scope).",
+      "unit_digest": "d33c7a9ee8b4dae07eb9b91fc68d8edd546022cb6386fe111892bd3ae75ff3d6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3b_abi_coverage.md",
+          "sha256": "98319eead7253bf6c631f8cda75c66a0e2d361ae4d2bf9474799b062f55f5f76"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-abi-generated",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Checked-in build artifact, not hand-written source (header forbids hand edits). Source of truth is export-abi.ts plus compiled artifacts; regen auto-runs on compile. Guard pins export CONTRACTS list to guard CONTRACTS list (FIND-01).",
+      "unit_digest": "d33c7a9ee8b4dae07eb9b91fc68d8edd546022cb6386fe111892bd3ae75ff3d6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3b_abi_coverage.md",
+          "sha256": "98319eead7253bf6c631f8cda75c66a0e2d361ae4d2bf9474799b062f55f5f76"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-abi-generated",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "check-abi-drift is the behavior-bearing check: 14/14 post-regen, fails closed on missing artifact/const or any added/removed/changed entry. check-frontend 232/232 independently includes it; check-tsc clean.",
+      "unit_digest": "d33c7a9ee8b4dae07eb9b91fc68d8edd546022cb6386fe111892bd3ae75ff3d6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3b_abi_coverage.md",
+          "sha256": "98319eead7253bf6c631f8cda75c66a0e2d361ae4d2bf9474799b062f55f5f76"
+        }
+      ]
+    },
+    {
+      "unit_id": "unit-abi-generated",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Header documents generator, artifact source, regen command, and auto-run on compile - all verified present. Regen-is-acceptance claim holds: diff is exactly the artifact-derived additions and the guard passes.",
+      "unit_digest": "d33c7a9ee8b4dae07eb9b91fc68d8edd546022cb6386fe111892bd3ae75ff3d6",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s3b_abi_coverage.md",
+          "sha256": "98319eead7253bf6c631f8cda75c66a0e2d361ae4d2bf9474799b062f55f5f76"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-compile-001.json",
+      "sha256": "a7ea85186cc34ad37b355d15c09685a3438be4bf49f713ac3fb3e62ab7787707"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-tests-001.json",
+      "sha256": "e12bbabc87c50ceb2f505c5996ab5675747d5174ed5b77760b158369ae7cd914"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-abidrift-001.json",
+      "sha256": "2216d977fc48b48d2c2a8a21f6fda7d77b085f54f198490930f0fafa3dd5bc74"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-frontend-001.json",
+      "sha256": "0f2d5828c8f8f3404026f7a4225fbfe608e2361771bd8d713ad2737e4fe1fe52"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-tsc-001.json",
+      "sha256": "1304d953dba58c9a9719e9b95f181376727cdb670a05f98f66b6935907bed7f5"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-compile-001.json",
+      "sha256": "7924e0618d69e2cac8b5a8aa510496dae9ea3f0453f45ca81947670bf64d9517"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-tests-001.json",
+      "sha256": "a625955733cbc550ffc9a360d1b9d47b220d6b559b86e689c6468d8cc8b08a7d"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-abi-drift-001.json",
+      "sha256": "dbd9c02e2a51b4976d0bbef2b9da5810a7e3bef10e07238ddc8a44fbc6e99f46"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-frontend-001.json",
+      "sha256": "cda5b20e0622883efae91a21a50a2b0a9e94d893ced3488fccff639079aa67dd"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-tsc-001.json",
+      "sha256": "63a84f496c6ba209323d178a5af77c54e6c33499735c07342fb8993bbb0680ea"
+    }
+  ],
+  "findings": [
+    {
+      "id": "RL-01",
+      "classification": "REJECTED_LEAD",
+      "resolution": "REJECTED",
+      "claim": "renounceOwnership sets platformRenounced=true before super.renounceOwnership(); a revert in super would strand the flag true with an active owner.",
+      "location": "packages/contracts/contracts/RevenueSplitter.sol:renounceOwnership() (L73-76), source e7bc7f69bd59",
+      "challenge": "Read OZ Ownable.sol: renounceOwnership only writes _owner storage and emits; no external calls, no revert path. Ordering is safe.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s4_findings.md",
+          "sha256": "efad2f41c49033f9bc64ca6d2775b638a5b452b8e3d173566beff0331e03fb93"
+        }
+      ],
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    },
+    {
+      "id": "RL-02",
+      "classification": "REJECTED_LEAD",
+      "resolution": "REJECTED",
+      "claim": "MovieTicket never executes the renounce redirect branch \u2014 post-renounce mints revert first.",
+      "location": "packages/contracts/test/RenounceRedirect.test.ts MovieTicket describe; MovieTicket.sol mintPermanentPass/mintBurnableTicket (onlyOwner)",
+      "challenge": "Both paid entry points are onlyOwner; post-renounce owner=address(0) cannot sign, so no MovieTicket sale can ever occur post-renounce \u2014 the revert assertion is the correct coverage; shared branch covered by the other three contracts.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s4_findings.md",
+          "sha256": "efad2f41c49033f9bc64ca6d2775b638a5b452b8e3d173566beff0331e03fb93"
+        }
+      ],
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    },
+    {
+      "id": "RL-03",
+      "classification": "REJECTED_LEAD",
+      "resolution": "REJECTED",
+      "claim": "No dedicated PlatformRenounced event \u2014 indexers must infer renounce from OwnershipTransferred(zero).",
+      "location": "packages/contracts/contracts/RevenueSplitter.sol:renounceOwnership()",
+      "challenge": "super emits OwnershipTransferred(zero) and platformRenounced is a public getter; redundant event has no acceptance measure (no demonstrated indexing problem).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/evidence/s4_findings.md",
+          "sha256": "efad2f41c49033f9bc64ca6d2775b638a5b452b8e3d173566beff0331e03fb93"
+        }
+      ],
+      "verification_checks": [],
+      "queue_task_id": "",
+      "remaining_reason": ""
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "checkup worker session 82442334-777d-487d-b21b-24da1245fb1b (subagent depth 2/2, dispatched by parent orchestrator)",
+  "independent_review_evidence": [],
+  "next_action": "Hand back to parent orchestrator: gate verdict PASS for checkup-df-renounce-2026-09-29b, 0 findings requiring action. Acceptance verified: abi-drift 14/14 post-regen, platformRenounced in all four inheritor ABIs, frontend vitest 232/232, tsc clean. Suggested follow-on: separate checkups for the other uncommitted repairs on this branch (F-DFLIX-1 probe, PayPerView F-3)."
+}

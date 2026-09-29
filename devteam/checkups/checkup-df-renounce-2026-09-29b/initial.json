@@ -1,0 +1,15 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "source_digest": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "files": {
+    "packages/contracts/contracts/RevenueSplitter.sol": "5e07b0693d133e11e971bc598d21ace02958fc5424c872274ff910971e7d88c1",
+    "packages/contracts/test/RenounceRedirect.test.ts": "6db4db94d15b4d8bfa4c8161551373a0d1a7a76d0ea54b8eb6b92d1447912689",
+    "apps/frontend/lib/contracts/abis.generated.ts": "ae5e42152b99fdd7526ccc8bb929ef25b9c5955dd53c9f8b6d4629f0b3afea6f"
+  },
+  "unit_digests": {
+    "unit-revenuesplitter": "6bd793b725ce7fb0e59c98f6e59ef3ecd11d211a77e33910bd031bd6bc511051",
+    "unit-renouncetest": "38cef779b87dda30ec45bea9ebf729b4f16222d270e9575bad2c3d8343c4ce79",
+    "unit-abi-generated": "d33c7a9ee8b4dae07eb9b91fc68d8edd546022cb6386fe111892bd3ae75ff3d6"
+  }
+}

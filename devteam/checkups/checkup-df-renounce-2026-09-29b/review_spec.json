@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "project_root": "/home/dino/Decentralflix",
+  "source_paths": [
+    "packages/contracts/contracts/RevenueSplitter.sol",
+    "packages/contracts/test/RenounceRedirect.test.ts",
+    "apps/frontend/lib/contracts/abis.generated.ts"
+  ],
+  "exclusions": [
+    {"pattern": ".git", "reason": "Version control internals; git status inspected separately"},
+    {"pattern": "node_modules", "reason": "Installed dependencies; manifests and compile/test receipts inspected separately"},
+    {"pattern": "**/node_modules", "reason": "Nested installed dependencies"},
+    {"pattern": "devteam/checkups", "reason": "Changing checkup output, not application source"},
+    {"pattern": "**/__pycache__", "reason": "Generated Python bytecode"}
+  ],
+  "review_units": [
+    {
+      "id": "unit-revenuesplitter",
+      "paths": ["packages/contracts/contracts/RevenueSplitter.sol"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "SEC", "DAT", "DOM"]
+    },
+    {
+      "id": "unit-renouncetest",
+      "paths": ["packages/contracts/test/RenounceRedirect.test.ts"],
+      "lenses": ["COR", "TST", "DOC", "ARC"]
+    },
+    {
+      "id": "unit-abi-generated",
+      "paths": ["apps/frontend/lib/contracts/abis.generated.ts"],
+      "lenses": ["COR", "ARC", "TST", "DOC"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-compile",
+      "purpose": "hardhat compiles the contracts package cleanly including the DF-RENOUNCE-1 changes",
+      "argv": ["npx", "hardhat", "compile"],
+      "cwd": "packages/contracts",
+      "timeout_seconds": 600,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-tests",
+      "purpose": "full hardhat suite passes: 250 tests including the 5 new DF-RENOUNCE-1 exact-split tests",
+      "argv": ["npx", "hardhat", "test"],
+      "cwd": "packages/contracts",
+      "timeout_seconds": 1800,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-abi-drift",
+      "purpose": "ABI-drift guard: regenerated frontend ABIs exactly match compiled artifacts (14 tests) post-regen",
+      "argv": ["npx", "vitest", "run", "lib/contracts/abi-drift.test.ts"],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 600,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-frontend",
+      "purpose": "full frontend vitest suite passes (232 tests)",
+      "argv": ["npx", "vitest", "run"],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 1200,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-tsc",
+      "purpose": "TypeScript compiles clean with no errors (tsc --noEmit) in apps/frontend",
+      "argv": ["npx", "tsc", "--noEmit"],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 600,
+      "baseline_required": true,
+      "final_required": true
+    }
+  ]
+}

@@ -61,6 +61,17 @@ export const MOVIE_TICKET_ABI_FULL = [
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "NewOwnerCannotReceive",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "NotCompatibleWithSpotMints",
     "type": "error"
@@ -1016,6 +1027,19 @@ export const MOVIE_TICKET_ABI_FULL = [
     "name": "pause",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformRenounced",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -3451,6 +3475,17 @@ export const TICKET_NFT_ABI_FULL = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "NewOwnerCannotReceive",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -4032,6 +4067,19 @@ export const TICKET_NFT_ABI_FULL = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "platformRenounced",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -4367,6 +4415,17 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
   {
     "inputs": [],
     "name": "MissingCreator",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "NewOwnerCannotReceive",
     "type": "error"
   },
   {
@@ -4844,6 +4903,19 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "platformRenounced",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -4972,6 +5044,17 @@ export const PAY_PER_VIEW_ABI_FULL = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "NewOwnerCannotReceive",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "filmId",
         "type": "uint256"
@@ -5015,6 +5098,11 @@ export const PAY_PER_VIEW_ABI_FULL = [
   {
     "inputs": [],
     "name": "TransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
     "type": "error"
   },
   {
@@ -5267,6 +5355,19 @@ export const PAY_PER_VIEW_ABI_FULL = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "platformRenounced",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -5277,6 +5378,11 @@ export const PAY_PER_VIEW_ABI_FULL = [
         "internalType": "uint256",
         "name": "priceWei",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "filmmaker",
+        "type": "address"
       }
     ],
     "name": "registerFilm",

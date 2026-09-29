@@ -1,0 +1,343 @@
+CHECK check-tests
+
+
+  DFLIX
+    Deployment
+      ✔ sets name, symbol, 18 decimals, max supply (704ms)
+      ✔ gives the deployer the admin role and makes them initial attestor
+    mint
+      ✔ minter mints and emits Transfer
+      ✔ reverts for non-minters
+      ✔ enforces the mint cap, allowing mints up to exactly the cap
+      ✔ reverts on zero amount and zero address
+      ✔ admin can grant and revoke the minter role
+      ✔ non-admin cannot grant the minter role
+    setAttestor / setRewardRate
+      ✔ admin updates attestor and emits
+      ✔ reverts attestor update for non-admin and zero address
+      ✔ admin updates reward rate and emits
+      ✔ reverts reward-rate update for non-admin
+    fundRewardPool
+      ✔ admin funds the pool and emits
+      ✔ reverts on zero amount and for non-admin
+    stake / unstake
+      ✔ stakes, emits, and starts the lock clock
+      ✔ reverts on zero stake and on insufficient balance
+      ✔ blocks unstake before the lock period, allows it at the boundary
+      ✔ allows unstake after the lock period and emits
+      ✔ supports partial unstake
+      ✔ reverts unstake of zero or more than staked
+    staking rewards
+      ✔ accrues time-weighted rewards and pays them via claimRewards
+      ✔ reverts double claim and claim with no rewards
+      ✔ accrues nothing when the reward rate is zero
+      ✔ checkpoints correctly across partial unstake (no over-count)
+    seed-to-earn
+      ✔ attestor allocates, seeder claims, emits SeedRewardAllocated
+      ✔ a delegated attestor (non-admin) can allocate
+      ✔ reverts for unauthorized callers
+      ✔ reverts on duplicate report hash (replay protection)
+      ✔ reverts on zero amount, zero seeder, and over-pool allocation
+      ✔ claimRewards pays staking + seed parts together
+
+  FilmmakerCampaign
+    Deployment
+      ✔ stores the MovieTicket address and defaults
+      ✔ rejects a zero MovieTicket address
+    setAIReviewWindow
+      ✔ accepts 48-72h and rejects outside that range, owner-only
+    launchCampaign
+      ✔ creates a campaign with the right fields and emits, open to any filmmaker
+      ✔ validates inputs
+    contribute
+      ✔ mints an InvestmentNFT and records escrow/raised/backer totals
+      ✔ holds contributed funds in the contract escrow
+      ✔ flips status to FUNDED once the target is reached
+      ✔ enforces tier validity, supply, and payment
+      ✔ rejects contributions after the deadline
+    approveMilestoneAndRelease
+      ✔ releases a tranche to the filmmaker and marks DELIVERED when all are approved
+      ✔ prevents double release and non-owner release
+      ✔ reverts when escrow cannot cover the milestone
+    claimRefund
+      ✔ refunds backers after a failed (under-target, past-deadline) campaign
+      ✔ refuses refunds while the campaign is still refundable-ineligible
+    emergencyRefundAll
+      ✔ marks a campaign FAILED so backers can pull refunds immediately, owner-only
+    setCampaignVideo
+      ✔ links a video hash when called by filmmaker or owner, with guards
+    hasCrowdfundAccess (real on-chain access)
+      ✔ grants access to a backer once the campaign is linked to a video, and only that film
+      ✔ moves crowdfund access when the InvestmentNFT is transferred
+      ✔ re-linking a campaign to a new film clears access to the old film
+    AI milestone proofs (Producer-tier gated)
+      ✔ lets a Producer-tier backer submit a proof; blocks non-producers and unrelated users (40ms)
+      ✔ rejects a second submission for the same milestone
+      ✔ owner can approve the AI submission within the review window
+      ✔ a rejected AI submission clears the proof so it can be resubmitted
+      ✔ moves the producer-submit right when the Producer InvestmentNFT is transferred
+
+  MovieTicket
+    Deployment
+      ✔ exposes the immutable 2500 bps split from the shared splitter
+      ✔ sets the deployer as owner
+      ✔ has correct ERC721 name and symbol
+    immutable 75/25 split (df-cycle-12)
+      ✔ the owner cannot change the split — no fee setter exists
+      ✔ there is no owner withdraw sweep — nothing accrues in the contract
+      ✔ the creator cannot be redirected after mint — no creator setter exists
+    Fee math helpers
+      ✔ computes the 75/25 split exactly from the immutable constant
+    mintPermanentPass splits 75/25 at purchase
+      ✔ pays the creator 75% and the owner 25% immediately; contract retains 0
+      ✔ emits VideoMinted, CreatorPaid and RevenueSplit with the right args
+      ✔ gives the creator the rounding remainder on odd wei amounts
+      ✔ reverts on a zero creator — the share is never redirected
+      ✔ mints token id 0 to the recipient and records metadata
+      ✔ grants Producer rights only for the Producer tier
+      ✔ increments token ids across multiple mints
+      ✔ reverts when payment is below price (IncorrectPayment)
+      ✔ reverts on overpayment — with no sweep, excess would be locked forever
+      ✔ reverts when called by a non-owner
+      ✔ handles a zero-price mint with no transfers
+    mintBurnableTicket + burnTicket
+      ✔ splits 75/25 at purchase for burnable tickets too
+      ✔ mints a burnable ticket and lets its owner burn it once
+      ✔ prevents a non-owner from burning the ticket
+      ✔ prevents burning a permanent pass
+      ✔ totalMinted() counts every mint and is unaffected by burns (enumeration bound)
+    Pausing
+      ✔ blocks minting while paused and resumes after unpause
+      ✔ only the owner can pause
+    Emergency legal delisting (T16)
+      ✔ flags a film as delisted with reason + timestamp, owner-only
+      ✔ blocks access to a delisted film and restores it
+    On-chain access index (hasAccessToVideo)
+      ✔ returns false for a non-holder and true after a mint, scoped to the film
+      ✔ counts multiple tickets for the same film
+      ✔ moves access on transfer
+      ✔ removes access when a burnable ticket is burned
+      ✔ denies access to a delisted film even for a holder, and restores on re-list
+      ✔ the legacy hasAccess() alias now mirrors hasAccessToVideo (no longer always-true)
+    Tier index (tierBalanceOf / highestTierMultiplier)
+      ✔ defaults to 1.0x with no tickets
+      ✔ reflects the highest owned tier (Producer > Deluxe > Basic)
+      ✔ drops the multiplier when the top-tier ticket is transferred away
+    no owner sweep (df-cycle-12)
+      ✔ the contract never holds funds after a mint — nothing to sweep
+      ✔ direct ETH transfers revert — no receive/fallback to trap funds
+
+  PayPerView
+    registerFilm
+      ✔ owner registers a film naming the filmmaker; emits FilmRegistered
+      ✔ reverts for non-owner: a front-runner cannot capture a filmId (F-3)
+      ✔ reverts on a zero filmmaker address
+      ✔ reverts on duplicate filmId and filmId 0
+      ✔ getFilm reverts for unregistered film
+    setFilmPrice
+      ✔ filmmaker updates price and emits
+      ✔ reverts for non-filmmaker and unknown film
+    immutable 75/25 split (df-cycle-12)
+      ✔ PLATFORM_FEE_BPS is the 2500 constant from the shared splitter
+      ✔ the owner cannot change the split — no fee setter exists
+      ✔ there is no withdraw path at all — nothing accrues in the contract
+      ✔ the filmmaker cannot be changed after registration — no filmmaker setter exists
+    buyAccess splits 75/25 immediately
+      ✔ sends exactly 75% to the filmmaker and 25% to the owner, contract keeps 0
+      ✔ emits AccessPurchased with the split amounts and RevenueSplit
+      ✔ filmmaker gets the rounding remainder on odd wei amounts
+      ✔ reverts on underpayment and overpayment (no refunds path)
+      ✔ reverts for unregistered film
+      ✔ grants access to multiple buyers, each split immediately
+      ✔ free films grant access with zero value and no transfers
+      ✔ direct ETH transfers revert — no receive/fallback to trap funds
+    F-DFLIX-1: owner rotation cannot install a fee-bricking owner
+      ✔ transferOwnership to a non-receiving contract reverts NewOwnerCannotReceive
+      ✔ a failed bricking rotation leaves payments working (no outage)
+      ✔ transferOwnership to a receiving contract succeeds and fees flow to it
+      ✔ transferOwnership to an EOA still works (probe does not over-block)
+      ✔ transferOwnership to the zero address still reverts (Ownable rule intact)
+      ✔ non-owners cannot rotate ownership
+
+  ProofRegistry
+    registerManifest
+      ✔ registers a manifest and emits ManifestRegistered
+      ✔ lets the registrant update the manifest and emits ManifestUpdated
+      ✔ lets the contract owner update another registrant's manifest
+      ✔ reverts update from a non-registrant, non-owner
+      ✔ reverts on zero filmId, zero root, zero fragmentCount
+      ✔ reverts getManifest for an unknown film
+    verifyFragment — end to end with @decentralflix/storage
+      ✔ verifies every fragment of a real split+hashed film on-chain
+      ✔ verifies an odd-count film (duplicated last leaf)
+      ✔ verifies a single-fragment film with an empty proof (root == leaf)
+      ✔ returns false for a tampered fragment
+      ✔ returns false for a proof built for a different fragment
+      ✔ returns false for a corrupted proof element
+      ✔ reverts for unknown film, out-of-bounds index, and wrong proof length
+
+  DF-RENOUNCE-1: renounce redirects the platform fee to the creator
+    TicketNFT
+      ✔ pre-renounce sale splits 75/25; post-renounce sale pays creator 100%
+      ✔ only the owner can renounce
+    PayPerView
+      ✔ pre-renounce sale splits 75/25; post-renounce sale pays creator 100%
+    SubscriptionManager
+      ✔ pre-renounce subscribe splits 75/25; post-renounce pays creator 100%
+    MovieTicket
+      ✔ pre-renounce mint splits 75/25; post-renounce mints revert (owner-only)
+
+  Reviews
+    Gate against the real MovieTicket access index
+      ✔ lets a real ticket holder submit a review and blocks a non-holder (44ms)
+      ✔ lets a crowdfund backer review via hasCrowdfundAccess once the campaign links the film
+      ✔ rejects reviews on a delisted film with the legal message
+      ✔ read views are empty by default
+    Review logic (access granted via mock gate)
+      ✔ lets a verified owner submit a review and records it
+      ✔ enforces rating 1-5 and comment length 1-500
+      ✔ allows editing (one review per user) without growing the count, emitting ReviewUpdated
+      ✔ enumerates multiple distinct reviewers
+      ✔ hides reviews once a film is delisted, and restores them when re-listed
+      ✔ blocks a viewer who does not have access
+
+  SeederCredits
+    Deployment
+      ✔ sets movieTicket and makes the owner the initial attestor
+      ✔ rejects a zero MovieTicket address
+    submitSeedingReport
+      ✔ credits a seeder on a valid attestor-signed report (1.0x multiplier)
+      ✔ rejects an empty txid or zero amount
+      ✔ rejects a signature from a non-attestor
+      ✔ rejects a signature bound to a different seeder (no replay across accounts)
+      ✔ rejects a signature bound to a different amount (no amount tampering)
+      ✔ enforces the 1-day claim cooldown
+      ✔ honors attestor rotation: old signer rejected, new signer accepted
+    replay protection (W3B-001)
+      ✔ rejects the identical signed report submitted twice (consume-once)
+      ✔ rejects a report older than MAX_REPORT_AGE
+      ✔ rejects a report timestamped in the future
+      ✔ accepts a fresh signed report (new nonce) after the cooldown
+      ✔ does not let an invalid signature burn the valid report (verify-before-consume)
+    setPlatformAttestor
+      ✔ is owner-only and rejects the zero address
+    redeemCredits
+      ✔ spends credits and emits the reward type
+      ✔ rejects redeeming more than the balance or zero
+    admin
+      ✔ emergencySlash reduces a seeder's balance, owner-only
+      ✔ getTierMultiplier reflects the seeder's highest MovieTicket tier
+      ✔ applies the tier multiplier to credited amounts (Producer = 1.5x)
+    claim pausing
+      ✔ blocks claims while paused and resumes after unpause, owner-only
+
+  SeederReputation
+    attestor setup
+      ✔ starts with the owner as attestor
+      ✔ rotates the attestor via setAttestor and emits AttestorUpdated
+      ✔ reverts setAttestor for non-owner and for the zero address
+    reportSeeding
+      ✔ accumulates stats and emits SeedingReported
+      ✔ accumulates across periods (never overwrites)
+      ✔ tracks seeders independently
+      ✔ reverts for non-attestor callers
+      ✔ reverts for the zero-address seeder
+      ✔ old attestor loses rights after rotation; new attestor gains them
+    scoreOf
+      ✔ is 0 for a seeder with no reports
+      ✔ scores each component per the documented formula
+      ✔ scores components independently
+      ✔ uses integer division (remainders dropped)
+      ✔ grows as reports accumulate
+
+  SubscriptionManager
+    createPlan
+      ✔ creates a plan with an immutable creator and emits PlanCreated
+      ✔ reverts on zero creator address (MissingCreator) — never falls back to owner
+      ✔ reverts for non-owner
+      ✔ reverts on duplicate planId
+      ✔ reverts on empty name / zero price / zero duration
+      ✔ getPlan reverts for unknown plan
+    immutable 75/25 split (MUS-001)
+      ✔ PLATFORM_FEE_BPS is the 2500 constant
+      ✔ the owner cannot change the split — no fee setter exists
+      ✔ the plan creator cannot be changed after creation — no creator setter exists
+      ✔ there is no withdraw function at all — nothing accrues in the contract
+      ✔ direct ETH transfers revert — no receive/fallback to trap funds
+    subscribe splits 75/25 immediately
+      ✔ sends exactly 75% to the creator and 25% to the owner, contract keeps 0
+      ✔ emits Subscribed with the split amounts
+      ✔ creator gets the rounding remainder on odd wei amounts
+      ✔ creator takes the whole wei when the fee rounds to zero
+      ✔ reverts on underpayment and overpayment
+      ✔ reverts for unknown or inactive plan
+      ✔ reverts when already subscribed
+      ✔ allows subscribing again after expiry
+    renew splits 75/25 immediately
+      ✔ extends expiry and splits the renewal payment
+      ✔ sends the renewal 75/25 to creator/owner
+      ✔ reverts after expiry
+      ✔ reverts with no subscription at all
+      ✔ reverts on plan mismatch
+      ✔ reverts on wrong payment and on inactive plan
+    deactivatePlan
+      ✔ deactivates and emits
+      ✔ reverts for non-owner and unknown plan
+    cancel
+      ✔ ends the subscription immediately and emits Cancelled
+      ✔ allows subscribing again after cancel
+      ✔ reverts with no active subscription
+    hasActiveSubscription
+      ✔ is false for never-subscribed addresses
+      ✔ tracks expiry across time
+
+  TicketNFT
+    Deployment
+      ✔ sets name and symbol
+      ✔ starts token IDs at 1
+    registerFilm
+      ✔ registers a film and emits FilmRegistered
+      ✔ reverts for non-owner
+      ✔ reverts on duplicate filmId
+      ✔ reverts on filmId 0
+      ✔ reverts on empty title
+      ✔ reverts on zero filmmaker address
+      ✔ getFilm reverts for unregistered film
+    setFilmActive / setFilmPrice
+      ✔ toggles active and emits
+      ✔ updates price and emits
+      ✔ reverts for non-owner on both
+      ✔ reverts for unregistered film on both
+    mintTicket
+      ✔ mints, splits payment 75/25 at purchase, emits TicketMinted + RevenueSplit
+      ✔ allows multiple tickets per holder
+      ✔ reverts on underpayment and overpayment
+      ✔ reverts for unregistered film
+      ✔ reverts for inactive film
+      ✔ mints free film tickets with zero value
+    immutable 75/25 split (df-cycle-13)
+      ✔ exposes the immutable 2500 bps split from the shared splitter
+      ✔ the owner cannot change the split — no fee setter exists
+      ✔ there is no owner withdraw sweep — nothing accrues in the contract
+      ✔ the filmmaker cannot be redirected after registration — no payee setter exists
+      ✔ gives the filmmaker the rounding remainder on odd wei amounts
+      ✔ reverts on a zero filmmaker at registration — the share is never redirected
+    soulbound transfers
+      ✔ blocks transfers for soulbound films
+      ✔ moves the valid-ticket count with transfers for non-soulbound films
+    redeemTicket
+      ✔ burns the ticket and emits TicketRedeemed
+      ✔ redeeming one of two tickets leaves the other valid
+      ✔ reverts for non-owner
+      ✔ reverts for nonexistent token
+      ✔ works for soulbound tickets
+    views / tokenURI
+      ✔ hasValidTicket is false before minting
+      ✔ tokenURI builds from the film base URI
+      ✔ tokenURI is empty when the film registered no base URI
+      ✔ tokenURI reverts for nonexistent token
+      ✔ ticketFilm reverts for nonexistent token
+
+
+  250 passing (3s)
+

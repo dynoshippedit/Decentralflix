@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "check_id": "check-compile",
+  "phase": "baseline",
+  "argv": [
+    "npx",
+    "hardhat",
+    "compile"
+  ],
+  "cwd": "/home/dino/Decentralflix/packages/contracts",
+  "started_at": "2026-09-29T22:50:06.874659+00:00",
+  "finished_at": "2026-09-29T22:50:07.892219+00:00",
+  "source_before": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "source_after": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-compile-001.json.log",
+    "sha256": "a0001992ef9dfd3a3a4e778206ceb294bd96fa485e040007a71ed6cc3dba087d"
+  }
+}

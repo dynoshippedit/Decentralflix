@@ -1,0 +1,23 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "check_id": "check-abi-drift",
+  "phase": "baseline",
+  "argv": [
+    "npx",
+    "vitest",
+    "run",
+    "lib/contracts/abi-drift.test.ts"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T22:50:15.762631+00:00",
+  "finished_at": "2026-09-29T22:50:16.880689+00:00",
+  "source_before": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "source_after": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/baseline-abidrift-001.json.log",
+    "sha256": "744a7c948471004832523db711dc79626767573ce13299760c07fcdb694b7ecc"
+  }
+}

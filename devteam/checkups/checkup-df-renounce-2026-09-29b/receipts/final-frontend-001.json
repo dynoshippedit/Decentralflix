@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df-renounce-2026-09-29b",
+  "spec_digest": "96ebc17330bcffb60d2990748798b752ad90a4044f0204a16b83116974d90b74",
+  "check_id": "check-frontend",
+  "phase": "final",
+  "argv": [
+    "npx",
+    "vitest",
+    "run"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T22:51:41.501573+00:00",
+  "finished_at": "2026-09-29T22:51:43.322281+00:00",
+  "source_before": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "source_after": "df7d41b0df6e960e0821626a1f81d1dfa528331805767f81c21128deff8ad0b1",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df-renounce-2026-09-29b/receipts/final-frontend-001.json.log",
+    "sha256": "298f474e77150a726369c6c275de97a892ea6953588b65050da6a89917c62dc3"
+  }
+}

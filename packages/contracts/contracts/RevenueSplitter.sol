@@ -22,6 +22,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  *    fallback — the creator's share is never redirected.
  *  - The creator address is set by each inheriting contract at registration /
  *    creation time and can never be changed afterward.
+ *  - F-DFLIX-1: the creator is paid BEFORE the platform fee, and ownership
+ *    can only rotate to an address that can receive ETH (transferOwnership
+ *    probes the new owner with a zero-value call). A non-receiving owner
+ *    would brick every paid flow, since the fee leg is pushed atomically
+ *    with the creator's share — the rotation guard keeps that state
+ *    unreachable instead of letting a fee-leg failure outage user payments.
+ *  - DF-RENOUNCE-1: renounceOwnership does NOT burn the 25% platform fee to
+ *    address(0) on future sales. Once renounced, the fee leg is redirected
+ *    to the creator — the creator receives 100% of every future sale.
+ *    (Dino's economic call 2026-09-29: when the platform walks away, the
+ *    creator gets everything; burning destroys value and a revert-guard
+ *    could brick a legitimate exit.)
  * @dev Utility/access tokens only. No investment contract, no promised returns.
  * Any mainnet deployment must be reviewed by licensed counsel first.
  * NOTE: this contract is unaudited.
@@ -38,9 +50,46 @@ abstract contract RevenueSplitter is Ownable {
     // ── Errors ────────────────────────────────────────────────────────────
     error MissingCreator();
     error TransferFailed();
+    /// @notice The new owner cannot receive ETH — installing it would brick
+    /// every paid flow (the platform-fee leg would always revert).
+    error NewOwnerCannotReceive(address newOwner);
 
     // ── Events ────────────────────────────────────────────────────────────
     event RevenueSplit(address indexed creator, uint256 creatorShare, uint256 platformFee);
+
+    /// @notice True once the platform has renounced ownership. While set,
+    /// every future sale redirects the 25% platform fee to the creator
+    /// (DF-RENOUNCE-1) — the creator receives 100%, nothing is burned.
+    /// One-way: ownership can never be reclaimed after renouncing.
+    bool public platformRenounced;
+
+    /**
+     * @notice Renounce platform ownership. DF-RENOUNCE-1: renouncing sets
+     * `platformRenounced`, after which `_splitRevenue` sends 100% of every
+     * sale to the creator instead of burning the 25% fee to address(0).
+     * Emits OwnershipTransferred (via super) with the zero address.
+     */
+    function renounceOwnership() public override onlyOwner {
+        platformRenounced = true;
+        super.renounceOwnership();
+    }
+
+    /**
+     * @notice Ownership can only rotate to an address that can receive ETH.
+     * F-DFLIX-1: every paid flow pushes the platform fee to the owner
+     * atomically with the creator's share, so a non-receiving owner would
+     * brick ALL of them (buyAccess, subscribe, renew, mints). The zero-value
+     * probe keeps that state unreachable: a contract without a payable
+     * receive/fallback reverts the rotation instead of the payments.
+     * EOAs always pass the probe. renounceOwnership sets `platformRenounced`
+     * (DF-RENOUNCE-1): post-renounce sales pay the creator 100%.
+     * @param newOwner Address to transfer ownership to.
+     */
+    function transferOwnership(address newOwner) public override onlyOwner {
+        (bool ok, ) = newOwner.call{value: 0}("");
+        if (!ok) revert NewOwnerCannotReceive(newOwner);
+        super.transferOwnership(newOwner);
+    }
 
     /**
      * @notice Split msg.value 75/25 between `creator` and the platform (owner).
@@ -48,7 +97,12 @@ abstract contract RevenueSplitter is Ownable {
      * `msg.value - fee`, so the rounding remainder always favors the creator.
      * Reverts on a zero creator — the creator's share is NEVER redirected to
      * the owner, and the owner cannot change the split.
-     * @param creator Address receiving the 75% (+ rounding remainder) share.
+     * F-DFLIX-1: the creator is paid FIRST, then the platform fee — the
+     * user-facing payment settles before the platform takes its cut.
+     * DF-RENOUNCE-1: after renounceOwnership, the fee leg is skipped and the
+     * creator receives 100% of msg.value.
+     * @param creator Address receiving the 75% (+ rounding remainder) share,
+     * or 100% once the platform has renounced.
      * @return creatorShare wei sent to the creator.
      * @return platformFee wei sent to the platform (owner).
      */
@@ -58,13 +112,28 @@ abstract contract RevenueSplitter is Ownable {
     {
         if (creator == address(0)) revert MissingCreator();
 
+        if (platformRenounced) {
+            // DF-RENOUNCE-1: the platform walked away — there is no fee leg.
+            // The creator receives 100% of msg.value; nothing is burned to
+            // address(0) and no payment can be bricked by a zero owner.
+            creatorShare = msg.value;
+            platformFee = 0;
+            (bool okCreator, ) = creator.call{value: creatorShare}("");
+            if (!okCreator) revert TransferFailed();
+            emit RevenueSplit(creator, creatorShare, 0);
+            return (creatorShare, 0);
+        }
+
         platformFee = (msg.value * PLATFORM_FEE_BPS) / BPS_DENOMINATOR;
         creatorShare = msg.value - platformFee;
 
-        (bool okFee, ) = owner().call{value: platformFee}("");
-        if (!okFee) revert TransferFailed();
+        // F-DFLIX-1: creator first, then the platform fee. Under atomic
+        // execution the order does not change the revert semantics, but the
+        // user-facing payment settles before the platform takes its cut.
         (bool okCreator, ) = creator.call{value: creatorShare}("");
         if (!okCreator) revert TransferFailed();
+        (bool okFee, ) = owner().call{value: platformFee}("");
+        if (!okFee) revert TransferFailed();
 
         emit RevenueSplit(creator, creatorShare, platformFee);
     }
