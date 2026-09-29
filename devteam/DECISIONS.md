@@ -15,3 +15,8 @@
 - Context: Owner correction states contracts are UNAUDITED; no Slither/Aderyn output exists in the repo.
 - Decision & why: BLD will attempt static analysis (slither if installable without spend); regardless, the final report will state UNAUDITED plainly.
 - Consequences: no audit claims in REPORT.md beyond what this run actually executes.
+
+### D-004 · Accept MAP's CJ1 refinement: encryption module exists but is unwired — 2026-09-29 · LEAD
+- Context: MAP-010 found packages/storage (AES-256-GCM fragments) has zero importers outside its own tests; lifeboat serves unencrypted masters behind entitlement checks. DOC-001 found the legal page claiming 'audited smart contracts' protection.
+- Decision & why: accept the refinement. Crown jewel 1 now reads: 'paid/token-gated content actually protected — note: encrypted-fragment module exists but is NOT wired into the lifeboat serving path; current protection is entitlement checks on unencrypted masters.' This is the honest protection story for W3B/STR to review in Phases 2-3.
+- Consequences: W3B's 'is paid content actually protected?' check must evaluate the entitlement-check path as the real gate, not the storage module.

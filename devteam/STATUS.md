@@ -1,22 +1,22 @@
 # STATUS — resume here
-Updated: 2026-09-29 01:55 UTC by LEAD (Tech Lead)
-Phase: 0 — Boot · Mode: A multi-agent · Branch: devteam/review-2026-09-29
+Updated: 2026-09-29 02:05 UTC by LEAD (Tech Lead)
+Phase: 2 — Critical-flow tracing · Mode: A multi-agent · Branch: devteam/review-2026-09-29
 
 ## Progress
-- Coverage: 0/0 (0%) — Cartographer to build in Phase 1
-- Issues: S0 0 · S1 0 · S2 0 · S3 0 · S4 0 — open 0 · fixed 0 · verified 0
-- Gates passed: P0 (pending commit)
+- Coverage: tiers set for 262 files (H=70/M=102/L=90); 1,001 lens cells queued for Phase 3
+- Issues: S0 0 · S1 8 · S2 13 · S3 21 · S4 5 — NEW 47 (DOC-001..006, MAP-001..010, BLD-001..012, TST-001..011) · fixed 0 · verified 0
+- Gates passed: P0 ✔ P1 ✔ (all suites reproduced exactly: 217/93/203/128; tsc+build clean; secret scan clean)
 
 ## In progress
-- LEAD: Phase 0 boot — workspace init, playbook fill, branch, commit
+- (none — Phase 2 lanes about to spawn)
 
 ## Next actions (in order)
-1. Create branch devteam/review-2026-09-29, copy devteam/ to repo, append review pointer to CLAUDE.md/AGENTS.md, commit `chore(devteam): initialize review workspace and playbook`
-2. Spawn Phase 1 specialists: MAP (Cartographer), BLD (Build & Release), TST (Test Engineer), DOC (Product & Docs Auditor)
-3. Gate P1: COVERAGE tiers complete, BASELINE holds real outputs, crown jewels/flows confirmed
+1. Spawn Phase 2 specialists: BUG, SEC, ARC, DAT, STR, W3B, MUS — trace all 6 critical flows hop by hop
+2. Gate P2: every critical flow traced with path:line hops; threat model + authz matrix drafted; committed
+3. Phase 3: deep review lanes (full sweep per COVERAGE)
 
 ## Fix queue (from Phase 4)
 - (empty — built in Phase 4)
 
 ## Blockers / waiting on owner
-- none yet
+- none yet (package-manager + crowdfund-code questions queued for QUESTIONS.md in Phase 4)
