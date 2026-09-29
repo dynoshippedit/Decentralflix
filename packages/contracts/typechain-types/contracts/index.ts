@@ -8,6 +8,7 @@ export type { FilmmakerCampaign } from "./FilmmakerCampaign";
 export type { MovieTicket } from "./MovieTicket";
 export type { PayPerView } from "./PayPerView";
 export type { ProofRegistry } from "./ProofRegistry";
+export type { RevenueSplitter } from "./RevenueSplitter";
 export type { Reviews } from "./Reviews";
 export type { SeederCredits } from "./SeederCredits";
 export type { SeederReputation } from "./SeederReputation";

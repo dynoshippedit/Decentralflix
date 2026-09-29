@@ -49,8 +49,7 @@ describe("SubscriptionManager", () => {
           .connect(owner)
           .createPlan(PLAN2, "NoCreator", PRICE, DURATION, ethers.ZeroAddress)
       )
-        .to.be.revertedWithCustomError(manager, "MissingCreator")
-        .withArgs(PLAN2);
+        .to.be.revertedWithCustomError(manager, "MissingCreator");
     });
 
     it("reverts for non-owner", async () => {

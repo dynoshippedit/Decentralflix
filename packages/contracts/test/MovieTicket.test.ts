@@ -3,15 +3,14 @@ import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 /**
- * MovieTicket.sol — core money contract tests.
+ * MovieTicket.sol — df-cycle-12: immutable 75/25 through the shared RevenueSplitter.
  *
- * Covers the financial invariants that matter for a launch handling real funds:
- *  - 75% creator / 25% platform split is exact (creator withdraws their share)
- *  - platform fee is retained in the contract and only withdrawable by the owner
- *  - access tiers (Basic/Deluxe/Producer) and Producer rights are recorded correctly
- *  - burnable tickets can be burned once by their owner, permanent passes cannot
- *  - pause / fee-cap / ownership guards hold
- *  - emergency legal delisting (T16) flips access off and is owner-gated
+ * The owner-settable platformFeeBps and the owner withdraw() sweep are GONE.
+ * Every mint splits immediately at purchase: 75% (+ rounding remainder) to the
+ * creator, 25% straight to the owner. Nothing accrues in the contract.
+ *
+ * Unchanged behavior still covered: tiers, Producer rights, burnable tickets,
+ * pausing, T16 delisting, O(1) access/tier indexes.
  *
  * Runs on the in-process hardhat EVM — no RPC, keys, or external services.
  */
@@ -21,13 +20,17 @@ const Tier = { BASIC: 0, DELUXE: 1, PRODUCER: 2 } as const;
 // TicketType enum mirror (PERMANENT_PASS=0, BURNABLE_TICKET=1)
 const TicketType = { PERMANENT_PASS: 0, BURNABLE_TICKET: 1 } as const;
 
-const FEE_BPS = 2500n; // 25% platform fee → 75% creator, the headline split
+const FEE_BPS = 2500n; // immutable 25% platform fee → 75% creator, from RevenueSplitter
 const PRICE = ethers.parseEther("1"); // 1 ETH
+const ODD_PRICE = 7n; // odd wei: fee = floor(7 * 2500 / 10000) = 1, creator = 6
 const VIDEO_HASH = "ar://film-raging-midlife-master";
+
+const feeOf = (v: bigint) => (v * FEE_BPS) / 10000n;
+const shareOf = (v: bigint) => v - feeOf(v);
 
 async function deployFixture() {
   const [owner, creator, buyer, stranger] = await ethers.getSigners();
-  const movieTicket = await ethers.deployContract("MovieTicket", [FEE_BPS], owner);
+  const movieTicket = await ethers.deployContract("MovieTicket", [], owner);
   await movieTicket.waitForDeployment();
   return { movieTicket, owner, creator, buyer, stranger };
 }
@@ -49,21 +52,14 @@ function mintPass(
 
 describe("MovieTicket", () => {
   describe("Deployment", () => {
-    it("stores the initial platform fee", async () => {
+    it("exposes the immutable 2500 bps split from the shared splitter", async () => {
       const { movieTicket } = await loadFixture(deployFixture);
-      expect(await movieTicket.platformFeeBps()).to.equal(FEE_BPS);
-      expect(await movieTicket.getCurrentPlatformFeeBps()).to.equal(FEE_BPS);
+      expect(await movieTicket.PLATFORM_FEE_BPS()).to.equal(FEE_BPS);
     });
 
     it("sets the deployer as owner", async () => {
       const { movieTicket, owner } = await loadFixture(deployFixture);
       expect(await movieTicket.owner()).to.equal(owner.address);
-    });
-
-    it("rejects a fee above the 50% cap at construction", async () => {
-      await expect(ethers.deployContract("MovieTicket", [5001n])).to.be.revertedWith(
-        "Fee too high (max 25%)"
-      );
     });
 
     it("has correct ERC721 name and symbol", async () => {
@@ -73,8 +69,29 @@ describe("MovieTicket", () => {
     });
   });
 
+  describe("immutable 75/25 split (df-cycle-12)", () => {
+    it("the owner cannot change the split — no fee setter exists", async () => {
+      const { movieTicket } = await loadFixture(deployFixture);
+      for (const fn of ["setPlatformFee", "setPlatformFeeBps", "setFee", "updateFee"]) {
+        expect(movieTicket.interface.hasFunction(fn), fn).to.equal(false);
+      }
+    });
+
+    it("there is no owner withdraw sweep — nothing accrues in the contract", async () => {
+      const { movieTicket } = await loadFixture(deployFixture);
+      expect((movieTicket as unknown as Record<string, unknown>).withdraw).to.equal(undefined);
+    });
+
+    it("the creator cannot be redirected after mint — no creator setter exists", async () => {
+      const { movieTicket } = await loadFixture(deployFixture);
+      for (const fn of ["setCreator", "updateCreator"]) {
+        expect(movieTicket.interface.hasFunction(fn), fn).to.equal(false);
+      }
+    });
+  });
+
   describe("Fee math helpers", () => {
-    it("computes the 75/25 split exactly", async () => {
+    it("computes the 75/25 split exactly from the immutable constant", async () => {
       const { movieTicket } = await loadFixture(deployFixture);
       const fee = await movieTicket.getPlatformFee(PRICE);
       const creatorShare = await movieTicket.getCreatorShare(PRICE);
@@ -87,19 +104,64 @@ describe("MovieTicket", () => {
     });
   });
 
-  describe("mintPermanentPass", () => {
-    it("pays the creator their share and retains the platform fee", async () => {
+  describe("mintPermanentPass splits 75/25 at purchase", () => {
+    it("pays the creator 75% and the owner 25% immediately; contract retains 0", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
-      const fee = (PRICE * FEE_BPS) / 10000n;
-      const creatorShare = PRICE - fee;
+      const fee = feeOf(PRICE);
+      const creatorShare = shareOf(PRICE);
 
-      // creator gains exactly their share; contract retains exactly the platform fee
+      // NB: the mint is onlyOwner, so the owner PAYS the price and receives
+      // the fee back: net owner change = -price + fee = -creatorShare.
       await expect(
         mintPass(movieTicket, owner, buyer.address, creator.address)
       ).to.changeEtherBalances(
-        [creator, movieTicket],
-        [creatorShare, fee]
+        [creator, owner, movieTicket],
+        [creatorShare, -creatorShare, 0n]
       );
+      expect(await ethers.provider.getBalance(await movieTicket.getAddress())).to.equal(0n);
+    });
+
+    it("emits VideoMinted, CreatorPaid and RevenueSplit with the right args", async () => {
+      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
+      const fee = feeOf(PRICE);
+      const creatorShare = shareOf(PRICE);
+
+      await expect(mintPass(movieTicket, owner, buyer.address, creator.address))
+        .to.emit(movieTicket, "VideoMinted")
+        .withArgs(
+          0,
+          creator.address,
+          buyer.address,
+          VIDEO_HASH,
+          TicketType.PERMANENT_PASS,
+          Tier.BASIC,
+          PRICE,
+          fee,
+          creatorShare
+        )
+        .and.to.emit(movieTicket, "CreatorPaid")
+        .withArgs(0, creator.address, creatorShare)
+        .and.to.emit(movieTicket, "RevenueSplit")
+        .withArgs(creator.address, creatorShare, fee);
+    });
+
+    it("gives the creator the rounding remainder on odd wei amounts", async () => {
+      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
+      // 7 wei: fee = floor(7 * 2500 / 10000) = 1, creator = 6. Never fee rounded up.
+      await expect(
+        mintPass(movieTicket, owner, buyer.address, creator.address, {
+          price: ODD_PRICE,
+          value: ODD_PRICE,
+        })
+      ).to.changeEtherBalances([creator, owner, movieTicket], [6n, -6n, 0n]);
+      expect(6n + 1n).to.equal(7n);
+    });
+
+    it("reverts on a zero creator — the share is never redirected", async () => {
+      const { movieTicket, owner, buyer } = await loadFixture(deployFixture);
+      await expect(
+        mintPass(movieTicket, owner, buyer.address, ethers.ZeroAddress)
+      ).to.be.revertedWithCustomError(movieTicket, "MissingCreator");
     });
 
     it("mints token id 0 to the recipient and records metadata", async () => {
@@ -121,28 +183,6 @@ describe("MovieTicket", () => {
       expect(await movieTicket.tokenTiers(0)).to.equal(Tier.BASIC);
     });
 
-    it("emits VideoMinted and CreatorPaid with the right args", async () => {
-      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
-      const fee = (PRICE * FEE_BPS) / 10000n;
-      const creatorShare = PRICE - fee;
-
-      await expect(mintPass(movieTicket, owner, buyer.address, creator.address))
-        .to.emit(movieTicket, "VideoMinted")
-        .withArgs(
-          0,
-          creator.address,
-          buyer.address,
-          VIDEO_HASH,
-          TicketType.PERMANENT_PASS,
-          Tier.BASIC,
-          PRICE,
-          fee,
-          creatorShare
-        )
-        .and.to.emit(movieTicket, "CreatorPaid")
-        .withArgs(0, creator.address, creatorShare);
-    });
-
     it("grants Producer rights only for the Producer tier", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
       await mintPass(movieTicket, owner, buyer.address, creator.address, { tier: Tier.BASIC });
@@ -162,13 +202,26 @@ describe("MovieTicket", () => {
       expect(await movieTicket.ownerOf(2)).to.equal(buyer.address);
     });
 
-    it("reverts when payment is below price", async () => {
+    it("reverts when payment is below price (IncorrectPayment)", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
       await expect(
         mintPass(movieTicket, owner, buyer.address, creator.address, {
           value: PRICE - 1n,
         })
-      ).to.be.revertedWith("Insufficient payment");
+      )
+        .to.be.revertedWithCustomError(movieTicket, "IncorrectPayment")
+        .withArgs(PRICE, PRICE - 1n);
+    });
+
+    it("reverts on overpayment — with no sweep, excess would be locked forever", async () => {
+      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
+      await expect(
+        mintPass(movieTicket, owner, buyer.address, creator.address, {
+          value: PRICE + 1n,
+        })
+      )
+        .to.be.revertedWithCustomError(movieTicket, "IncorrectPayment")
+        .withArgs(PRICE, PRICE + 1n);
     });
 
     it("reverts when called by a non-owner", async () => {
@@ -178,19 +231,33 @@ describe("MovieTicket", () => {
       ).to.be.revertedWithCustomError(movieTicket, "OwnableUnauthorizedAccount");
     });
 
-    it("handles a zero-price mint with no creator payout", async () => {
+    it("handles a zero-price mint with no transfers", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
       await expect(
         mintPass(movieTicket, owner, buyer.address, creator.address, {
           price: 0n,
           value: 0n,
         })
-      ).to.changeEtherBalances([creator, movieTicket], [0n, 0n]);
+      ).to.changeEtherBalances([creator, owner, movieTicket], [0n, 0n, 0n]);
       expect(await movieTicket.ownerOf(0)).to.equal(buyer.address);
     });
   });
 
   describe("mintBurnableTicket + burnTicket", () => {
+    it("splits 75/25 at purchase for burnable tickets too", async () => {
+      const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
+      await expect(
+        movieTicket
+          .connect(owner)
+          .mintBurnableTicket(buyer.address, creator.address, VIDEO_HASH, PRICE, Tier.BASIC, {
+            value: PRICE,
+          })
+      ).to.changeEtherBalances(
+        [creator, owner, movieTicket],
+        [shareOf(PRICE), -shareOf(PRICE), 0n]
+      );
+    });
+
     it("mints a burnable ticket and lets its owner burn it once", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
       await movieTicket
@@ -252,30 +319,6 @@ describe("MovieTicket", () => {
     });
   });
 
-  describe("setPlatformFee", () => {
-    it("updates the fee within the cap and emits the change", async () => {
-      const { movieTicket, owner } = await loadFixture(deployFixture);
-      await expect(movieTicket.connect(owner).setPlatformFee(1000n))
-        .to.emit(movieTicket, "PlatformFeeUpdated")
-        .withArgs(FEE_BPS, 1000n);
-      expect(await movieTicket.platformFeeBps()).to.equal(1000n);
-    });
-
-    it("rejects a fee above the cap", async () => {
-      const { movieTicket, owner } = await loadFixture(deployFixture);
-      await expect(movieTicket.connect(owner).setPlatformFee(2501n)).to.be.revertedWith(
-        "Fee too high (max 25%)"
-      );
-    });
-
-    it("is owner-only", async () => {
-      const { movieTicket, stranger } = await loadFixture(deployFixture);
-      await expect(
-        movieTicket.connect(stranger).setPlatformFee(1000n)
-      ).to.be.revertedWithCustomError(movieTicket, "OwnableUnauthorizedAccount");
-    });
-  });
-
   describe("Emergency legal delisting (T16)", () => {
     it("flags a film as delisted with reason + timestamp, owner-only", async () => {
       const { movieTicket, owner, stranger } = await loadFixture(deployFixture);
@@ -285,8 +328,10 @@ describe("MovieTicket", () => {
         movieTicket.connect(stranger).delistFilm(VIDEO_HASH, "CSAM")
       ).to.be.revertedWithCustomError(movieTicket, "OwnableUnauthorizedAccount");
 
-      await expect(movieTicket.connect(owner).delistFilm(VIDEO_HASH, "CSAM"))
-        .to.emit(movieTicket, "ContentDelisted");
+      await expect(movieTicket.connect(owner).delistFilm(VIDEO_HASH, "CSAM")).to.emit(
+        movieTicket,
+        "ContentDelisted"
+      );
 
       expect(await movieTicket.isFilmDelisted(VIDEO_HASH)).to.equal(true);
       const key = ethers.keccak256(ethers.solidityPacked(["string"], [VIDEO_HASH]));
@@ -333,9 +378,7 @@ describe("MovieTicket", () => {
     it("moves access on transfer", async () => {
       const { movieTicket, owner, creator, buyer, stranger } = await loadFixture(deployFixture);
       await mintPass(movieTicket, owner, buyer.address, creator.address); // tokenId 0 → buyer
-      await movieTicket
-        .connect(buyer)
-        .transferFrom(buyer.address, stranger.address, 0);
+      await movieTicket.connect(buyer).transferFrom(buyer.address, stranger.address, 0);
 
       expect(await movieTicket.hasAccessToVideo(buyer.address, VIDEO_HASH)).to.equal(false);
       expect(await movieTicket.hasAccessToVideo(stranger.address, VIDEO_HASH)).to.equal(true);
@@ -418,26 +461,17 @@ describe("MovieTicket", () => {
     });
   });
 
-  describe("withdraw", () => {
-    it("lets the owner withdraw accumulated platform fees", async () => {
+  describe("no owner sweep (df-cycle-12)", () => {
+    it("the contract never holds funds after a mint — nothing to sweep", async () => {
       const { movieTicket, owner, creator, buyer } = await loadFixture(deployFixture);
-      const fee = (PRICE * FEE_BPS) / 10000n;
       await mintPass(movieTicket, owner, buyer.address, creator.address);
-
-      // contract holds exactly the platform fee; withdraw moves it to the owner
-      expect(await ethers.provider.getBalance(await movieTicket.getAddress())).to.equal(fee);
-      await expect(movieTicket.connect(owner).withdraw()).to.changeEtherBalance(
-        movieTicket,
-        -fee
-      );
+      expect(await ethers.provider.getBalance(await movieTicket.getAddress())).to.equal(0n);
     });
 
-    it("is owner-only", async () => {
-      const { movieTicket, stranger } = await loadFixture(deployFixture);
-      await expect(movieTicket.connect(stranger).withdraw()).to.be.revertedWithCustomError(
-        movieTicket,
-        "OwnableUnauthorizedAccount"
-      );
+    it("direct ETH transfers revert — no receive/fallback to trap funds", async () => {
+      const { movieTicket, buyer } = await loadFixture(deployFixture);
+      const addr = await movieTicket.getAddress();
+      await expect(buyer.sendTransaction({ to: addr, value: 100n })).to.be.reverted;
     });
   });
 });

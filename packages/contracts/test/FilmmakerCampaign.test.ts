@@ -23,7 +23,7 @@ const DAY = 24 * 60 * 60;
 
 async function deployFixture() {
   const [owner, filmmaker, backer1, backer2, stranger] = await ethers.getSigners();
-  const movieTicket = await ethers.deployContract("MovieTicket", [2500n], owner);
+  const movieTicket = await ethers.deployContract("MovieTicket", [], owner);
   await movieTicket.waitForDeployment();
   const campaign = await ethers.deployContract(
     "FilmmakerCampaign",

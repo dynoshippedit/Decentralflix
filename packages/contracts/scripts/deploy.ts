@@ -16,12 +16,10 @@ async function main() {
   console.log("Balance:", ethers.formatEther(balance), "ETH");
   console.log("====================================\n");
 
-  // Default to 25% platform fee (2500 basis points) = 75% creator share.
-  // Matches the verified site economics; PayPerView caps at 2500 as well.
-  const INITIAL_PLATFORM_FEE_BPS = 2500;
-
+  // df-cycle-12: MovieTicket now splits through the shared RevenueSplitter —
+  // immutable 75/25, no constructor fee arg, no owner-settable fee.
   const MovieTicketFactory = await ethers.getContractFactory("MovieTicket");
-  const movieTicket = await MovieTicketFactory.deploy(INITIAL_PLATFORM_FEE_BPS);
+  const movieTicket = await MovieTicketFactory.deploy();
   await movieTicket.waitForDeployment();
 
   const movieTicketAddress = await movieTicket.getAddress();

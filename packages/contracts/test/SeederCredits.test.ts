@@ -28,7 +28,7 @@ const MAX_REPORT_AGE = 7 * DAY;
 
 async function deployFixture() {
   const [owner, seeder, seeder2, stranger] = await ethers.getSigners();
-  const movieTicket = await ethers.deployContract("MovieTicket", [2500n], owner);
+  const movieTicket = await ethers.deployContract("MovieTicket", [], owner);
   const seeder_credits = await ethers.deployContract(
     "SeederCredits",
     [await movieTicket.getAddress()],

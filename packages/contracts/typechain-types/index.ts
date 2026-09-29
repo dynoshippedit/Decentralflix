@@ -60,6 +60,8 @@ export type { PayPerView } from "./contracts/PayPerView";
 export { PayPerView__factory } from "./factories/contracts/PayPerView__factory";
 export type { ProofRegistry } from "./contracts/ProofRegistry";
 export { ProofRegistry__factory } from "./factories/contracts/ProofRegistry__factory";
+export type { RevenueSplitter } from "./contracts/RevenueSplitter";
+export { RevenueSplitter__factory } from "./factories/contracts/RevenueSplitter__factory";
 export type { Reviews } from "./contracts/Reviews";
 export { Reviews__factory } from "./factories/contracts/Reviews__factory";
 export type { SeederCredits } from "./contracts/SeederCredits";

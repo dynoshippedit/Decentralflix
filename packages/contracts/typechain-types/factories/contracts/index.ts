@@ -7,6 +7,7 @@ export { FilmmakerCampaign__factory } from "./FilmmakerCampaign__factory";
 export { MovieTicket__factory } from "./MovieTicket__factory";
 export { PayPerView__factory } from "./PayPerView__factory";
 export { ProofRegistry__factory } from "./ProofRegistry__factory";
+export { RevenueSplitter__factory } from "./RevenueSplitter__factory";
 export { Reviews__factory } from "./Reviews__factory";
 export { SeederCredits__factory } from "./SeederCredits__factory";
 export { SeederReputation__factory } from "./SeederReputation__factory";

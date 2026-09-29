@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./RevenueSplitter.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
@@ -11,16 +11,16 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * (name, price, duration, creator); users subscribe with exact payment, renew
  * an active subscription to extend it, or cancel to end it immediately (no
  * refunds).
- * @notice NON-CUSTODIAL SPLITTER: every payment is split immediately — 75% to
- * the plan's creator, 25% to the platform (owner). The split is an immutable
- * constant (PLATFORM_FEE_BPS); the owner cannot change it, and the plan
- * creator cannot be changed after creation, so funds can never be redirected.
- * No subscription balance accrues in the contract.
+ * @notice NON-CUSTODIAL SPLITTER: every payment is split immediately through
+ * the shared RevenueSplitter — 75% to the plan's creator, 25% to the platform
+ * (owner). The split is an immutable constant; the owner cannot change it,
+ * and the plan creator cannot be changed after creation, so funds can never
+ * be redirected. No subscription balance accrues in the contract.
  * @dev Utility/access tokens only. No investment contract, no promised returns.
  * Any mainnet deployment must be reviewed by licensed counsel first.
  * NOTE: this contract is unaudited.
  */
-contract SubscriptionManager is Ownable, ReentrancyGuard {
+contract SubscriptionManager is RevenueSplitter, ReentrancyGuard {
     /// @notice A purchasable access plan.
     struct Plan {
         string name; // plan display name
@@ -37,14 +37,6 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
         uint256 expiresAt; // unix timestamp; active while > block.timestamp
     }
 
-    /// @notice Platform fee in basis points — IMMUTABLE. 2500 bps = 25%.
-    /// The creator always receives 75% plus the rounding remainder.
-    /// Defined once, here; there is no setter by design.
-    uint256 public constant PLATFORM_FEE_BPS = 2500;
-
-    /// @notice Basis-points denominator (10000 = 100%).
-    uint256 public constant BPS_DENOMINATOR = 10000;
-
     // ── Errors ────────────────────────────────────────────────────────────
     error PlanAlreadyExists(uint256 planId);
     error PlanNotFound(uint256 planId);
@@ -52,13 +44,11 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     error EmptyName();
     error ZeroPrice();
     error ZeroDuration();
-    error MissingCreator(uint256 planId);
     error IncorrectPayment(uint256 expected, uint256 received);
     error AlreadySubscribed(address holder);
     error SubscriptionNotActive(address holder);
     error PlanMismatch(uint256 currentPlanId, uint256 requestedPlanId);
     error NoSubscription(address holder);
-    error TransferFailed();
 
     // ── Events ────────────────────────────────────────────────────────────
     event PlanCreated(
@@ -115,7 +105,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
         if (bytes(name).length == 0) revert EmptyName();
         if (priceWei == 0) revert ZeroPrice();
         if (durationSecs == 0) revert ZeroDuration();
-        if (creator == address(0)) revert MissingCreator(planId);
+        if (creator == address(0)) revert MissingCreator();
 
         _plans[planId] = Plan({
             name: name,
@@ -157,7 +147,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
         uint256 expiresAt = block.timestamp + plan.durationSecs;
         _subscriptions[msg.sender] = Subscription({planId: planId, expiresAt: expiresAt});
 
-        (uint256 creatorShare, uint256 platformFee) = _splitPayment(planId, plan);
+        (uint256 creatorShare, uint256 platformFee) = _splitPayment(plan);
 
         emit Subscribed(msg.sender, planId, expiresAt, plan.creator, creatorShare, platformFee);
     }
@@ -178,7 +168,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
 
         sub.expiresAt += plan.durationSecs;
 
-        (uint256 creatorShare, uint256 platformFee) = _splitPayment(planId, plan);
+        (uint256 creatorShare, uint256 platformFee) = _splitPayment(plan);
 
         emit Renewed(msg.sender, planId, sub.expiresAt, plan.creator, creatorShare, platformFee);
     }
@@ -217,28 +207,17 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Split msg.value 75/25 between the plan's creator and the platform.
-     * The platform fee is computed with floor division; the creator receives
-     * `msg.value - fee`, so the rounding remainder always favors the creator.
-     * Reverts if the plan has no creator — the creator's share is NEVER
-     * redirected to the owner.
+     * @notice Split the plan payment 75/25 through the shared RevenueSplitter.
+     * Reverts on a zero creator — the creator's share is NEVER redirected to
+     * the owner.
      * @return creatorShare wei sent to the plan's creator.
      * @return platformFee wei sent to the platform (owner).
      */
-    function _splitPayment(uint256 planId, Plan memory plan)
+    function _splitPayment(Plan memory plan)
         internal
         returns (uint256 creatorShare, uint256 platformFee)
     {
-        address creator = plan.creator;
-        if (creator == address(0)) revert MissingCreator(planId);
-
-        platformFee = (msg.value * PLATFORM_FEE_BPS) / BPS_DENOMINATOR;
-        creatorShare = msg.value - platformFee;
-
-        (bool okFee, ) = owner().call{value: platformFee}("");
-        if (!okFee) revert TransferFailed();
-        (bool okCreator, ) = creator.call{value: creatorShare}("");
-        if (!okCreator) revert TransferFailed();
+        return _splitRevenue(plan.creator);
     }
 
     function _getPlanOrRevert(uint256 planId) internal view returns (Plan storage) {

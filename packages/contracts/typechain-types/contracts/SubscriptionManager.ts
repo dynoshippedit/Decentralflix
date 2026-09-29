@@ -75,6 +75,7 @@ export interface SubscriptionManagerInterface extends Interface {
       | "PlanCreated"
       | "PlanDeactivated"
       | "Renewed"
+      | "RevenueSplit"
       | "Subscribed"
   ): EventFragment;
 
@@ -245,6 +246,28 @@ export namespace RenewedEvent {
     holder: string;
     planId: bigint;
     newExpiresAt: bigint;
+    creator: string;
+    creatorShare: bigint;
+    platformFee: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace RevenueSplitEvent {
+  export type InputTuple = [
+    creator: AddressLike,
+    creatorShare: BigNumberish,
+    platformFee: BigNumberish
+  ];
+  export type OutputTuple = [
+    creator: string,
+    creatorShare: bigint,
+    platformFee: bigint
+  ];
+  export interface OutputObject {
     creator: string;
     creatorShare: bigint;
     platformFee: bigint;
@@ -483,6 +506,13 @@ export interface SubscriptionManager extends BaseContract {
     RenewedEvent.OutputObject
   >;
   getEvent(
+    key: "RevenueSplit"
+  ): TypedContractEvent<
+    RevenueSplitEvent.InputTuple,
+    RevenueSplitEvent.OutputTuple,
+    RevenueSplitEvent.OutputObject
+  >;
+  getEvent(
     key: "Subscribed"
   ): TypedContractEvent<
     SubscribedEvent.InputTuple,
@@ -544,6 +574,17 @@ export interface SubscriptionManager extends BaseContract {
       RenewedEvent.InputTuple,
       RenewedEvent.OutputTuple,
       RenewedEvent.OutputObject
+    >;
+
+    "RevenueSplit(address,uint256,uint256)": TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
+    >;
+    RevenueSplit: TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
 
     "Subscribed(address,uint256,uint256,address,uint256,uint256)": TypedContractEvent<

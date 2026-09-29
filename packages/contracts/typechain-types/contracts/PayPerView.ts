@@ -40,21 +40,16 @@ export declare namespace PayPerView {
 export interface PayPerViewInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "MAX_PLATFORM_FEE_BPS"
-      | "accruedPlatformFees"
+      | "BPS_DENOMINATOR"
+      | "PLATFORM_FEE_BPS"
       | "buyAccess"
-      | "filmRevenue"
       | "getFilm"
       | "hasAccess"
       | "owner"
-      | "platformFeeBps"
       | "registerFilm"
       | "renounceOwnership"
       | "setFilmPrice"
-      | "setPlatformFeeBps"
       | "transferOwnership"
-      | "withdrawPlatformFees"
-      | "withdrawRevenue"
   ): FunctionFragment;
 
   getEvent(
@@ -63,25 +58,19 @@ export interface PayPerViewInterface extends Interface {
       | "FilmPriceUpdated"
       | "FilmRegistered"
       | "OwnershipTransferred"
-      | "PlatformFeeUpdated"
-      | "PlatformFeesWithdrawn"
-      | "RevenueWithdrawn"
+      | "RevenueSplit"
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "MAX_PLATFORM_FEE_BPS",
+    functionFragment: "BPS_DENOMINATOR",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "accruedPlatformFees",
+    functionFragment: "PLATFORM_FEE_BPS",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "buyAccess",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "filmRevenue",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -94,10 +83,6 @@ export interface PayPerViewInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "platformFeeBps",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "registerFilm",
     values: [BigNumberish, BigNumberish]
   ): string;
@@ -108,44 +93,24 @@ export interface PayPerViewInterface extends Interface {
   encodeFunctionData(
     functionFragment: "setFilmPrice",
     values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setPlatformFeeBps",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawPlatformFees",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawRevenue",
-    values: [BigNumberish]
-  ): string;
 
   decodeFunctionResult(
-    functionFragment: "MAX_PLATFORM_FEE_BPS",
+    functionFragment: "BPS_DENOMINATOR",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "accruedPlatformFees",
+    functionFragment: "PLATFORM_FEE_BPS",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "buyAccess", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "filmRevenue",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getFilm", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasAccess", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "platformFeeBps",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "registerFilm",
     data: BytesLike
@@ -159,19 +124,7 @@ export interface PayPerViewInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setPlatformFeeBps",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawPlatformFees",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawRevenue",
     data: BytesLike
   ): Result;
 }
@@ -180,13 +133,26 @@ export namespace AccessPurchasedEvent {
   export type InputTuple = [
     filmId: BigNumberish,
     buyer: AddressLike,
-    pricePaid: BigNumberish
+    pricePaid: BigNumberish,
+    filmmaker: AddressLike,
+    filmmakerShare: BigNumberish,
+    platformFee: BigNumberish
   ];
-  export type OutputTuple = [filmId: bigint, buyer: string, pricePaid: bigint];
+  export type OutputTuple = [
+    filmId: bigint,
+    buyer: string,
+    pricePaid: bigint,
+    filmmaker: string,
+    filmmakerShare: bigint,
+    platformFee: bigint
+  ];
   export interface OutputObject {
     filmId: bigint;
     buyer: string;
     pricePaid: bigint;
+    filmmaker: string;
+    filmmakerShare: bigint;
+    platformFee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -251,49 +217,20 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace PlatformFeeUpdatedEvent {
-  export type InputTuple = [oldFeeBps: BigNumberish, newFeeBps: BigNumberish];
-  export type OutputTuple = [oldFeeBps: bigint, newFeeBps: bigint];
-  export interface OutputObject {
-    oldFeeBps: bigint;
-    newFeeBps: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace PlatformFeesWithdrawnEvent {
-  export type InputTuple = [owner: AddressLike, amount: BigNumberish];
-  export type OutputTuple = [owner: string, amount: bigint];
-  export interface OutputObject {
-    owner: string;
-    amount: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RevenueWithdrawnEvent {
+export namespace RevenueSplitEvent {
   export type InputTuple = [
-    filmId: BigNumberish,
-    filmmaker: AddressLike,
-    filmmakerAmount: BigNumberish,
+    creator: AddressLike,
+    creatorShare: BigNumberish,
     platformFee: BigNumberish
   ];
   export type OutputTuple = [
-    filmId: bigint,
-    filmmaker: string,
-    filmmakerAmount: bigint,
+    creator: string,
+    creatorShare: bigint,
     platformFee: bigint
   ];
   export interface OutputObject {
-    filmId: bigint;
-    filmmaker: string;
-    filmmakerAmount: bigint;
+    creator: string;
+    creatorShare: bigint;
     platformFee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -345,13 +282,11 @@ export interface PayPerView extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  MAX_PLATFORM_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
+  BPS_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
 
-  accruedPlatformFees: TypedContractMethod<[], [bigint], "view">;
+  PLATFORM_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
 
   buyAccess: TypedContractMethod<[filmId: BigNumberish], [void], "payable">;
-
-  filmRevenue: TypedContractMethod<[filmId: BigNumberish], [bigint], "view">;
 
   getFilm: TypedContractMethod<
     [filmId: BigNumberish],
@@ -367,8 +302,6 @@ export interface PayPerView extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
-  platformFeeBps: TypedContractMethod<[], [bigint], "view">;
-
   registerFilm: TypedContractMethod<
     [filmId: BigNumberish, priceWei: BigNumberish],
     [void],
@@ -383,22 +316,8 @@ export interface PayPerView extends BaseContract {
     "nonpayable"
   >;
 
-  setPlatformFeeBps: TypedContractMethod<
-    [newFeeBps: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  withdrawPlatformFees: TypedContractMethod<[], [void], "nonpayable">;
-
-  withdrawRevenue: TypedContractMethod<
-    [filmId: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -408,17 +327,14 @@ export interface PayPerView extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "MAX_PLATFORM_FEE_BPS"
+    nameOrSignature: "BPS_DENOMINATOR"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "accruedPlatformFees"
+    nameOrSignature: "PLATFORM_FEE_BPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "buyAccess"
   ): TypedContractMethod<[filmId: BigNumberish], [void], "payable">;
-  getFunction(
-    nameOrSignature: "filmRevenue"
-  ): TypedContractMethod<[filmId: BigNumberish], [bigint], "view">;
   getFunction(
     nameOrSignature: "getFilm"
   ): TypedContractMethod<
@@ -437,9 +353,6 @@ export interface PayPerView extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "platformFeeBps"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
     nameOrSignature: "registerFilm"
   ): TypedContractMethod<
     [filmId: BigNumberish, priceWei: BigNumberish],
@@ -457,17 +370,8 @@ export interface PayPerView extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "setPlatformFeeBps"
-  ): TypedContractMethod<[newFeeBps: BigNumberish], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "withdrawPlatformFees"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "withdrawRevenue"
-  ): TypedContractMethod<[filmId: BigNumberish], [void], "nonpayable">;
 
   getEvent(
     key: "AccessPurchased"
@@ -498,29 +402,15 @@ export interface PayPerView extends BaseContract {
     OwnershipTransferredEvent.OutputObject
   >;
   getEvent(
-    key: "PlatformFeeUpdated"
+    key: "RevenueSplit"
   ): TypedContractEvent<
-    PlatformFeeUpdatedEvent.InputTuple,
-    PlatformFeeUpdatedEvent.OutputTuple,
-    PlatformFeeUpdatedEvent.OutputObject
-  >;
-  getEvent(
-    key: "PlatformFeesWithdrawn"
-  ): TypedContractEvent<
-    PlatformFeesWithdrawnEvent.InputTuple,
-    PlatformFeesWithdrawnEvent.OutputTuple,
-    PlatformFeesWithdrawnEvent.OutputObject
-  >;
-  getEvent(
-    key: "RevenueWithdrawn"
-  ): TypedContractEvent<
-    RevenueWithdrawnEvent.InputTuple,
-    RevenueWithdrawnEvent.OutputTuple,
-    RevenueWithdrawnEvent.OutputObject
+    RevenueSplitEvent.InputTuple,
+    RevenueSplitEvent.OutputTuple,
+    RevenueSplitEvent.OutputObject
   >;
 
   filters: {
-    "AccessPurchased(uint256,address,uint256)": TypedContractEvent<
+    "AccessPurchased(uint256,address,uint256,address,uint256,uint256)": TypedContractEvent<
       AccessPurchasedEvent.InputTuple,
       AccessPurchasedEvent.OutputTuple,
       AccessPurchasedEvent.OutputObject
@@ -564,37 +454,15 @@ export interface PayPerView extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "PlatformFeeUpdated(uint256,uint256)": TypedContractEvent<
-      PlatformFeeUpdatedEvent.InputTuple,
-      PlatformFeeUpdatedEvent.OutputTuple,
-      PlatformFeeUpdatedEvent.OutputObject
+    "RevenueSplit(address,uint256,uint256)": TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
-    PlatformFeeUpdated: TypedContractEvent<
-      PlatformFeeUpdatedEvent.InputTuple,
-      PlatformFeeUpdatedEvent.OutputTuple,
-      PlatformFeeUpdatedEvent.OutputObject
-    >;
-
-    "PlatformFeesWithdrawn(address,uint256)": TypedContractEvent<
-      PlatformFeesWithdrawnEvent.InputTuple,
-      PlatformFeesWithdrawnEvent.OutputTuple,
-      PlatformFeesWithdrawnEvent.OutputObject
-    >;
-    PlatformFeesWithdrawn: TypedContractEvent<
-      PlatformFeesWithdrawnEvent.InputTuple,
-      PlatformFeesWithdrawnEvent.OutputTuple,
-      PlatformFeesWithdrawnEvent.OutputObject
-    >;
-
-    "RevenueWithdrawn(uint256,address,uint256,uint256)": TypedContractEvent<
-      RevenueWithdrawnEvent.InputTuple,
-      RevenueWithdrawnEvent.OutputTuple,
-      RevenueWithdrawnEvent.OutputObject
-    >;
-    RevenueWithdrawn: TypedContractEvent<
-      RevenueWithdrawnEvent.InputTuple,
-      RevenueWithdrawnEvent.OutputTuple,
-      RevenueWithdrawnEvent.OutputObject
+    RevenueSplit: TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
   };
 }

@@ -48,8 +48,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/MovieTicket.sol": {
-      "lastModificationDate": 1790634724284,
-      "contentHash": "71f05e32dffcd0c47c1b6eb1e688d965",
+      "lastModificationDate": 1790664507125,
+      "contentHash": "26972ece215c89e61efe14082f60130e",
       "sourceName": "contracts/MovieTicket.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -77,7 +77,7 @@
       },
       "imports": [
         "erc721a/contracts/ERC721A.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
+        "./RevenueSplitter.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
       ],
       "versionPragmas": [
@@ -1385,8 +1385,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/SubscriptionManager.sol": {
-      "lastModificationDate": 1790651528937,
-      "contentHash": "444c480f1c4267cbbe60523cbab5915c",
+      "lastModificationDate": 1790664507126,
+      "contentHash": "572af203d7d178a60876faf93b13bfef",
       "sourceName": "contracts/SubscriptionManager.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1413,7 +1413,7 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
+        "./RevenueSplitter.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
       ],
       "versionPragmas": [
@@ -1424,8 +1424,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/PayPerView.sol": {
-      "lastModificationDate": 1790627979156,
-      "contentHash": "5c33334674bce63bb7ff9ff576f578f8",
+      "lastModificationDate": 1790664507125,
+      "contentHash": "d67b0409902092a3ed26da96ea8489db",
       "sourceName": "contracts/PayPerView.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1452,7 +1452,7 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
+        "./RevenueSplitter.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
       ],
       "versionPragmas": [
@@ -1536,6 +1536,44 @@
       ],
       "artifacts": [
         "ProofRegistry"
+      ]
+    },
+    "/home/dino/Decentralflix/packages/contracts/contracts/RevenueSplitter.sol": {
+      "lastModificationDate": 1790664380581,
+      "contentHash": "7a4cd80edd93a24a91483f9199abb4a3",
+      "sourceName": "contracts/RevenueSplitter.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "RevenueSplitter"
       ]
     }
   }

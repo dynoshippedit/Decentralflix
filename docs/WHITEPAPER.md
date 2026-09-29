@@ -42,7 +42,7 @@ Filmmakers or the operator define **plans** (`planId → name, price, duration, 
 
 ### 3.3 Pay-per-view (PayPerView)
 
-For one-time purchases without an NFT: `buyAccess(filmId)` records licensed streaming access for the caller (rental or licensed access per the filmmaker's terms; not a perpetuity claim). The filmmaker sets the price; the contract splits payment into filmmaker revenue and a platform fee (`platformFeeBps`, capped at 2500 = 25%, adjustable by the owner). Overpayment is impossible by design — the call reverts unless `msg.value` exactly equals the price. Filmmakers withdraw via `withdrawRevenue`; the owner withdraws accrued platform fees separately. Every wei is accounted for in exactly one of those two buckets.
+For one-time purchases without an NFT: `buyAccess(filmId)` records licensed streaming access for the caller (rental or licensed access per the filmmaker's terms; not a perpetuity claim). The filmmaker sets the price; the contract splits payment immediately and non-custodially through the shared RevenueSplitter: 75% (+ rounding remainder) to the filmmaker, 25% to the platform, from the immutable `PLATFORM_FEE_BPS = 2500` constant — the owner cannot change the split and there is no owner-settable fee. Overpayment is impossible by design — the call reverts unless `msg.value` exactly equals the price. Nothing accrues in the contract; there is no withdraw path. Every wei is accounted for in exactly one of those two buckets.
 
 ### 3.4 Storage layer (@decentralflix/storage)
 

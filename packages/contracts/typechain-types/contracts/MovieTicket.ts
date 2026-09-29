@@ -26,6 +26,8 @@ import type {
 export interface MovieTicketInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "BPS_DENOMINATOR"
+      | "PLATFORM_FEE_BPS"
       | "accessBalanceOf"
       | "approve"
       | "balanceOf"
@@ -35,7 +37,6 @@ export interface MovieTicketInterface extends Interface {
       | "delistedAt"
       | "getApproved"
       | "getCreatorShare"
-      | "getCurrentPlatformFeeBps"
       | "getPlatformFee"
       | "hasAccess"
       | "hasAccessToVideo"
@@ -51,13 +52,11 @@ export interface MovieTicketInterface extends Interface {
       | "owner"
       | "ownerOf"
       | "pause"
-      | "platformFeeBps"
       | "renounceOwnership"
       | "restoreFilm"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
-      | "setPlatformFee"
       | "supportsInterface"
       | "symbol"
       | "ticketTypes"
@@ -69,7 +68,6 @@ export interface MovieTicketInterface extends Interface {
       | "transferOwnership"
       | "unpause"
       | "videoMetadata"
-      | "withdraw"
   ): FunctionFragment;
 
   getEvent(
@@ -82,7 +80,7 @@ export interface MovieTicketInterface extends Interface {
       | "CreatorPaid"
       | "OwnershipTransferred"
       | "Paused"
-      | "PlatformFeeUpdated"
+      | "RevenueSplit"
       | "TicketBurned"
       | "TierUpgraded"
       | "Transfer"
@@ -90,6 +88,14 @@ export interface MovieTicketInterface extends Interface {
       | "VideoMinted"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "BPS_DENOMINATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "PLATFORM_FEE_BPS",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "accessBalanceOf",
     values: [AddressLike, string]
@@ -125,10 +131,6 @@ export interface MovieTicketInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getCreatorShare",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getCurrentPlatformFeeBps",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getPlatformFee",
@@ -182,10 +184,6 @@ export interface MovieTicketInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "platformFeeBps",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -201,10 +199,6 @@ export interface MovieTicketInterface extends Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [AddressLike, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setPlatformFee",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -244,8 +238,15 @@ export interface MovieTicketInterface extends Interface {
     functionFragment: "videoMetadata",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "BPS_DENOMINATOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "PLATFORM_FEE_BPS",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "accessBalanceOf",
     data: BytesLike
@@ -265,10 +266,6 @@ export interface MovieTicketInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getCreatorShare",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getCurrentPlatformFeeBps",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -314,10 +311,6 @@ export interface MovieTicketInterface extends Interface {
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "platformFeeBps",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
@@ -335,10 +328,6 @@ export interface MovieTicketInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setPlatformFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -373,7 +362,6 @@ export interface MovieTicketInterface extends Interface {
     functionFragment: "videoMetadata",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
 export namespace ApprovalEvent {
@@ -527,12 +515,21 @@ export namespace PausedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace PlatformFeeUpdatedEvent {
-  export type InputTuple = [oldFeeBps: BigNumberish, newFeeBps: BigNumberish];
-  export type OutputTuple = [oldFeeBps: bigint, newFeeBps: bigint];
+export namespace RevenueSplitEvent {
+  export type InputTuple = [
+    creator: AddressLike,
+    creatorShare: BigNumberish,
+    platformFee: BigNumberish
+  ];
+  export type OutputTuple = [
+    creator: string,
+    creatorShare: bigint,
+    platformFee: bigint
+  ];
   export interface OutputObject {
-    oldFeeBps: bigint;
-    newFeeBps: bigint;
+    creator: string;
+    creatorShare: bigint;
+    platformFee: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -679,6 +676,10 @@ export interface MovieTicket extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  BPS_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
+
+  PLATFORM_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
+
   accessBalanceOf: TypedContractMethod<
     [user: AddressLike, videoHash: string],
     [bigint],
@@ -712,8 +713,6 @@ export interface MovieTicket extends BaseContract {
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
   getCreatorShare: TypedContractMethod<[price: BigNumberish], [bigint], "view">;
-
-  getCurrentPlatformFeeBps: TypedContractMethod<[], [bigint], "view">;
 
   getPlatformFee: TypedContractMethod<[price: BigNumberish], [bigint], "view">;
 
@@ -785,8 +784,6 @@ export interface MovieTicket extends BaseContract {
 
   pause: TypedContractMethod<[], [void], "nonpayable">;
 
-  platformFeeBps: TypedContractMethod<[], [bigint], "view">;
-
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   restoreFilm: TypedContractMethod<[videoHash: string], [void], "nonpayable">;
@@ -810,12 +807,6 @@ export interface MovieTicket extends BaseContract {
 
   setApprovalForAll: TypedContractMethod<
     [operator: AddressLike, approved: boolean],
-    [void],
-    "nonpayable"
-  >;
-
-  setPlatformFee: TypedContractMethod<
-    [newFeeBps: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -876,12 +867,16 @@ export interface MovieTicket extends BaseContract {
     "view"
   >;
 
-  withdraw: TypedContractMethod<[], [void], "nonpayable">;
-
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "BPS_DENOMINATOR"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "PLATFORM_FEE_BPS"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "accessBalanceOf"
   ): TypedContractMethod<
@@ -921,9 +916,6 @@ export interface MovieTicket extends BaseContract {
   getFunction(
     nameOrSignature: "getCreatorShare"
   ): TypedContractMethod<[price: BigNumberish], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "getCurrentPlatformFeeBps"
-  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getPlatformFee"
   ): TypedContractMethod<[price: BigNumberish], [bigint], "view">;
@@ -1002,9 +994,6 @@ export interface MovieTicket extends BaseContract {
     nameOrSignature: "pause"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "platformFeeBps"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
@@ -1036,9 +1025,6 @@ export interface MovieTicket extends BaseContract {
     [void],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "setPlatformFee"
-  ): TypedContractMethod<[newFeeBps: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
@@ -1098,9 +1084,6 @@ export interface MovieTicket extends BaseContract {
     ],
     "view"
   >;
-  getFunction(
-    nameOrSignature: "withdraw"
-  ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
     key: "Approval"
@@ -1159,11 +1142,11 @@ export interface MovieTicket extends BaseContract {
     PausedEvent.OutputObject
   >;
   getEvent(
-    key: "PlatformFeeUpdated"
+    key: "RevenueSplit"
   ): TypedContractEvent<
-    PlatformFeeUpdatedEvent.InputTuple,
-    PlatformFeeUpdatedEvent.OutputTuple,
-    PlatformFeeUpdatedEvent.OutputObject
+    RevenueSplitEvent.InputTuple,
+    RevenueSplitEvent.OutputTuple,
+    RevenueSplitEvent.OutputObject
   >;
   getEvent(
     key: "TicketBurned"
@@ -1290,15 +1273,15 @@ export interface MovieTicket extends BaseContract {
       PausedEvent.OutputObject
     >;
 
-    "PlatformFeeUpdated(uint256,uint256)": TypedContractEvent<
-      PlatformFeeUpdatedEvent.InputTuple,
-      PlatformFeeUpdatedEvent.OutputTuple,
-      PlatformFeeUpdatedEvent.OutputObject
+    "RevenueSplit(address,uint256,uint256)": TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
-    PlatformFeeUpdated: TypedContractEvent<
-      PlatformFeeUpdatedEvent.InputTuple,
-      PlatformFeeUpdatedEvent.OutputTuple,
-      PlatformFeeUpdatedEvent.OutputObject
+    RevenueSplit: TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
 
     "TicketBurned(uint256,address)": TypedContractEvent<

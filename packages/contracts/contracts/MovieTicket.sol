@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "erc721a/contracts/ERC721A.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./RevenueSplitter.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
@@ -16,6 +16,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * - Fully non-custodial: all value flows wallet-to-wallet via direct contract calls.
  * - Platform (operator) never takes custody of funds or NFTs.
  *
+ * @notice NON-CUSTODIAL SPLITTER: every mint payment is split immediately
+ * through the shared RevenueSplitter — 75% (+ rounding remainder) to the
+ * creator, 25% to the platform (owner). The split is an immutable constant;
+ * there is no owner-settable fee and no owner withdraw sweep. Nothing
+ * accrues in the contract.
+ *
  * Section 230 (Communications Decency Act) + DMCA Safe Harbor:
  * The broader Decentralflix platform relies on Section 230 immunity for third-party UGC.
  * This contract only handles access gating and payments; it does not host or moderate content.
@@ -28,6 +34,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *
  * All legal documents and contract comments must be reviewed by licensed counsel before mainnet.
  * This contract is provided as part of the production build for demonstration purposes.
+ * NOTE: this contract is unaudited.
  *
  * Supports two types of tokens:
  *   1. Permanent Access Passes (soulbound-style or transferable)
@@ -35,12 +42,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *
  * Higher tiers can mint additional burnable tickets that reappear in the buyer's wallet.
  */
-contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
+contract MovieTicket is ERC721A, RevenueSplitter, ReentrancyGuard {
     // Business counter for videoMetadata keys (kept in sync with ERC721A token IDs via spot minting).
     // We no longer shadow ERC721A's totalSupply() or _nextTokenId().
     uint256 private _videoCounter;
     bool private _paused;
-    uint256 public platformFeeBps; // e.g. 2500 = 25% (75% creator share)
 
     // URI storage (ERC721A does not include ERC721URIStorage by default)
     mapping(uint256 => string) private _tokenURIs;
@@ -88,6 +94,9 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     mapping(bytes32 => string) public delistReason;
     mapping(bytes32 => uint256) public delistedAt;
 
+    // ── Errors ────────────────────────────────────────────────────────────
+    error IncorrectPayment(uint256 expected, uint256 received);
+
     event VideoMinted(
         uint256 indexed tokenId,
         address indexed creator,
@@ -103,17 +112,13 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     event TicketBurned(uint256 indexed tokenId, address indexed viewer);
     event Paused(address account);
     event Unpaused(address account);
-    event PlatformFeeUpdated(uint256 oldFeeBps, uint256 newFeeBps);
     event TierUpgraded(uint256 indexed tokenId, Tier newTier); // Future: allow upgrading tiers
 
     // Emergency legal removal events (only for illegal content — political deplatforming is not removable)
     event ContentDelisted(string indexed videoHash, string reason, uint256 timestamp, address by);
     event ContentRestored(string indexed videoHash, uint256 timestamp, address by);
 
-    constructor(uint256 _initialPlatformFeeBps) ERC721A("Decentralflix Movie Ticket", "DFMT") Ownable(msg.sender) {
-        require(_initialPlatformFeeBps <= 2500, "Fee too high (max 25%)");
-        platformFeeBps = _initialPlatformFeeBps;
-    }
+    constructor() ERC721A("Decentralflix Movie Ticket", "DFMT") Ownable(msg.sender) {}
 
     /**
      * @dev ERC721A hook — start token IDs at 0 to match prior ERC721 behavior.
@@ -182,18 +187,6 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
         emit Unpaused(msg.sender);
     }
 
-    function setPlatformFee(uint256 newFeeBps) public onlyOwner {
-        require(newFeeBps <= 2500, "Fee too high (max 25%)");
-        uint256 oldFee = platformFeeBps;
-        platformFeeBps = newFeeBps;
-        emit PlatformFeeUpdated(oldFee, newFeeBps);
-    }
-
-    function withdraw() public onlyOwner nonReentrant {
-        (bool success, ) = owner().call{value: address(this).balance}("");
-        require(success, "Withdraw failed");
-    }
-
     // === Emergency Legal Removal (T16) — ONLY for illegal content (CSAM, etc.) ===
     // Censorship resistance applies to political pressure on *legal* content.
     function delistFilm(string calldata videoHash, string calldata reason) external onlyOwner {
@@ -214,6 +207,21 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
         return isDelisted[keccak256(abi.encodePacked(videoHash))];
     }
 
+    /**
+     * @dev Split the mint payment 75/25 through the shared RevenueSplitter.
+     * Payment must equal the price exactly — with no owner withdraw sweep,
+     * any excess would be locked in the contract forever. Reverts on a zero
+     * creator; the creator's share is NEVER redirected.
+     */
+    function _splitMintPayment(address creator, uint256 price)
+        internal
+        returns (uint256 creatorShare, uint256 platformFee)
+    {
+        if (msg.value != price) revert IncorrectPayment(price, msg.value);
+        if (msg.value == 0) return (0, 0); // free mint: no transfers, nothing accrues
+        return _splitRevenue(creator);
+    }
+
     function mintPermanentPass(
         address to,
         address creator,
@@ -221,18 +229,17 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
         uint256 price,
         Tier tier // New parameter for multi-tier support
     ) public payable onlyOwner whenNotPaused nonReentrant returns (uint256) {
-        require(msg.value >= price, "Insufficient payment");
         require(uint8(tier) <= uint8(Tier.PRODUCER), "Invalid tier");
 
-        uint256 platformFee = (price * platformFeeBps) / 10000;
-        uint256 creatorShare = price - platformFee;
+        (uint256 creatorShare, uint256 platformFee) = _splitMintPayment(creator, price);
 
         uint256 tokenId = _videoCounter++;
 
-        // Pay creator immediately (protects them from future gas price increases)
+        // Pay creator immediately at the immutable 75/25 split (protects them
+        // from future gas price increases). The platform fee goes straight to
+        // the owner — nothing accrues in the contract, so there is nothing for
+        // an owner sweep to take.
         if (creatorShare > 0) {
-            (bool sent, ) = creator.call{value: creatorShare}("");
-            require(sent, "Creator payment failed");
             emit CreatorPaid(tokenId, creator, creatorShare);
         }
 
@@ -281,18 +288,15 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
         uint256 price,
         Tier tier // New parameter for multi-tier support
     ) public payable onlyOwner whenNotPaused nonReentrant returns (uint256) {
-        require(msg.value >= price, "Insufficient payment");
         require(uint8(tier) <= uint8(Tier.PRODUCER), "Invalid tier");
 
-        uint256 platformFee = (price * platformFeeBps) / 10000;
-        uint256 creatorShare = price - platformFee;
+        (uint256 creatorShare, uint256 platformFee) = _splitMintPayment(creator, price);
 
         uint256 tokenId = _videoCounter++;
 
-        // Pay creator immediately (protects them from future gas price increases)
+        // Pay creator immediately at the immutable 75/25 split. The platform
+        // fee goes straight to the owner — nothing accrues in the contract.
         if (creatorShare > 0) {
-            (bool sent, ) = creator.call{value: creatorShare}("");
-            require(sent, "Creator payment failed");
             emit CreatorPaid(tokenId, creator, creatorShare);
         }
 
@@ -354,17 +358,14 @@ contract MovieTicket is ERC721A, Ownable, ReentrancyGuard {
     }
 
     // === Fee Calculation Helpers (for frontend / off-chain use) ===
+    // Wired to the shared immutable split — the owner cannot change these.
 
-    function getPlatformFee(uint256 price) public view returns (uint256) {
-        return (price * platformFeeBps) / 10000;
+    function getPlatformFee(uint256 price) public pure returns (uint256) {
+        return (price * PLATFORM_FEE_BPS) / BPS_DENOMINATOR;
     }
 
-    function getCreatorShare(uint256 price) public view returns (uint256) {
+    function getCreatorShare(uint256 price) public pure returns (uint256) {
         return price - getPlatformFee(price);
-    }
-
-    function getCurrentPlatformFeeBps() public view returns (uint256) {
-        return platformFeeBps;
     }
 
     /**

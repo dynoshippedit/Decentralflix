@@ -24,7 +24,7 @@ describe("Reviews", () => {
 
     async function realFixture() {
       const [owner, holder, viewer, backer] = await ethers.getSigners();
-      const movieTicket = await ethers.deployContract("MovieTicket", [2500n], owner);
+      const movieTicket = await ethers.deployContract("MovieTicket", [], owner);
       const campaign = await ethers.deployContract(
         "FilmmakerCampaign",
         [await movieTicket.getAddress()],
