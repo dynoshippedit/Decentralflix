@@ -42,5 +42,19 @@
     "lifeboat test.sh not re-run (no TicketNFT usage in apps/lifeboat; contract ABI surface changed only by addition of RevenueSplitter members)",
     "pre-existing eslint errors in useMovieTicket.ts / mint/page.tsx (setState-in-effect, missing deps, any) predate this cycle",
     "packages/contracts/cache/solidity-files-cache.json modified by compile (tracked build cache)"
-  ]
+  ],
+  "proposed_status": "VERIFIED",
+  "controller_verification": {
+    "date": "2026-09-29",
+    "checks": [
+      "source identity 76c08f7 on devteam/review-2026-09-29, tree clean, nothing pushed",
+      "TicketNFT.sol: contract TicketNFT is ERC721, RevenueSplitter, ReentrancyGuard; mintTicket splits via _splitRevenue(film.filmmaker); exact payment enforced; free mints skip transfers",
+      "superseded banners present in all three notes files, old 100% text preserved; Q-df12-001 RESOLVED; WHITEPAPER 3.1 corrected",
+      "drift guard abi-drift.test.ts: per-contract deep equality frontend ABI vs compiled artifacts, fail-closed on missing artifact/const/entry change, runs under npm test; documented SEEDER_CREDITS deviation asserted as only exception",
+      "npx hardhat test: 236/236 green (independent re-run)",
+      "npm test (frontend vitest): 210/210 green (independent re-run)",
+      "drift guard refusal: worker proved 1 failed/12 passed on removed RevenueSplit entry, green after regen"
+    ],
+    "result": "VERIFIED"
+  }
 }
