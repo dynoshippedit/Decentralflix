@@ -109,9 +109,14 @@
     },
     {
       "id": "S8",
-      "status": "PENDING",
-      "summary": "",
-      "evidence": []
+      "status": "PASS",
+      "summary": "Full gate through S8 PASS. Verdict: ACCEPT. df-cycle-13 is sound; FIND-01 fixed and proven by two-direction fault injection; 3 leads rejected with counter-evidence. Fix + records committed locally as 63cab36 (no push). Contracts UNAUDITED (standing flag).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df13-2026-09-29b/evidence/s8-verdict.md",
+          "sha256": "741f9eb3c05551f79bf7e39175110f0ebd91ae75088b637060e21516eca7bf92"
+        }
+      ]
     }
   ],
   "coverage": [
@@ -677,8 +682,8 @@
       "remaining_reason": ""
     }
   ],
-  "reviewer_mode": null,
-  "next_action": "",
+  "reviewer_mode": "SELF_REVIEW",
+  "next_action": "Handback to parent agent: checkup-df13-2026-09-29b complete, full gate PASS through S8, verdict ACCEPT. Records + FIND-01 fix committed locally on branch devteam/review-2026-09-29 (no push). Nothing further queued; contracts remain UNAUDITED (standing flag).",
   "record_shapes": {
     "evidence_ref": {
       "path": "actual/project-relative/artifact",
@@ -705,6 +710,6 @@
       "remaining_reason": "Concrete investigation or external dependency"
     }
   },
-  "reviewer_identity": null,
+  "reviewer_identity": "checkup-controller agent session 2026-09-29: the same agent that performed the review acted as controller; no independent reviewer was dispatched for this run.",
   "independent_review_evidence": []
 }
