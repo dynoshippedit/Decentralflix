@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df14-2026-09-29",
+  "spec_digest": "73d56be3d477ffb35bdebf44ca0c531d4c36e3babc0cb3115368d419021112b2",
+  "check_id": "check-tsc",
+  "phase": "final",
+  "argv": [
+    "npx",
+    "tsc",
+    "--noEmit"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T07:55:20.150033+00:00",
+  "finished_at": "2026-09-29T07:55:25.631860+00:00",
+  "source_before": "e3c446fa4998b2c1d7c603f820c83aa05a2c03f4c305323f1d3412ac0e53c15f",
+  "source_after": "e3c446fa4998b2c1d7c603f820c83aa05a2c03f4c305323f1d3412ac0e53c15f",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-tsc.json.log",
+    "sha256": "b79718d57988731da7c8669d893ae14a9741ad3fe61dc2a742f94d078b82d636"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "review_id": "checkup-df14-2026-09-29",
+  "spec_digest": "73d56be3d477ffb35bdebf44ca0c531d4c36e3babc0cb3115368d419021112b2",
+  "check_id": "check-frontend",
+  "phase": "final",
+  "argv": [
+    "npm",
+    "test"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T07:55:25.711121+00:00",
+  "finished_at": "2026-09-29T07:55:27.029679+00:00",
+  "source_before": "e3c446fa4998b2c1d7c603f820c83aa05a2c03f4c305323f1d3412ac0e53c15f",
+  "source_after": "e3c446fa4998b2c1d7c603f820c83aa05a2c03f4c305323f1d3412ac0e53c15f",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-frontend.json.log",
+    "sha256": "b5465ee621d62469a570cc75347eabac59801dbeb3d03435579cc11924b5982a"
+  }
+}

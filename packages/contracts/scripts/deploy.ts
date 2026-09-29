@@ -86,7 +86,7 @@ async function main() {
     try {
       await run("verify:verify", {
         address: movieTicketAddress,
-        constructorArguments: [INITIAL_PLATFORM_FEE_BPS],
+        constructorArguments: [],
       });
       console.log("✅ Contract verified successfully!");
     } catch (verifyError: any) {

@@ -167,7 +167,7 @@ export default function DemoPage() {
               <div className="text-white/50 text-sm">To the creator's wallet, on-chain. No invoices.</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <div className="text-3xl font-semibold mb-2">30%</div>
+              <div className="text-3xl font-semibold mb-2">25%</div>
               <div className="text-white/50 text-sm">Platform fee. Covers Cloudflare, Livepeer, Arbitrum gas, backend ops.</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">

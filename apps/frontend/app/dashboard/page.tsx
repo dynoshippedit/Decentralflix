@@ -491,7 +491,7 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-[10px] text-white/40 mt-2">Platform fee (currently 25%, adjustable by the owner, hard-capped at 25%) stays in the contract for the owner to withdraw.</div>
+                <div className="text-[10px] text-white/40 mt-2">Platform fee is a fixed 25%, split at payment time — the creator receives 75% plus any rounding remainder. The owner cannot change the split or withdraw funds.</div>
               </div>
             </div>
 

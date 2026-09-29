@@ -1,0 +1,423 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df14-2026-09-29",
+  "spec_digest": "73d56be3d477ffb35bdebf44ca0c531d4c36e3babc0cb3115368d419021112b2",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df14-2026-09-29/initial.json",
+    "sha256": "e806c150c9e2ef00e3ea4361b2ee91b3fcdcf48ff67c56285df6afbed4a7ab01"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Change checkup frozen on DF-1/DF-2/DF-3 (3 files, 3 review units, 9 coverage cells, 3 behavior-bearing checks). Deviation documented: fixes applied before snapshot; pre-change state was 1c7c82a + checklist edit, verified by checkup-df13b.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s0-scope.md",
+          "sha256": "faadd4eb3d7ff4c5abcc9af2f4806b8fe91a5e1e67a168307b0e16a22f609da5"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline inherited from checkup-df13b on the same tree: hardhat 236/236, frontend 211/211, tsc clean. No environment faults; all checks local.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "067a783dcddc392c82b6f648b02fd67208ae36a0583bfd101fd02bf73d9739fc"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "Change sites mapped: dashboard footnote (owner-facing fee statement), demo economics section (public), deploy verify flow (live-network only). No data stores, events, or external effects touched; failure paths unchanged.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b2c2e501d427a4bf9c2dc9893949381571884f3d7a583c05545c64bfda78cd2"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "16/16 coverage cells done: 13 REVIEWED with concrete observations, 3 TST cells justified NOT_APPLICABLE (no harness for static copy / deploy script). No new defects in the matrix pass.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "3 confirmed defects (DF-1/DF-2/DF-3), each with claim, location, and counter-evidence challenge. Repo-wide sweeps for stale fee language clean; no other leads.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s4-findings.md",
+          "sha256": "ef861aafac9b62a2640326671c4425a2bfe23ed022cd27a56d01fa9f44359ca7"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "Smallest coherent fixes: DF-1 footnote rewritten, DF-2 card 30%->25%, DF-3 constructorArguments: []. Full diff preserved in evidence.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s5-fix.md",
+          "sha256": "27843de4084e42c6753bcf1a9b0b195cf3c547c2737b25e2e56d8dbf6fe71fb7"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "All three frozen final checks through the recorder, exit 0: check-tsc clean, check-frontend 211/211, check-hardhat 236/236.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/checks/baseline/check-hardhat.json",
+          "sha256": "2eb2cbe4f7e4459e580c2b66362f3843a0a3dc94d2f2d9291c6d2e8bc13ab2a5"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "e87f6768fcbfbee6a298e97ea7be37a491ad12a5e621d336b687a8e8ef6585c2"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "49564b7b2bea8f9d122b930f0dfbded86c7b038b161f937cd5014751c16dd66d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "5c693f600fa82a002357edf0322ee18d4f9b7fe0dc414d35dad6c7a1b114bc1f"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Post-fix diff re-read: exactly the 3 intended one-line changes plus the pre-existing checklist rewrite. Docs-vs-tree: copy now matches the immutable 75/25 contracts; no stale fee language remains in the frontend.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "11666ba1462c565324f2cddb9db31583415bf05d2a81d3b89441abe54df33ec1"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Full gate S0-S8 PASS. Verdict: ACCEPT. Standing flags: contracts UNAUDITED; no mainnet/real-funds deployment without Dino's explicit authorization; no push.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "75d9ea57f03fb94a6b3a9bf1d8599206f96e414ab1beeb5c8454dc1289f4df04"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "copy-dashboard",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Footnote now states the immutable 25% fee, split at payment time, creator gets 75% + remainder, owner cannot change or withdraw \u2014 matches RevenueSplitter.sol PLATFORM_FEE_BPS=2500 and all four viewer-payment contracts.",
+      "unit_digest": "7913fafc7640460e1def3c43315afec92e658fb23faa8ca9c26992094fd81c53",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-dashboard",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Pure presentational text in the dashboard payout section; no data flow, no coupling to fee logic \u2014 the claim is documentary, not computational.",
+      "unit_digest": "7913fafc7640460e1def3c43315afec92e658fb23faa8ca9c26992094fd81c53",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-dashboard",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "Static copy has no executable behavior and no test harness targets it; covered by tsc compile and the frontend suite.",
+      "unit_digest": "7913fafc7640460e1def3c43315afec92e658fb23faa8ca9c26992094fd81c53",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-dashboard",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Docs-vs-tree: the only fee-mechanics statement on the dashboard page no longer contradicts the verified contracts or DEPLOYMENT_CHECKLIST.md.",
+      "unit_digest": "7913fafc7640460e1def3c43315afec92e658fb23faa8ca9c26992094fd81c53",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-dashboard",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Rendered footnote read in context; no other fee claim on the page conflicts with it.",
+      "unit_digest": "7913fafc7640460e1def3c43315afec92e658fb23faa8ca9c26992094fd81c53",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-demo",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Economics card now shows 25%, consistent with the 75% creator card (sums to 100) and the on-chain rule.",
+      "unit_digest": "5b8e37d1062361faa847236509ea97f42b7467ae3e050e53c9e2e48ab492d64e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-demo",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Static section in the demo page; no data flow or component coupling \u2014 presentational only.",
+      "unit_digest": "5b8e37d1062361faa847236509ea97f42b7467ae3e050e53c9e2e48ab492d64e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-demo",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "Static copy has no executable behavior and no test harness targets it; covered by tsc compile and the frontend suite.",
+      "unit_digest": "5b8e37d1062361faa847236509ea97f42b7467ae3e050e53c9e2e48ab492d64e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-demo",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Docs-vs-tree: the public economics section no longer carries the stale 30% figure from the pre-75/25 era.",
+      "unit_digest": "5b8e37d1062361faa847236509ea97f42b7467ae3e050e53c9e2e48ab492d64e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "copy-demo",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Card grid read in full; the 25% card text (infra cost coverage) is unchanged and still accurate.",
+      "unit_digest": "5b8e37d1062361faa847236509ea97f42b7467ae3e050e53c9e2e48ab492d64e",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "constructorArguments: [] matches MovieTicket's parameterless constructor; INITIAL_PLATFORM_FEE_BPS referenced nowhere else in the repo.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Verify step ordering unchanged (deploy, then verify on live networks with API key); only the argument list changed.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "The deploy script has no test harness; verified by tsc compile (BLD) and the contract suite.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "The script's verify behavior now matches its own log output and the deployment checklist's no-fee-arguments rule.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "BLD",
+      "status": "REVIEWED",
+      "reason": "tsc --noEmit clean proves the TS2304 is gone; the script compiles.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    },
+    {
+      "unit_id": "deploy-script",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "Live-network verify step can no longer throw ReferenceError after deployment; dry-run deploy path unchanged.",
+      "unit_digest": "25e321acc13408cfd38a0ed160b81800adc1d4faf9fcace8c8f2d6fb5eb53b8d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "22869ebb079d442415863bb930c067147f9ea12e60aadc4c02a9394c4a0d3931"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df14-2026-09-29/checks/baseline/check-hardhat.json",
+      "sha256": "2eb2cbe4f7e4459e580c2b66362f3843a0a3dc94d2f2d9291c6d2e8bc13ab2a5"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-tsc.json",
+      "sha256": "e87f6768fcbfbee6a298e97ea7be37a491ad12a5e621d336b687a8e8ef6585c2"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-frontend.json",
+      "sha256": "49564b7b2bea8f9d122b930f0dfbded86c7b038b161f937cd5014751c16dd66d"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14-2026-09-29/checks/final/check-hardhat.json",
+      "sha256": "5c693f600fa82a002357edf0322ee18d4f9b7fe0dc414d35dad6c7a1b114bc1f"
+    }
+  ],
+  "findings": [
+    {
+      "id": "DF-1",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Dashboard fee footnote claimed the fee was owner-adjustable and withdrawable \u2014 false under the immutable splitter.",
+      "challenge": "Checked for any fee setter or owner-withdraw path in all four viewer-payment contracts: none exists.",
+      "location": "apps/frontend/app/dashboard/page.tsx:494",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s4-findings.md",
+          "sha256": "ef861aafac9b62a2640326671c4425a2bfe23ed022cd27a56d01fa9f44359ca7"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s5-fix.md",
+          "sha256": "27843de4084e42c6753bcf1a9b0b195cf3c547c2737b25e2e56d8dbf6fe71fb7"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-tsc",
+        "check-frontend"
+      ]
+    },
+    {
+      "id": "DF-2",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Demo economics card showed a stale 30% platform fee next to the 75% creator card (self-contradictory, wrong).",
+      "challenge": "Checked whether 30% could refer to a different product line: it sits in PLATFORM ECONOMICS describing the same fee.",
+      "location": "apps/frontend/app/demo/page.tsx:170",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s4-findings.md",
+          "sha256": "ef861aafac9b62a2640326671c4425a2bfe23ed022cd27a56d01fa9f44359ca7"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s5-fix.md",
+          "sha256": "27843de4084e42c6753bcf1a9b0b195cf3c547c2737b25e2e56d8dbf6fe71fb7"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-tsc",
+        "check-frontend"
+      ]
+    },
+    {
+      "id": "DF-3",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "deploy.ts verify step referenced deleted INITIAL_PLATFORM_FEE_BPS: tsc TS2304, and a live deploy would crash with ReferenceError after contracts deploy.",
+      "challenge": "Repo-wide grep: the symbol is referenced only here and defined nowhere.",
+      "location": "packages/contracts/scripts/deploy.ts:89",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s4-findings.md",
+          "sha256": "ef861aafac9b62a2640326671c4425a2bfe23ed022cd27a56d01fa9f44359ca7"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14-2026-09-29/evidence/s5-fix.md",
+          "sha256": "27843de4084e42c6753bcf1a9b0b195cf3c547c2737b25e2e56d8dbf6fe71fb7"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-tsc",
+        "check-hardhat"
+      ]
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "overnight chief-engineer subagent (session b8d365d7), 2026-09-29",
+  "next_action": "Commit the three fixes plus these checkup records on devteam/review-2026-09-29 (no push).",
+  "record_shapes": {},
+  "independent_review_evidence": []
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df14-2026-09-29",
+  "project_root": "/home/dino/Decentralflix",
+  "source_paths": [
+    "apps/frontend/app/dashboard/page.tsx",
+    "apps/frontend/app/demo/page.tsx",
+    "packages/contracts/scripts/deploy.ts"
+  ],
+  "exclusions": [
+    {
+      "pattern": ".git",
+      "reason": "Version control internals; inspect Git status separately"
+    },
+    {
+      "pattern": "node_modules",
+      "reason": "Installed dependencies"
+    },
+    {
+      "pattern": "**/node_modules",
+      "reason": "Nested installed dependencies"
+    },
+    {
+      "pattern": "__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "**/__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "devteam/checkups",
+      "reason": "Changing checkup output, not application source"
+    }
+  ],
+  "review_units": [
+    {
+      "id": "copy-dashboard",
+      "paths": [
+        "apps/frontend/app/dashboard/page.tsx"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC",
+        "UIX"
+      ]
+    },
+    {
+      "id": "copy-demo",
+      "paths": [
+        "apps/frontend/app/demo/page.tsx"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC",
+        "UIX"
+      ]
+    },
+    {
+      "id": "deploy-script",
+      "paths": [
+        "packages/contracts/scripts/deploy.ts"
+      ],
+      "lenses": [
+        "COR",
+        "ARC",
+        "TST",
+        "DOC",
+        "BLD",
+        "REL"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-tsc",
+      "purpose": "TypeScript compiles clean: DF-3's TS2304 on INITIAL_PLATFORM_FEE_BPS is gone and the edited tsx files type-check",
+      "argv": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 300,
+      "baseline_required": false,
+      "final_required": true
+    },
+    {
+      "id": "check-frontend",
+      "purpose": "Frontend suite incl. ABI-drift guard still green after the copy edits",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 600,
+      "baseline_required": false,
+      "final_required": true
+    },
+    {
+      "id": "check-hardhat",
+      "purpose": "Contract suite green; deploy script change does not affect contract behavior",
+      "argv": [
+        "npx",
+        "hardhat",
+        "test"
+      ],
+      "cwd": "packages/contracts",
+      "timeout_seconds": 600,
+      "baseline_required": true,
+      "final_required": true
+    }
+  ]
+}
