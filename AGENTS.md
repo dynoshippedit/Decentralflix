@@ -58,3 +58,6 @@
 - Do not put video bytes on Arweave. Do not expose R2 credentials to client code.
 - Do not use linear token scans for ownership. Do not build AI moderation.
 - Do not promise what the research PDFs defer. When in doubt, the PDFs win.
+
+## Review program in progress
+Before any work in this repo, read `devteam/PLAYBOOK.md` in full, then `devteam/STATUS.md`, and follow them. The Playbook overrides conflicting defaults.
