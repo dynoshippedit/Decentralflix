@@ -45,6 +45,125 @@
     return API_BASE + path;
   }
 
+  // --- session auth (STR-001) ----------------------------------------------
+  // The Lifeboat API authenticates with Bearer session tokens. Every authed
+  // endpoint was unreachable from the UI because no page ever sent one:
+  // login() stores the token and the request helpers below attach it.
+  var TOKEN_KEY = "dfl.token";
+  var ACCOUNT_KEY = "dfl.account";
+
+  function lsGet(k) {
+    try {
+      if (!window.localStorage) return null;
+      return window.localStorage.getItem(k);
+    } catch (e) { return null; }
+  }
+  function lsSet(k, v) {
+    try {
+      if (window.localStorage) window.localStorage.setItem(k, v);
+    } catch (e) { /* private mode: token lives in memory only */ }
+  }
+  function lsDel(k) {
+    try {
+      if (window.localStorage) window.localStorage.removeItem(k);
+    } catch (e) { /* ignore */ }
+  }
+
+  function authToken() { return lsGet(TOKEN_KEY); }
+
+  function authAccount() {
+    var raw = lsGet(ACCOUNT_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+
+  function setAuth(token, account) {
+    if (token) lsSet(TOKEN_KEY, token);
+    if (account) lsSet(ACCOUNT_KEY, JSON.stringify(account));
+  }
+
+  function clearAuth() {
+    lsDel(TOKEN_KEY);
+    lsDel(ACCOUNT_KEY);
+  }
+
+  function authHeaders(extra) {
+    var h = {};
+    for (var k in extra) {
+      if (Object.prototype.hasOwnProperty.call(extra, k)) h[k] = extra[k];
+    }
+    var t = authToken();
+    if (t) h["Authorization"] = "Bearer " + t;
+    return h;
+  }
+
+  // POST /api/auth/login. Stores the session token + account on success.
+  // Throws the server's error message on bad credentials (nothing stored).
+  function login(email, password) {
+    return postJSON("/api/auth/login", { email: email, password: password }).then(function (data) {
+      if (!data || !data.token) throw new Error("login failed: no token in response");
+      setAuth(data.token, data.account || null);
+      renderAuth();
+      return data.account || null;
+    });
+  }
+
+  // POST /api/auth/logout with the current token (revokes the session
+  // server-side, SEC-002), then clear local state. Best-effort: local state
+  // is cleared even if the request fails.
+  function logout() {
+    function done() { clearAuth(); renderAuth(); }
+    return postJSON("/api/auth/logout", {}).then(done, done);
+  }
+
+  // Auth widget rendered inside the nav (renderNav). Logged out: email +
+  // password + Log in. Logged in: account chip + Log out. A stored token is
+  // validated with GET /api/auth/me; a stale/expired one is dropped.
+  function renderAuth() {
+    if (typeof document === "undefined") return;
+    var host = document.getElementById("dfl-auth");
+    if (!host) return;
+    var token = authToken();
+    var account = authAccount();
+    if (token && account) {
+      host.innerHTML =
+        '<span class="who">' + esc(account.email || account.name || "signed in") + "</span>" +
+        '<button type="button" class="btn small secondary" id="dfl-logout">Log out</button>';
+      var out = document.getElementById("dfl-logout");
+      if (out) out.addEventListener("click", function () { logout(); });
+      getJSON("/api/auth/me").then(
+        function () { /* token still good */ },
+        function (err) {
+          if (err && err.message && err.message.indexOf("401") >= 0) {
+            clearAuth();
+            renderAuth();
+          }
+        }
+      );
+    } else {
+      host.innerHTML =
+        '<input id="dfl-login-email" type="email" placeholder="email" autocomplete="username">' +
+        '<input id="dfl-login-pass" type="password" placeholder="password" autocomplete="current-password">' +
+        '<button type="button" class="btn small" id="dfl-login-btn">Log in</button>' +
+        '<span class="auth-err" id="dfl-login-err" hidden></span>';
+      var btn = document.getElementById("dfl-login-btn");
+      if (btn) btn.addEventListener("click", function () {
+        var email = document.getElementById("dfl-login-email").value;
+        var pass = document.getElementById("dfl-login-pass").value;
+        var errEl = document.getElementById("dfl-login-err");
+        btn.disabled = true;
+        login(email, pass).then(
+          function () { /* renderAuth() ran inside login() */ },
+          function (err) {
+            errEl.textContent = err && err.message ? err.message : "Login failed";
+            errEl.hidden = false;
+            btn.disabled = false;
+          }
+        );
+      });
+    }
+  }
+
   function readErrorText(res) {
     return res.json().then(
       function (data) {
@@ -60,7 +179,7 @@
   }
 
   function getJSON(path) {
-    return fetch(api(path), { headers: { Accept: "application/json" } }).then(function (res) {
+    return fetch(api(path), { headers: authHeaders({ Accept: "application/json" }) }).then(function (res) {
       if (!res.ok) {
         return readErrorText(res).then(function (msg) {
           throw new Error("GET " + path + " \u2192 " + res.status + " " + msg);
@@ -73,7 +192,7 @@
   function postJSON(path, body) {
     return fetch(api(path), {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
       body: JSON.stringify(body == null ? {} : body)
     }).then(function (res) {
       if (!res.ok) {
@@ -88,7 +207,7 @@
   function patchJSON(path, body) {
     return fetch(api(path), {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json", Accept: "application/json" }),
       body: JSON.stringify(body == null ? {} : body)
     }).then(function (res) {
       if (!res.ok) {
@@ -105,6 +224,7 @@
   }
 
   function renderNav(activePage) {
+    if (typeof document === "undefined") return;
     var host = document.getElementById("dfl-nav");
     if (!host) return;
     var links = NAV.map(function (item) {
@@ -113,7 +233,9 @@
     }).join("");
     host.innerHTML =
       '<div class="dfl-brand"><a href="index.html">DECENTRALFLIX <span>Lifeboat</span></a></div>' +
-      "<nav>" + links + "</nav>";
+      "<nav>" + links + "</nav>" +
+      '<div class="dfl-auth" id="dfl-auth"></div>';
+    renderAuth();
   }
 
   function showStatus(target, msg, kind) {
@@ -165,6 +287,13 @@
     getJSON: getJSON,
     postJSON: postJSON,
     patchJSON: patchJSON,
+    login: login,
+    logout: logout,
+    authToken: authToken,
+    authAccount: authAccount,
+    setAuth: setAuth,
+    clearAuth: clearAuth,
+    renderAuth: renderAuth,
     queryParam: queryParam,
     renderNav: renderNav,
     showStatus: showStatus,

@@ -809,6 +809,15 @@ node ../../devteam/repro/dat-002-crash-recovery.js > "$TMPD/dat002.log" 2>&1
 [ "$?" = "0" ] && pass "DAT-002 crash-recovery converges (journal + reconcile)" \
   || fail "DAT-002 crash recovery" "$(tail -3 "$TMPD/dat002.log")"
 
+
+# --- STR-001: Lifeboat UI sends auth (Bearer token via login/logout) ---
+# The node script loads public/app.js with shimmed browser APIs and asserts
+# login stores the session token, the request helpers attach
+# "Authorization: Bearer <token>", and logout revokes + clears local state.
+node ../../devteam/repro/str-001-ui-auth.js > "$TMPD/str001.log" 2>&1
+[ "$?" = "0" ] && pass "STR-001 UI auth (login stores token, helpers send Bearer)" \
+  || fail "STR-001 UI auth" "$(tail -3 "$TMPD/str001.log")"
+
 # --- summary -----------------------------------------------------------------------------------
 echo "----------------------------------------"
 echo "RESULT: PASS=$PASS FAIL=$FAIL"

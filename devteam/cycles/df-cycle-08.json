@@ -1,0 +1,41 @@
+{
+  "cycle_id": "df-cycle-08",
+  "project_id": "decentralflix",
+  "task_id": "DF-008",
+  "task_ref": "STR-001",
+  "status": "IMPLEMENTED",
+  "proposed_status": "IMPLEMENTED",
+  "source_identity": {
+    "branch": "devteam/review-2026-09-29",
+    "before": "98bf9ac",
+    "after": null
+  },
+  "summary": "STR-001: wired login/logout + Authorization headers through the Lifeboat UI. public/app.js now stores the /api/auth/login session token in localStorage, getJSON/postJSON/patchJSON attach 'Authorization: Bearer <token>' when set, logout POSTs /api/auth/logout (server-side revocation, SEC-002) then clears local state, and every page's nav gained a login form / account-chip + logout widget (renderAuth, with GET /api/auth/me validation of the stored token).",
+  "root_cause": "The shared UI helpers (getJSON/postJSON/patchJSON in public/app.js) never sent authentication and no page had any login/logout UI, so every authed endpoint (film import, claim approval, buyer import, library) was unusable from the UI.",
+  "fix": [
+    "apps/lifeboat/public/app.js: token/account localStorage storage (dfl.token, dfl.account) with try/catch for private-mode safety",
+    "apps/lifeboat/public/app.js: DFL.login(email,password) -> POST /api/auth/login, stores token+account; DFL.logout() -> POST /api/auth/logout with Bearer, best-effort, then clears local state",
+    "apps/lifeboat/public/app.js: authHeaders() attaches 'Authorization: Bearer <token>' in getJSON/postJSON/patchJSON when a token is set; no header when absent",
+    "apps/lifeboat/public/app.js: renderAuth() widget (login form when signed out, account chip + logout when signed in, /api/auth/me validation with 401 -> drop stale token), hosted in renderNav so every page gets it",
+    "apps/lifeboat/public/styles.css: .dfl-auth styles matching the dark theme",
+    "devteam/repro/str-001-ui-auth.js: 15-check node regression (loads app.js with shimmed window/localStorage/fetch); wired into test.sh STR-001 section"
+  ],
+  "evidence": {
+    "repro": "devteam/repro/str-001-ui-auth.js: 15/15 checks pass on fixed code; FAILS on pre-fix code (DFL.login is not a function) \u2014 genuinely falsifiable",
+    "suite": "full lifeboat suite on fresh port 18107 (never :8080): PASS=136 FAIL=0 (135 baseline + 1 new STR-001), exit 0"
+  },
+  "challenge_results": [
+    "All authed UI calls flow through the three shared helpers, so the Bearer injection covers every page at once; no per-page changes needed.",
+    "logout clears local state even if the network request fails (fail-closed locally); server-side revocation is best-effort.",
+    "Stored token validated against GET /api/auth/me on nav render; a stale/expired token is dropped silently rather than showing a false signed-in state.",
+    "XSS: account email rendered through the existing esc() helper."
+  ],
+  "recommended_next": "STR-002 or next QUEUED item in devteam/TASKS.md queue head after DF-008 (MUS-001 stays parked pending Dino's decision per devteam/QUESTIONS.md)",
+  "constraints_honored": [
+    "local commits only, no push",
+    "no mainnet/testnet broadcasts, no real payments, no funded keys, no third-party contact",
+    "contracts remain UNAUDITED \u2014 no audit claim added",
+    "bufirstrepo/* untouched",
+    "no requests against the :8080 demo service"
+  ]
+}

@@ -259,3 +259,9 @@ footer.site p { margin: 0.3rem 0; }
 
 .kv { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; }
+
+/* ---- auth widget (STR-001) ---- */
+.dfl-auth { display: flex; gap: 0.5rem; align-items: center; margin-left: auto; }
+.dfl-auth input { padding: 0.35rem 0.55rem; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--text); font-size: 0.85rem; width: 10.5rem; }
+.dfl-auth .who { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.dfl-auth .auth-err { color: var(--danger); font-size: 0.8rem; }
