@@ -1,0 +1,120 @@
+{
+ "blockers": [],
+ "changed_files": [
+  "apps/frontend/package.json",
+  "pnpm-lock.yaml",
+  "devteam/TASKS.md",
+  "devteam/cycles/df-cycle-04.json"
+ ],
+ "checks": [
+  {
+   "artifacts": [
+    "apps/frontend/package.json"
+   ],
+   "command": [
+    "npm",
+    "audit",
+    "--audit-level=critical"
+   ],
+   "cwd": "/home/dino/Decentralflix/apps/frontend",
+   "exit_code": 1,
+   "id": "before-audit",
+   "notes": "BEFORE: npm audit --audit-level=critical flagged next 16.2.6 in vulnerable range 16.0.0 - 16.3.2, Severity: critical, 12 advisories including the 2 unauthenticated RCEs: GHSA-p293-qw3h-jr36 (Unauthenticated RCE on windows-hosted servers) and GHSA-2xp9-vwfh-vxw4 (Unauthenticated RCE in Image Optimization API when AVIF files are used). Audit exit code 1 (vulnerabilities found). A separate moderate (vitest path traversal GHSA-82fw-gwwq-j7x9) also present \u2014 out of BLD-001 scope.",
+   "status": "PASS",
+   "tested_source_identity": "7bb6138 (pre-fix)"
+  },
+  {
+   "artifacts": [
+    "apps/frontend/package.json",
+    "pnpm-lock.yaml"
+   ],
+   "command": [
+    "pnpm",
+    "install"
+   ],
+   "cwd": "/home/dino/Decentralflix",
+   "exit_code": 0,
+   "id": "upgrade",
+   "notes": "Pinned next 16.2.6 -> 16.3.6 in apps/frontend/package.json (sed); pnpm install resolved 1396 packages and rewrote pnpm-lock.yaml. Diff confirmed as the next 16.2.6->16.3.6 dependency subtree swap only. Pre-existing peer warning (use-sync-external-store wants react ^16-18, repo has react 19.2.4) unchanged by this upgrade.",
+   "status": "PASS",
+   "tested_source_identity": "working tree (post-pin, pre-commit)"
+  },
+  {
+   "artifacts": [],
+   "command": [
+    "pnpm",
+    "audit",
+    "--audit-level=critical"
+   ],
+   "cwd": "/home/dino/Decentralflix",
+   "exit_code": 0,
+   "id": "after-audit-critical",
+   "notes": "AFTER: pnpm audit --audit-level=critical reports 0 critical vulnerabilities. Installed next version confirmed 16.3.6 via node -e require(next/package.json).version.",
+   "status": "PASS",
+   "tested_source_identity": "working tree (post-upgrade)"
+  },
+  {
+   "artifacts": [],
+   "command": [
+    "pnpm",
+    "audit"
+   ],
+   "cwd": "/home/dino/Decentralflix",
+   "exit_code": 0,
+   "id": "after-audit-full",
+   "notes": "AFTER: full pnpm audit: 7 low / 49 moderate / 46 high, 0 critical; grep for a 'next' advisory entry returns nothing \u2014 the critical next range is fully cleared. Remaining non-critical items (incl. the moderate vitest path-traversal, a build/test-only dep) are out of BLD-001 scope and stay QUEUED in the triage queue.",
+   "status": "PASS",
+   "tested_source_identity": "working tree (post-upgrade)"
+  },
+  {
+   "artifacts": [
+    "apps/frontend/.next (build output, gitignored)"
+   ],
+   "command": [
+    "pnpm",
+    "build"
+   ],
+   "cwd": "/home/dino/Decentralflix/apps/frontend",
+   "exit_code": 0,
+   "id": "rebuild",
+   "notes": "next build (16.3.6) completed with exit 0; all 20 routes compiled (static + dynamic), no build errors or warnings introduced by the upgrade.",
+   "status": "PASS",
+   "tested_source_identity": "working tree (post-upgrade)"
+  },
+  {
+   "artifacts": [],
+   "command": [
+    "pnpm",
+    "test"
+   ],
+   "cwd": "/home/dino/Decentralflix/apps/frontend",
+   "exit_code": 0,
+   "id": "frontend-vitest-suite",
+   "notes": "vitest run: 14 test files, 203/203 tests passed, exit 0. No regressions from the next 16.2.6 -> 16.3.6 upgrade.",
+   "status": "PASS",
+   "tested_source_identity": "working tree (post-upgrade)"
+  }
+ ],
+ "cycle_id": "df-cycle-04",
+ "lessons": [
+  "The Decentralflix frontend is pnpm-managed (pnpm-workspace.yaml), not npm: the correct upgrade path is pinning in apps/frontend/package.json + `pnpm install` at the workspace root, which updates pnpm-lock.yaml. `npm audit` still works for before/after evidence but `pnpm audit` is the consistent check for the managed tree.",
+  "History expansion on the Threadripper remote shell mangles heredocs containing '!'; prefix remote commands with `set +H` and ship file content via stdin piping (`threadripper-ssh 'cat > dest' < localfile`)."
+ ],
+ "next_action": {
+  "disposition": "CONTINUE",
+  "reason": "BLD-001 is implemented and verified (critical next range cleared, build clean, 203/203 frontend tests green). Queue head after DF-004: DOC-001 (S1, legal page false claims \u2014 contracts 'audited'/'deployed on Arbitrum'). MUS-001 (S1) stays parked pending Dino's decision (change contract vs change copy) per devteam/QUESTIONS.md.",
+  "task_id": "DOC-001"
+ },
+ "project_id": "decentralflix",
+ "project_root": "/home/dino/Decentralflix",
+ "proposed_status": "IMPLEMENTED",
+ "root_cause": "apps/frontend pinned next@16.2.6, inside npm-audited critical range 16.0.0-16.3.2 covering 12 advisories including 2 unauthenticated RCEs (GHSA-p293-qw3h-jr36 windows-hosted RCE; GHSA-2xp9-vwfh-vxw4 AVIF image-optimization RCE). The dependency was simply out of date; no code change was required beyond the version bump.",
+ "schema_version": "1.0",
+ "source_identity": {
+  "after": "c3f82ec df-cycle-04: fix BLD-001 - next 16.2.6 -> 16.3.6 (critical RCE range cleared)",
+  "before": "7bb61382a50ea692de0028e7bddb941ed1da2e13 (branch devteam/review-2026-09-29, clean tree)",
+  "method": "git rev-parse HEAD + git status --porcelain on the Threadripper before and after; all checks re-run against the post-upgrade tree"
+ },
+ "summary": "BLD-001 fixed: next upgraded 16.2.6 -> 16.3.6 in apps/frontend (package.json pin + pnpm install, pnpm-lock.yaml regenerated). Before: npm audit --audit-level=critical showed next in the 16.0.0-16.3.2 critical range with 12 advisories incl. 2 unauthenticated RCEs. After: pnpm audit shows 0 critical vulnerabilities and no next advisory entry; `next build` exits 0 (all 20 routes); frontend vitest suite 203/203 passes. No push; local commits only. Contracts remain UNAUDITED \u2014 no audit claim added anywhere.",
+ "task_id": "DF-004 (queue: BLD-001)"
+}
