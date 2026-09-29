@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-docs1-2026-09-29",
+  "spec_digest": "25bc2ed82486d5fa08c70f1ba365453bd7f9d82ad1813fc0e3b214379b6fa7f1",
+  "check_id": "check-onchain-truth",
+  "phase": "final",
+  "argv": [
+    "bash",
+    "-c",
+    "echo 'stale hits:'; grep -rc 'platformFeeBps' packages/contracts/contracts/*.sol | grep -v ':0' || true; echo '---'; grep -n 'uint256 public constant PLATFORM_FEE_BPS' packages/contracts/contracts/RevenueSplitter.sol"
+  ],
+  "cwd": "/home/dino/Decentralflix",
+  "started_at": "2026-09-29T20:27:29.226234+00:00",
+  "finished_at": "2026-09-29T20:27:29.246884+00:00",
+  "source_before": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+  "source_after": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-onchain-truth.json.log",
+    "sha256": "c4c22810b7798a4c919d6469f1fd2643cfd65e0da94cec1e2829df6488cf3e31"
+  }
+}

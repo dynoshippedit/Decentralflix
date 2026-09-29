@@ -61,6 +61,7 @@ export interface SubscriptionManagerInterface extends Interface {
       | "getPlan"
       | "hasActiveSubscription"
       | "owner"
+      | "platformRenounced"
       | "renew"
       | "renounceOwnership"
       | "subscribe"
@@ -105,6 +106,10 @@ export interface SubscriptionManagerInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "platformRenounced",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "renew", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -143,6 +148,10 @@ export interface SubscriptionManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "platformRenounced",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "renew", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -390,6 +399,8 @@ export interface SubscriptionManager extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
+  platformRenounced: TypedContractMethod<[], [boolean], "view">;
+
   renew: TypedContractMethod<[planId: BigNumberish], [void], "payable">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
@@ -450,6 +461,9 @@ export interface SubscriptionManager extends BaseContract {
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "platformRenounced"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "renew"
   ): TypedContractMethod<[planId: BigNumberish], [void], "payable">;

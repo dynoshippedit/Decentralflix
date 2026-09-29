@@ -69,6 +69,7 @@ export interface TicketNFTInterface extends Interface {
       | "nextTokenId"
       | "owner"
       | "ownerOf"
+      | "platformRenounced"
       | "redeemTicket"
       | "registerFilm"
       | "renounceOwnership"
@@ -145,6 +146,10 @@ export interface TicketNFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "platformRenounced",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "redeemTicket",
@@ -235,6 +240,10 @@ export interface TicketNFTInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "platformRenounced",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "redeemTicket",
     data: BytesLike
@@ -572,6 +581,8 @@ export interface TicketNFT extends BaseContract {
 
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
+  platformRenounced: TypedContractMethod<[], [boolean], "view">;
+
   redeemTicket: TypedContractMethod<
     [tokenId: BigNumberish],
     [void],
@@ -717,6 +728,9 @@ export interface TicketNFT extends BaseContract {
   getFunction(
     nameOrSignature: "ownerOf"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "platformRenounced"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "redeemTicket"
   ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;

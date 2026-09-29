@@ -1,0 +1,228 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-docs1-2026-09-29",
+  "spec_digest": "25bc2ed82486d5fa08c70f1ba365453bd7f9d82ad1813fc0e3b214379b6fa7f1",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-docs1-2026-09-29/initial.json",
+    "sha256": "a04616af4392c0f147854f5398e82be8a0bdca304f9dc0a8e2063db89b87726f"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Change checkup frozen on the DOCS-1 correction to docs/PHASE2_AUDIT.md: 1 source file, 1 review unit, 4 lenses (DOC/COR/ARC/TST with TST NOT_APPLICABLE explained), 3 checks. Deviation documented: correction already applied before freeze; pre-change state is the committed file at branch HEAD (stale lines :56/:77 unmarked there).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s0-scope.md",
+          "sha256": "5088aee817bdbe8a9a52889f92eedfe32e48b3a940227be784f4f65cf412f7bd"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline check-doc-diff through the recorder, exit 0, no timeout. The diff is the 3-hunk correction; out-of-scope working-tree change (apps/frontend/package.json, separate claimed task) excluded by the check argv. Source digests equal before/after.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7de0a6182112d94637092138ad919f34fc4a3851da9c55e4d2fc7d6de1b8d59c"
+        },
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/baseline/check-doc-diff.json",
+          "sha256": "3f8c7f5eee11838ecc2b6ed4ae89a286f5a08710d60da2f0db70237afdd0cedb"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "As-is map: dated-audit + correction-note pattern; header pinned to 2026-09-28/ccf762c; note defers current fee mechanics to DEPLOYMENT_CHECKLIST.md and WHITEPAPER.md 3.1-3.3; single fee-truth source preserved (RevenueSplitter.sol).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "91ac8a05b1abc50d031dcb002b562ef3ff9bd70d4df722a751ae844c858fa084"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "1 unit x 4 lenses reviewed. DOC PASS (dated, explained, both lines marked, original claims preserved); COR PASS (all note claims traced to tree); ARC PASS (historical record coherent); TST NOT_APPLICABLE with technical explanation (receipts serve as falsification evidence). No new findings.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "542c6a3d47f07dac94ce2cabf8cb2dcea60c265d74a71eabd540cfdb0625c1cc"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "No new confirmed defects. The known S-1/S-2 staleness was the defect under treatment and is corrected; counter-evidence captured (committed file has the two unmarked stale lines, zero correction notes). Sibling sweep already clean per the spec.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "16d6d1b630135264232cf23ffa39a8cd8609457dee1e7978bd2a19064850cb29"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "Fix already applied before the freeze (post-hoc pattern, no new edits by this checkup). Applied copy byte-identical to the steward's spec-fixed copy (check-spec-match exit 0, zero diff bytes). Smallest coherent repair; silent rewrite explicitly rejected and not done.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s5-fix.md",
+          "sha256": "1819a5179addde254630a8076648f30cd9db53c73d6cac73a47c8249bac956a1"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Final checks through the recorder, all exit 0: check-doc-diff (diff unchanged from baseline), check-spec-match (byte-identical to spec-fixed copy), check-onchain-truth (zero platformFeeBps in *.sol, PLATFORM_FEE_BPS=2500 at RevenueSplitter.sol:33). Source stable across runs.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s6-final.md",
+          "sha256": "c0412c2479a4360b3f30f4a06869824cea937a406aa7a87840bb14387e6baf3d"
+        },
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-doc-diff.json",
+          "sha256": "f90622ba5230c1deb1bac694894b48aacaefb1b6ba8371c14145662dd8da552b"
+        },
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-spec-match.json",
+          "sha256": "aa27ad1c2b74f2defb69d64bc6f997031a7e30bb6bfe4b7c119f0b9375cf011d"
+        },
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-onchain-truth.json",
+          "sha256": "27c99ea02d2da7f79882c39da6ac72bd320b4689415bd10c483a574845060f44"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Challenge pass incl. docs-vs-tree check: every correction-note claim traced to source lines (constant, remainder, MissingCreator, no withdraw, inheritance, zero stale hits, current-truth doc references all resolve). All platformFeeBps occurrences in the doc are note text or inline markers. SELF_REVIEW declared.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "ebdc73e371732a7c80777cbb5cf30d361b86600b8f00e1219b2c6b8d43717297"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Verdict ACCEPT. DOCS-1 correction verified line-by-line against stale-doc-sweep.md; original dated audit claims preserved; 0 outstanding findings. Contracts UNAUDITED; no commit/merge/push by this checkup.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "4746491bcb0e9b7e4af4dd0fee56d3275a583cb112a7455141d7b9b00d9cbb09"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "audit-correction",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Correction note dated 2026-09-29 (DOCS-1), explains the platformFeeBps -> RevenueSplitter supersession; both stale lines marked inline; original audit claims preserved (Date 2026-09-28 / commit ccf762c header intact).",
+      "unit_digest": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "542c6a3d47f07dac94ce2cabf8cb2dcea60c265d74a71eabd540cfdb0625c1cc"
+        }
+      ]
+    },
+    {
+      "unit_id": "audit-correction",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Every note claim traced to the tree: RevenueSplitter.sol:33 constant 2500, :61-62 remainder to creator, :39/:59 MissingCreator revert, zero platformFeeBps in *.sol, zero withdraw fns in the four contracts, all four inherit RevenueSplitter.",
+      "unit_digest": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "542c6a3d47f07dac94ce2cabf8cb2dcea60c265d74a71eabd540cfdb0625c1cc"
+        }
+      ]
+    },
+    {
+      "unit_id": "audit-correction",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Historical record stays coherent: dated audit untouched in substance, correction layered as attributable annotation; WHITEPAPER 3.1-3.3 and DEPLOYMENT_CHECKLIST.md carry the current fee truth.",
+      "unit_digest": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "542c6a3d47f07dac94ce2cabf8cb2dcea60c265d74a71eabd540cfdb0625c1cc"
+        }
+      ]
+    },
+    {
+      "unit_id": "audit-correction",
+      "lens": "TST",
+      "status": "NOT_APPLICABLE",
+      "reason": "No test harness exists for a Markdown audit; falsification evidence is the diff receipt (only intended edits), the spec-match receipt (byte-identical to the spec-fixed copy), and the on-chain grep receipts.",
+      "unit_digest": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "542c6a3d47f07dac94ce2cabf8cb2dcea60c265d74a71eabd540cfdb0625c1cc"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "DOCS-1-S1S2",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "docs/PHASE2_AUDIT.md (dated 2026-09-28, pinned to commit ccf762c) described a per-contract platformFeeBps admin field in two passages (S-1 :56 repo map, S-2 :77 MovieTicket function surface) that no longer exists after df-cycle-12/13 replaced it with the shared immutable RevenueSplitter.",
+      "challenge": "Counter-evidence captured: the committed pre-change file contains the two UNMARKED stale lines at :56 and :77 and zero correction notes \u2014 the defect was real. Sibling sweep per the spec (WHITEPAPER, DEPLOYMENT_CHECKLIST, READMEs, legal docs) is clean; out-of-scope incidentals stay flagged elsewhere.",
+      "location": "docs/PHASE2_AUDIT.md:56 (S-1, pre-change) and :77 (S-2, pre-change)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s4-findings.md",
+          "sha256": "16d6d1b630135264232cf23ffa39a8cd8609457dee1e7978bd2a19064850cb29"
+        },
+        {
+          "path": "devteam/checkups/checkup-docs1-2026-09-29/evidence/s5-fix.md",
+          "sha256": "1819a5179addde254630a8076648f30cd9db53c73d6cac73a47c8249bac956a1"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-doc-diff",
+        "check-spec-match",
+        "check-onchain-truth"
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/baseline/check-doc-diff.json",
+      "sha256": "3f8c7f5eee11838ecc2b6ed4ae89a286f5a08710d60da2f0db70237afdd0cedb"
+    },
+    {
+      "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-doc-diff.json",
+      "sha256": "f90622ba5230c1deb1bac694894b48aacaefb1b6ba8371c14145662dd8da552b"
+    },
+    {
+      "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-spec-match.json",
+      "sha256": "aa27ad1c2b74f2defb69d64bc6f997031a7e30bb6bfe4b7c119f0b9375cf011d"
+    },
+    {
+      "path": "devteam/checkups/checkup-docs1-2026-09-29/checks/final/check-onchain-truth.json",
+      "sha256": "27c99ea02d2da7f79882c39da6ac72bd320b4689415bd10c483a574845060f44"
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "independent_review_evidence": [],
+  "reviewer_identity": "checkup subagent (session 7af654d3), 2026-09-29 - single verification pass, no independent second reviewer",
+  "next_action": "DOCS-1 closed: correction verified line-by-line against stale-doc-sweep.md, gate PASS S0-S8. Controller's call on committing the doc correction on devteam/review-2026-09-29 (no commit/merge/push performed by this checkup).",
+  "verdict": "ACCEPT"
+}

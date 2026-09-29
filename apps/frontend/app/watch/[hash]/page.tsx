@@ -80,9 +80,17 @@ export default function WatchPage() {
       {/* Player */}
       <div className="bg-black pt-4">
         <div className="max-w-5xl mx-auto">
+          {/* F-1 (df-batch2): signedUrl is a full URL (signed R2 URL from the
+              worker, or the simulation demo stream) — it is NOT a Livepeer
+              playback ID. Passing it as livepeerPlaybackId made
+              useVideoSources build a mangled nested URL
+              (https://livepeercdn.studio/hls/<full-url>/index.m3u8) that can
+              never play. Canonical delivery per GROK.md (2026-09-28, R2
+              primary via signed URLs; supersedes ADR-001's Filecoin-primary)
+              is the r2SignedUrl prop. */}
           <VideoPlayer
             videoHash={filmHash}
-            livepeerPlaybackId={signedUrl ?? undefined}
+            r2SignedUrl={signedUrl ?? undefined}
             title={title}
             isPermanentPass
             accessSources={['cloudflare']}

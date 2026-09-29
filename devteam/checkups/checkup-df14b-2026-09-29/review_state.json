@@ -1,0 +1,604 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df14b-2026-09-29",
+  "spec_digest": "7de7ba5ceccfb366784b30fc95a788b89a44dce9498a24186034fba648a1394f",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df14b-2026-09-29/initial.json",
+    "sha256": "7e824470b6d1b525bf0613990216839e6b63ae6fd74366371049b74c7f7bd8b5"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Change checkup frozen on DF-4 (commit 15b6f5e): 6 source files, 6 review units, 29 coverage cells, 3 behavior-bearing checks. Deviation documented: fix committed before snapshot (post-hoc, same pattern as df14); pre-change state is parent 3823f4e.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s0-scope.md",
+          "sha256": "3ea7e61147dc0cc6957d9d0ad7df4ada28a45b2e6489246320f947e4c5554d3b"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline check-hardhat through the recorder on the frozen tree: 237/237 passing, exit 0. No environment faults. Pre-fix behavior pinned by the new regression tests, which cannot pass against the old implementation.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "a62a02a21f9e958d6e7e889c4223a0b44fc8f7fa5a6214639b446a556c7c5f5a"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "As-is map: ERC721A + RevenueSplitter + ReentrancyGuard; _videoCounter dense IDs from 0, untouched by _burn; totalMinted() returns the counter; on-chain access via _filmAccessCount O(1) index (never scanned); both frontend scans now bound by totalMinted; ABI regen via export:abi with drift guard.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "d235ca9c1839bd4318a0d0a92bda16b8525ea6c0d2184e48ba3430d96ad839c5"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "29/29 coverage cells reviewed with concrete observations across COR/ARC/TST/DOC/SEC/DAT/API/UIX. No new defects in the matrix pass; 4 leads rejected with counter-evidence.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "DF-4 confirmed: burn-enumeration bound defect, claim/location/counter-evidence recorded. Sibling scans swept (useHasFilmAccess event-driven; useFilmmakerCampaign mint-counter bound, no burn path; display-only totalSupply has no consumers).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "Fix already implemented in the reviewed commit (read-only task, no new edits). Recorded as the smallest coherent root-cause repair: on-chain burn-invariant counter + both scans rebounded + pure-core extraction enabling the regression test. Before-state: 3823f4e.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s5-fix.md",
+          "sha256": "c8368a1ba276ad2050404f5432663004cc618706a85a48348e769fc6df187224"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Final checks through the recorder, all exit 0 on the frozen tree: check-hardhat 237/237, check-frontend 214/214 (abi-drift 14/14), check-tsc clean. Source stable across every run.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/baseline/check-hardhat.json",
+          "sha256": "30ea736c429e05a058aa69cc077942e26c8ad0659f1b1f2cb0daaa6d37db3ebc"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "5af31c41331bc61dd9884e65400bb86c8577ffe0f954d722af3abeca9682d271"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "46fa9d9b41ee8c3619719ecf6177d4beee8dee926c3b73dcb1e8755b2f9a16a2"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "6536c0ce38fd910483a1dea5364aef6613d93349e6b62fbf8b97c57cd196e55d"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Challenge pass: cause removed (bound replaced at the source, both scans); regression tests cannot pass against the broken implementation (missing view pre-fix; totalSupply trap in the fake chain); no ordering/auth/semantics changes; docs-vs-tree clean \u2014 no fee/stage/deploy claims affected. SELF_REVIEW declared.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s7-diff-review.md",
+          "sha256": "df0514f6c243e38a2c840a628e369a788ef285edd90db9281bd08548f6b3e0a6"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Verdict ACCEPT. DF-4 FIXED and verified; 4 rejected leads retained; no outstanding findings. Next: controller's call on commit/push of the devteam branch work.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "1ae7d052f849cd692eee2bc4d909819530c2a867903a85a37464ce4c7aaeb8d8"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "totalMinted() returns _videoCounter; incremented on both mint paths (236, 295), never decremented by _burn (342-349). Burn-invariance by construction.",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "New public view alongside the other frontend/off-chain helpers; no state writes, no coupling to RevenueSplitter.",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "New hardhat test: mint 3 -> 3; burn 1 -> supply 2, totalMinted 3; re-mint -> 4, ownerOf(3) correct. 237/237 green.",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "NatSpec documents the enumeration contract and the mapping-based on-chain access \u2014 verified true (_filmAccessCount, 392-395).",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "View-only, exposes one counter; no auth needed, no reentrancy surface, no new attack surface.",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-totalminted",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "uint256 on-chain; frontend Number() conversion bounded by realistic mint volume (2^53 unreachable).",
+      "unit_digest": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Asserts exact bigints (3n/2n/4n) across mint->burn->re-mint; exercises the dense-ID + burn interaction directly.",
+      "unit_digest": "1e5a7bc9faa7a094bd601a0d3c6e4a0d7381a63163f06a99671c56f9b7f2727c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Placed in the burnable-ticket describe block with the other burn tests.",
+      "unit_digest": "1e5a7bc9faa7a094bd601a0d3c6e4a0d7381a63163f06a99671c56f9b7f2727c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Calls totalMinted(), nonexistent pre-fix \u2014 cannot pass against the old contract.",
+      "unit_digest": "1e5a7bc9faa7a094bd601a0d3c6e4a0d7381a63163f06a99671c56f9b7f2727c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Test name states the invariant plainly.",
+      "unit_digest": "1e5a7bc9faa7a094bd601a0d3c6e4a0d7381a63163f06a99671c56f9b7f2727c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Loop i < minted from totalMinted(); per-ID try/catch skips burned IDs; videoMetadata(i)[0] as hash; case-insensitive owner compare.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Pure exported core + thin React binding via readView adapter; testable without chain or DOM.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "3-case vitest; fake chain throws on 'totalSupply', so any bound regression fails loudly.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "False 'mirrors hasAccessToVideo' comment replaced with the true O(1) reverse-index account.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "Adapter maps the three view names to publicClient.readContract with MOVIE_TICKET_ABI; tsc clean.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-owned-films",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Fixes the visible symptom: post-burn high-ID films no longer vanish from 'my films'.",
+      "unit_digest": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-creator-dashboard",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Bound swap totalSupply -> totalMinted; loop body untouched.",
+      "unit_digest": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-creator-dashboard",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Same linear-scan shape as useOwnedFilms; comment now documents the bound choice.",
+      "unit_digest": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-creator-dashboard",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "No dedicated scan test, but the bound is the same on-chain view proven by the contract test; suite 214/214 green.",
+      "unit_digest": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-creator-dashboard",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Comment states the burn rationale explicitly.",
+      "unit_digest": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-creator-dashboard",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "functionName 'totalMinted' against the regenerated ABI \u2014 typechecks.",
+      "unit_digest": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Diff adds exactly one entry \u2014 totalMinted view, no inputs, uint256 output \u2014 matching the contract.",
+      "unit_digest": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Single export:abi pipeline from compiled artifacts; no hand edits.",
+      "unit_digest": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "abi-drift guard 14/14 pins frontend ABI to compiled artifacts, fails closed on one-sided drift.",
+      "unit_digest": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Generated file; contract NatSpec is the source of truth \u2014 acceptable.",
+      "unit_digest": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-enum-test",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Case 1 finds tokenId 4 post-burn (the exact old failure); case 2 no-burn anchor; case 3 ownership filter + silent burn skip.",
+      "unit_digest": "8e8c3c69ad8d3748453d36972354e8e032e78493de9b6133324c95e5ec9f93bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-enum-test",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Pure-core injection, no React/DOM/chain; header documents why renderHook was not used.",
+      "unit_digest": "8e8c3c69ad8d3748453d36972354e8e032e78493de9b6133324c95e5ec9f93bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-enum-test",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Specific assertions (toContainEqual, call-trap on totalSupply).",
+      "unit_digest": "8e8c3c69ad8d3748453d36972354e8e032e78493de9b6133324c95e5ec9f93bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    },
+    {
+      "unit_id": "frontend-enum-test",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Header records the G7 origin and the old loop's failure mechanics.",
+      "unit_digest": "8e8c3c69ad8d3748453d36972354e8e032e78493de9b6133324c95e5ec9f93bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "3bc3d72f5616842e99086d0a4bea51aa89212f472fac317c0cdf796a35380484"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/baseline/check-hardhat.json",
+      "sha256": "30ea736c429e05a058aa69cc077942e26c8ad0659f1b1f2cb0daaa6d37db3ebc"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-hardhat.json",
+      "sha256": "5af31c41331bc61dd9884e65400bb86c8577ffe0f954d722af3abeca9682d271"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-frontend.json",
+      "sha256": "46fa9d9b41ee8c3619719ecf6177d4beee8dee926c3b73dcb1e8755b2f9a16a2"
+    },
+    {
+      "path": "devteam/checkups/checkup-df14b-2026-09-29/checks/final/check-tsc.json",
+      "sha256": "6536c0ce38fd910483a1dea5364aef6613d93349e6b62fbf8b97c57cd196e55d"
+    }
+  ],
+  "findings": [
+    {
+      "id": "DF-4",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "useOwnedFilms and useCreatorDashboard bounded enumeration by ERC721A totalSupply(), which shrinks on burn while token IDs stay dense from 0; after any burn, owned tokens with ID >= totalSupply were never read and vanished from the UI.",
+      "challenge": "Burn really shrinks supply (hardhat asserts totalSupply 2 after 1 burn of 3); on-chain access unaffected (hasAccessToVideo reads _filmAccessCount O(1)); sibling scans swept \u2014 useHasFilmAccess event-driven, useFilmmakerCampaign uses mint-counter bound with no burn path, remaining totalSupply read is display-only with no consumers.",
+      "location": "apps/frontend/lib/contracts/useMovieTicket.ts (useOwnedFilms, pre-fix totalSupply loop); apps/frontend/lib/contracts/useCreatorDashboard.ts:97 (pre-fix)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s5-fix.md",
+          "sha256": "c8368a1ba276ad2050404f5432663004cc618706a85a48348e769fc6df187224"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-hardhat",
+        "check-frontend"
+      ]
+    },
+    {
+      "id": "RL-1",
+      "classification": "REJECTED_LEAD",
+      "claim": "useMovieTicket() still reads totalSupply into state \u2014 possible remaining enumeration bound.",
+      "challenge": "Display-only state; zero consumers in app/ and components/. Not a loop bound.",
+      "location": "apps/frontend/lib/contracts/useMovieTicket.ts:16,40",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "RL-2",
+      "classification": "REJECTED_LEAD",
+      "claim": "dflix.ts totalSupply wrapper could feed an enumeration.",
+      "challenge": "Generic passthrough with no loop at any call site.",
+      "location": "apps/frontend/lib/web3/wrappers/dflix.ts:277",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "RL-3",
+      "classification": "REJECTED_LEAD",
+      "claim": "Number(minted) precision loss in enumerateOwnedFilms.",
+      "challenge": "Requires >2^53 mints; try/catch + empty-state fallback bounds any anomaly.",
+      "location": "apps/frontend/lib/contracts/useMovieTicket.ts:103",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        }
+      ],
+      "resolution": "REJECTED"
+    },
+    {
+      "id": "RL-4",
+      "classification": "REJECTED_LEAD",
+      "claim": "useFilmmakerCampaign.ts:121 loop could have the same bound defect.",
+      "challenge": "Bound is nextCampaignId (mint counter); FilmmakerCampaign.sol has no burn path.",
+      "location": "apps/frontend/lib/contracts/useFilmmakerCampaign.ts:121",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df14b-2026-09-29/evidence/s4-findings.md",
+          "sha256": "3b4783e45b7cc303b1c187b7538d036e48fa099b4298209fe61e75d03a43467b"
+        }
+      ],
+      "resolution": "REJECTED"
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "checkup subagent (session 76d1f631), 2026-09-29 \u2014 single reviewer pass, no independent second reviewer",
+  "next_action": "DF-4 closed. df14 ACCEPT (3823f4e) + df14b ACCEPT (15b6f5e) complete the cycle line. Controller's call on commit/push of the devteam/review-2026-09-29 branch work; contracts remain UNAUDITED, no mainnet action authorized.",
+  "record_shapes": {},
+  "independent_review_evidence": []
+}

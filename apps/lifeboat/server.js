@@ -532,11 +532,14 @@ async function importFilm(req, res, account) {
   return sendJson(res, 201, out);
 }
 
-async function importBuyers(req, res) {
+async function importBuyers(req, res, account) {
   const body = await readJson(req, res);
   if (body === null) return;
   const film = body.film_id ? store.get('films', body.film_id) : null;
   if (!film) return sendError(res, 404, 'film not found');
+  // F-DFLIX-5: the filmmaker must own the film (fail closed).
+  if (!ownsFilm(account, film))
+    return sendError(res, 403, 'only the filmmaker who owns this film can import buyer contacts');
   if (!Array.isArray(body.emails) || body.emails.length === 0)
     return sendError(res, 400, 'emails must be a non-empty array');
 
@@ -853,12 +856,18 @@ async function stripeWebhook(req, res) {
     if (md.product === 'collector_pass' && isEmail(md.buyer_email)) {
       const p = passLib.getPassByEmail(md.buyer_email);
       if (p && p.status === 'active') {
-        passLib.issueCredits({
-          pass_id: p.pass_id,
-          credits: passLib.CREDITS_PER_BILLING_PERIOD,
-          reason: 'subscription_renewal',
-          stripe_invoice_id: (event.data.object && event.data.object.id) || null,
-        });
+        // F-DFLIX-6: idempotent credit issue. Stripe delivers webhooks
+        // at-least-once; skip when this invoice already credited the pass
+        // (mirrors the checkout.session.completed alreadyEntitled guard).
+        const invoiceId = (event.data.object && event.data.object.id) || null;
+        if (!passLib.invoiceCredited({ pass_id: p.pass_id, stripe_invoice_id: invoiceId })) {
+          passLib.issueCredits({
+            pass_id: p.pass_id,
+            credits: passLib.CREDITS_PER_BILLING_PERIOD,
+            reason: 'subscription_renewal',
+            stripe_invoice_id: invoiceId,
+          });
+        }
       }
     }
   }
@@ -1286,7 +1295,15 @@ async function handleApi(req, res, url, seg, method) {
     return sendJson(res, 200, fullFilm(film));
   }
   if (seg[0] === 'buyers' && seg[1] === 'import' && seg.length === 2 && method === 'POST') {
-    return importBuyers(req, res);
+    // F-DFLIX-5 (fail closed, chief decision 2026-09-29): only a filmmaker
+    // may call this, and only for films they own. An unauthenticated caller
+    // could otherwise inject arbitrary emails into any film's
+    // migration_contacts (contact-list poisoning of audience.csv and
+    // migration notices). If Dino intended open migration import, this gate
+    // can be reverted deliberately.
+    const account = requireFilmmaker(req, res);
+    if (!account) return;
+    return importBuyers(req, res, account);
   }
   if (seg[0] === 'claims' && seg.length === 1 && method === 'POST') {
     return fileClaim(req, res);

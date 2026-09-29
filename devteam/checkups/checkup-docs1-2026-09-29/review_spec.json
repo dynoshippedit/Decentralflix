@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-docs1-2026-09-29",
+  "project_root": "/home/dino/Decentralflix",
+  "source_paths": ["docs/PHASE2_AUDIT.md"],
+  "review_units": [
+    {
+      "id": "audit-correction",
+      "paths": ["docs/PHASE2_AUDIT.md"],
+      "lenses": ["DOC", "COR", "ARC", "TST"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "check-doc-diff",
+      "argv": ["git", "diff", "--", "docs/PHASE2_AUDIT.md"],
+      "cwd": "/home/dino/Decentralflix",
+      "purpose": "Receipt of the exact uncommitted diff: must show ONLY the dated 2026-09-29 DOCS-1 correction note under the header plus the two inline S-1/S-2 supersession markers; no other doc or code changes",
+      "timeout_seconds": 60,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "check-spec-match",
+      "argv": ["diff", "/home/dino/Desktop/.queue/work/DOCS-1/fixed/docs/PHASE2_AUDIT.md", "/home/dino/Decentralflix/docs/PHASE2_AUDIT.md"],
+      "cwd": "/home/dino/Decentralflix",
+      "purpose": "Exit 0 proves the applied correction is byte-identical to the steward's spec-fixed copy; any deviation from stale-doc-sweep.md would fail the checkup",
+      "timeout_seconds": 60,
+      "baseline_required": false,
+      "final_required": true
+    },
+    {
+      "id": "check-onchain-truth",
+      "argv": ["bash", "-c", "echo 'stale hits:'; grep -rc 'platformFeeBps' packages/contracts/contracts/*.sol | grep -v ':0' || true; echo '---'; grep -n 'uint256 public constant PLATFORM_FEE_BPS' packages/contracts/contracts/RevenueSplitter.sol"],
+      "cwd": "/home/dino/Decentralflix",
+      "purpose": "Falsification receipt for the correction note's core claims: zero platformFeeBps state vars in any contract, PLATFORM_FEE_BPS=2500 immutable constant present",
+      "timeout_seconds": 60,
+      "baseline_required": false,
+      "final_required": true
+    }
+  ],
+  "exclusions": [
+    {"pattern": ".git", "reason": "Version control internals; inspect Git status separately"},
+    {"pattern": "node_modules", "reason": "Installed dependencies"},
+    {"pattern": "**/node_modules", "reason": "Nested installed dependencies"},
+    {"pattern": "__pycache__", "reason": "Generated Python bytecode"},
+    {"pattern": "**/__pycache__", "reason": "Generated Python bytecode"},
+    {"pattern": "devteam/checkups", "reason": "Changing checkup output, not application source"},
+    {"pattern": "packages/contracts/artifacts", "reason": "Compiled build outputs"}
+  ]
+}

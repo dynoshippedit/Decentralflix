@@ -1,0 +1,4 @@
+CHECK check-onchain-truth
+stale hits:
+---
+33:    uint256 public constant PLATFORM_FEE_BPS = 2500;

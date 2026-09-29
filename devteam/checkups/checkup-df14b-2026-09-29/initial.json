@@ -1,0 +1,21 @@
+{
+  "review_id": "checkup-df14b-2026-09-29",
+  "spec_digest": "7de7ba5ceccfb366784b30fc95a788b89a44dce9498a24186034fba648a1394f",
+  "source_digest": "b1e426bf4c42fa761ccd5f7c905d1b7a76b1afdfb66ca7453927c86708c6420c",
+  "files": {
+    "packages/contracts/contracts/MovieTicket.sol": "88e5b90ba468c8b1edd986a8f6065e8c0c40ef70037b2f40e58cd08a34ec00d4",
+    "packages/contracts/test/MovieTicket.test.ts": "2b10ad010bc3dd1e645ae84518e7e0532869646bfde949f7cc179386756bc795",
+    "apps/frontend/lib/contracts/useMovieTicket.ts": "b609309f6e01593e6094a93da26e47102e60891a3914ad5aa5f750d9cb083e0c",
+    "apps/frontend/lib/contracts/useCreatorDashboard.ts": "dfdda309e89c0c2afd5e3e06854d45134ae6a39325b7eb33757d7fcddf39f80c",
+    "apps/frontend/lib/contracts/abis.generated.ts": "62fa81a793b814386a10e8644d3ec55ce46df3f31c4070ee4e402ca43fbf3791",
+    "apps/frontend/lib/contracts/useOwnedFilms.enumeration.test.ts": "c25782a75faed84f9053fc3d52652026c01d9018846adc52adff888c9f2e6610"
+  },
+  "unit_digests": {
+    "contract-totalminted": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+    "contract-test": "1e5a7bc9faa7a094bd601a0d3c6e4a0d7381a63163f06a99671c56f9b7f2727c",
+    "hook-owned-films": "5a4411fab6d58588a2bbe489e225dbef1bb893c03d788c9cbb377b6357a2cc4a",
+    "hook-creator-dashboard": "3b68f730b5c7f46f610f699e711c96d718cf04aa3f18df6669240a7a53f3c8e4",
+    "abi-regen": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+    "frontend-enum-test": "8e8c3c69ad8d3748453d36972354e8e032e78493de9b6133324c95e5ec9f93bd"
+  }
+}

@@ -52,6 +52,7 @@ export interface MovieTicketInterface extends Interface {
       | "owner"
       | "ownerOf"
       | "pause"
+      | "platformRenounced"
       | "renounceOwnership"
       | "restoreFilm"
       | "safeTransferFrom(address,address,uint256)"
@@ -185,6 +186,10 @@ export interface MovieTicketInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "platformRenounced",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -315,6 +320,10 @@ export interface MovieTicketInterface extends Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "platformRenounced",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -793,6 +802,8 @@ export interface MovieTicket extends BaseContract {
 
   pause: TypedContractMethod<[], [void], "nonpayable">;
 
+  platformRenounced: TypedContractMethod<[], [boolean], "view">;
+
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   restoreFilm: TypedContractMethod<[videoHash: string], [void], "nonpayable">;
@@ -1004,6 +1015,9 @@ export interface MovieTicket extends BaseContract {
   getFunction(
     nameOrSignature: "pause"
   ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "platformRenounced"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;

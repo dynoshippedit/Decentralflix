@@ -29,6 +29,7 @@ export interface RevenueSplitterInterface extends Interface {
       | "BPS_DENOMINATOR"
       | "PLATFORM_FEE_BPS"
       | "owner"
+      | "platformRenounced"
       | "renounceOwnership"
       | "transferOwnership"
   ): FunctionFragment;
@@ -47,6 +48,10 @@ export interface RevenueSplitterInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "platformRenounced",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -64,6 +69,10 @@ export interface RevenueSplitterInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "platformRenounced",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -158,6 +167,8 @@ export interface RevenueSplitter extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
+  platformRenounced: TypedContractMethod<[], [boolean], "view">;
+
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   transferOwnership: TypedContractMethod<
@@ -179,6 +190,9 @@ export interface RevenueSplitter extends BaseContract {
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "platformRenounced"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;

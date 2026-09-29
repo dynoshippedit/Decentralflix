@@ -1,0 +1,29 @@
+{
+  "files": {
+    "apps/frontend/app/mint/page.tsx": "3180a6ec2ec41afc4a594298180dcd16dadba4e291e998464881519a8f128c2a",
+    "apps/frontend/lib/contracts/abis.generated.ts": "62fa81a793b814386a10e8644d3ec55ce46df3f31c4070ee4e402ca43fbf3791",
+    "apps/frontend/lib/contracts/mintPageWiring.test.ts": "4280ef0fa100a777c50fe91a96ce173dc8ec9b7adf2ab79e47b43f1ff67d64a5",
+    "apps/frontend/lib/contracts/ticketFilmId.test.ts": "69771a8c062a3c45ba45a2f6063d7e14e346aff27c9b9f1ae698f55e23e3aaa3",
+    "apps/frontend/lib/contracts/ticketFilmId.ts": "582d115538b74b25892f8ca3b44b455f7b61594caf2a7e6f10d90ae187b37c02",
+    "apps/frontend/lib/contracts/useHasFilmAccess.ts": "e4708e30f84e99bd52673ec7c0f5940dd971430ca4f3c953e8c9a50a67d4c4fc",
+    "apps/frontend/lib/web3/wrappers/payPerView.test.ts": "0f3d351ef2608d41aa08b55b8ec8e54f991ab8980c276f1c04bdb4e4648cba3b",
+    "apps/frontend/lib/web3/wrappers/payPerView.ts": "37d88b4132fcc67e86d6770ffe63bf12b3c67186e6603cd27b121d41489e5c4e",
+    "packages/contracts/contracts/MovieTicket.sol": "88e5b90ba468c8b1edd986a8f6065e8c0c40ef70037b2f40e58cd08a34ec00d4",
+    "packages/contracts/contracts/PayPerView.sol": "1e9d22305a7534e6cf289d6bc92a22d5e2ffab057be4f604dbb1319cea973d1d",
+    "packages/contracts/test/PayPerView.test.ts": "65ef07754b8ea3146055f2d1461b37483e0bd91209e24be921b9e1a7d63cfa54"
+  },
+  "review_id": "checkup-df15-2026-09-29",
+  "source_digest": "6feb1c01d08d5d4c10ac03fba7c85724dfa891e0c806b841b89fa9a7ea5e7a6f",
+  "spec_digest": "118124847fe8eb6fb1359dd4bc6e4c4d9806ca4faa15e39da5bbaf23d6e0de7b",
+  "unit_digests": {
+    "abi-regen": "4173eb4c912e5620d675a6409ff46cbf563cb9b8b829fcfb608426393447e587",
+    "contract-movieticket": "f7f48df07ccca91d6c51f02b8906ca42b0b8188b2724010ea456c08c5f01b1b5",
+    "contract-payperview": "59b24817568e9f31ac6ddb5ae1e433422934a0b49ef1dd4aeb9e58d94b0732be",
+    "contract-test-payperview": "3bb07dcc8fc1aa9f150757ea074129d8224a01d0a03729cbb6a0763ded91eeda",
+    "helper-film-id": "482b29d2a1d110dfca22492874f95dbdaf88ecc78bef5f2bc59d1c4d515d7fd3",
+    "hook-access": "8adef6b33ea76579c459a236ed8d3127cd408cc6c70baaaf51e1341afaf47993",
+    "page-mint": "81d2d945498c98b6a1a3a42229bf7bf065a1586293af6e31f3093635668767a6",
+    "page-wiring-test": "3be04b759b9ee0363538615b8b68715c0a144c0af18640dbee302174ea85c436",
+    "wrapper-payperview": "4c85994a607ce28ff7445c08bfa16a23ead4ee5e20eba91be54dfdbaf5bbb48b"
+  }
+}

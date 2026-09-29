@@ -138,17 +138,37 @@ export default function FilmDetailPage() {
           </div>
         )}
 
-        {/* Video player (for owners) */}
-        {hasAccessFinal && (
+        {/* Video player (for owners)
+            F-3 (df-batch2): NEVER fabricate a livepeerPlaybackId. The old
+            'demo-'+hash value resolved to Livepeer's
+            "#EXT-X-ERROR: Stream open failed". Demo films carry a real
+            playable videoUrl, wired to r2SignedUrl; a film with no preview
+            attached gets an explicit preview-unavailable state. */}
+        {hasAccessFinal && demoFilm?.videoUrl && (
           <div className="mb-12">
             <VideoPlayer
               videoHash={videoHash}
               filecoinCID={demoFilm?.filecoinCid}
-              livepeerPlaybackId={videoHash.length > 10 ? 'demo-' + videoHash.slice(0, 12) : undefined}
+              r2SignedUrl={demoFilm.videoUrl}
               title={title}
               isPermanentPass
               accessSources={sources}
             />
+          </div>
+        )}
+        {hasAccessFinal && !demoFilm?.videoUrl && (
+          <div className="mb-12 p-8 bg-white/5 border border-white/10 rounded-2xl text-center">
+            <div className="text-4xl mb-4">🎬</div>
+            <h3 className="text-lg font-semibold mb-2">Preview unavailable</h3>
+            <p className="text-white/50 text-sm mb-6 max-w-md mx-auto">
+              No playable preview is attached to this film yet. Use the watch page to stream it.
+            </p>
+            <Link
+              href={`/watch/${encodeURIComponent(videoHash)}`}
+              className="inline-block px-8 py-3 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition"
+            >
+              Watch now
+            </Link>
           </div>
         )}
 

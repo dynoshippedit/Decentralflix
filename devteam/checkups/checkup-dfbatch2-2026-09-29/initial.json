@@ -1,0 +1,31 @@
+{
+  "review_id": "checkup-dfbatch2-2026-09-29",
+  "spec_digest": "effd9caf8c696f43a85c124a058c5e2451e95597a75034d833b84c295d856ac1",
+  "source_digest": "1764401e6554a218346c350ea966d7e250631b5caca1fcd505831400608b2f3c",
+  "files": {
+    "apps/lifeboat/server.js": "481713d7df027787fd30aefa1cb9800712a856cc3852a31146b3c525fc19c796",
+    "apps/lifeboat/lib/pass.js": "76e244d4e0d7e0600f7127ea7377f45f78b7f2d20b56fff5eee2164c2eecb2ac",
+    "apps/lifeboat/test.sh": "fb9d54d90fa94fafe6ceb9c22c7da150a3487ccc91a9c0ecde21faab127457d3",
+    "packages/contracts/contracts/RevenueSplitter.sol": "d0df9e419928d47e51c846c23346fdce3d6cc2dbe00920c4db72a497e7b9d7f6",
+    "packages/contracts/contracts/mocks/MockFeeRecipients.sol": "d825a0b267cabdd2d949b98fc84be53ba66bf10663ba9701e3669c02dfc812b4",
+    "packages/contracts/test/PayPerView.test.ts": "53e5599cac8747482fe038df737f3d2d8c43f54d37989e6e199121d138f86ea9",
+    "apps/frontend/app/watch/[hash]/page.tsx": "053411f3a38ce7d081d71dd04e6327851f094e41b46f4952827d99bf963af75b",
+    "apps/frontend/app/film/[hash]/page.tsx": "bc03d6954856cb3a5bbd7831451757dbdd9f50f2c949ea4da968bd5003816ea3",
+    "apps/frontend/lib/cloudflare-access.ts": "0e94ae7dd2ee7bcd2a2360f71357479d7cc095764c7b49400f195d960447e367",
+    "cloudflare-worker/access-control.js": "0bc44cfde61763481ba6e512efd300651d0be9e50f42b82d1ba9c3f2bd7508fb",
+    "apps/frontend/lib/contracts/abis.generated.ts": "6901231111961af973272330b477521d8d0af53a1732b78fe8d5125d7fb057e3"
+  },
+  "unit_digests": {
+    "lifeboat-server": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+    "lifeboat-pass-lib": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+    "lifeboat-tests": "b578dac96ef38f05f1c34526e5978ae052760638df318a9f11ad6d7cbd87377b",
+    "splitter": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+    "splitter-mocks": "de8ed725d51ded8fe4d5753a67f17ea279a61b320e739a768d3cf4594c7f514c",
+    "splitter-tests": "6356c774c120c7f557b03a4ee9741fe07745e4695b5e65cad2377e5b88cedbca",
+    "page-watch": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+    "page-film": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+    "cf-access": "92299f5bc5879b54cd5157c30a7da5cc66112ce8e35634f79463ffa22f2ac5bd",
+    "worker-access": "acb7ddf1e22bdfc64874b2b71d6fa5f3a1451e09f23c51cecf3bfbd32a7d7e84",
+    "abi-regen": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d"
+  }
+}

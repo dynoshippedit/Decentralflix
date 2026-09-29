@@ -121,6 +121,21 @@ function ledger(pass_id) {
   return store.all('credit_ledger').filter((e) => e.pass_id === pass_id);
 }
 
+// F-DFLIX-6: webhook dedup. Stripe delivers webhooks at-least-once (retries
+// on non-2xx/timeout), so a retried invoice.payment_succeeded must not issue
+// a second credit for the same invoice. The stripe_invoice_id is the
+// idempotency key for the economic effect (mirrors the
+// checkout.session.completed alreadyEntitled guard at its call site).
+// Without an invoice id we cannot dedup: return false so the caller credits
+// (a missed credit for a paid period is worse than a bounded $0-value
+// duplicate), and Stripe always sets the invoice id in practice.
+function invoiceCredited({ pass_id, stripe_invoice_id }) {
+  if (!stripe_invoice_id) return false;
+  return store
+    .all('credit_ledger')
+    .some((e) => e.pass_id === pass_id && e.stripe_invoice_id === stripe_invoice_id);
+}
+
 // Redeems ONE credit for a film. Hard rules:
 //  - pass must be active
 //  - email must match the pass holder exactly (else 403 — no gifting, no transfers)
@@ -166,6 +181,7 @@ module.exports = {
   getPass,
   getPassByEmail,
   issueCredits,
+  invoiceCredited,
   redeemCredit,
   balance,
   ledger,

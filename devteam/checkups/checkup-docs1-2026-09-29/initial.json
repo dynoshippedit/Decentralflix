@@ -1,0 +1,11 @@
+{
+  "review_id": "checkup-docs1-2026-09-29",
+  "spec_digest": "25bc2ed82486d5fa08c70f1ba365453bd7f9d82ad1813fc0e3b214379b6fa7f1",
+  "source_digest": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639",
+  "files": {
+    "docs/PHASE2_AUDIT.md": "0d1b9cf392ddc02808a54a925481704f4ce5adc7bf99ee7d348bf8e4c044ca19"
+  },
+  "unit_digests": {
+    "audit-correction": "09fffd4387912d20a85c02c8dee24be61bc1f6326f0e1b9e3883e4e4dfeb5639"
+  }
+}

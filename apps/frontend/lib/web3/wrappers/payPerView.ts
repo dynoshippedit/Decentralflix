@@ -63,17 +63,21 @@ export async function owner(runner: ContractRunner): Promise<string> {
   return c.owner() as Promise<string>;
 }
 
-/** Register a film with its price in wei (owner only). */
+/** Register a film with its price in wei, naming the filmmaker (owner only). */
 export async function registerFilm(
   signer: ContractRunner,
   filmId: number | bigint | string,
   priceWei: bigint,
+  filmmaker: string,
   overrides?: WriteOverrides,
 ): Promise<ContractTransactionResponse> {
   const c: Contract = getPayPerView(signer);
-  return c.registerFilm(reqUint(filmId, 'filmId'), reqWei(priceWei, 'priceWei'), {
-    ...(overrides ?? {}),
-  });
+  return c.registerFilm(
+    reqUint(filmId, 'filmId'),
+    reqWei(priceWei, 'priceWei'),
+    reqAddress(filmmaker, 'filmmaker'),
+    { ...(overrides ?? {}) },
+  );
 }
 
 export async function renounceOwnership(

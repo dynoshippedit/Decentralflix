@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { arbitrumSepolia } from 'viem/chains';
-import { MOVIE_TICKET_ADDRESS, MOVIE_TICKET_ABI, FILMMAKER_CAMPAIGN_ADDRESS, FILMMAKER_CAMPAIGN_ABI } from './config';
+import { MOVIE_TICKET_ADDRESS, MOVIE_TICKET_ABI, TICKET_NFT_ADDRESS, TICKET_NFT_ABI, FILMMAKER_CAMPAIGN_ADDRESS, FILMMAKER_CAMPAIGN_ABI } from './config';
+import { ticketFilmIdForVideoHash } from './ticketFilmId';
 import { DEMO_ACCESSIBLE_FILMS } from '@/hooks/useFilmMetadata';
 import { getMyFilms, getFilmOwners } from '@/lib/indexer'; // Preferred modern Goldsky path (GROK.md)
 
@@ -461,6 +462,24 @@ export async function getFilmAccessSources(
         });
         if (hasViaView) {
           foundSources.push('MovieTicket');
+        }
+      } catch {}
+    }
+
+    // TicketNFT purchase path (F-1 rewire: /mint now sells TicketNFT tickets).
+    // The filmId is derived deterministically from the videoHash — registration
+    // must use ticketFilmIdForVideoHash for the same hash. Zero-address guard
+    // preserves demo behavior when TicketNFT is not deployed.
+    if (TICKET_NFT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+      try {
+        const hasTicket = await publicClient.readContract({
+          address: TICKET_NFT_ADDRESS,
+          abi: TICKET_NFT_ABI,
+          functionName: 'hasValidTicket',
+          args: [userAddress, ticketFilmIdForVideoHash(videoHash)],
+        });
+        if (hasTicket) {
+          foundSources.push('TicketNFT');
         }
       } catch {}
     }

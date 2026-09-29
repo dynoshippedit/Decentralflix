@@ -1,0 +1,20 @@
+{
+  "review_id": "checkup-dfbatch2-2026-09-29",
+  "spec_digest": "effd9caf8c696f43a85c124a058c5e2451e95597a75034d833b84c295d856ac1",
+  "check_id": "check-lifeboat",
+  "phase": "final",
+  "argv": [
+    "./test.sh"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/lifeboat",
+  "started_at": "2026-09-29T22:09:38.785148+00:00",
+  "finished_at": "2026-09-29T22:09:45.416972+00:00",
+  "source_before": "1764401e6554a218346c350ea966d7e250631b5caca1fcd505831400608b2f3c",
+  "source_after": "1764401e6554a218346c350ea966d7e250631b5caca1fcd505831400608b2f3c",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-lifeboat.json.log",
+    "sha256": "a2ec34dcd278678589afd660c4638bd01c4bb806e7a5ddb5e930ceeb28c5bc2a"
+  }
+}

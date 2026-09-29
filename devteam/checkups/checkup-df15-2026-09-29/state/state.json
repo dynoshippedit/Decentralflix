@@ -1,0 +1,958 @@
+{
+  "review_id": "checkup-df15-2026-09-29",
+  "spec_digest": "118124847fe8eb6fb1359dd4bc6e4c4d9806ca4faa15e39da5bbaf23d6e0de7b",
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Scope frozen: 11-path source set, 9 review units, 3 checks; F-1/F-2/F-3 under repair; out-of-scope pre-existing dirty files excluded.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s0-scope.md",
+          "sha256": "f9cc3d0667ba7c42b06fc9699ab7aee786840da98f8a92dc303ede9c1570b195"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Receipts parsed: 2 baseline + 3 final recorder-run receipts; all argv/cwd match the frozen spec; no check mutated source.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s1-receipts.md",
+          "sha256": "c83d2fe6c0705dd2f61bb05f0ab11518ac27bdf8a84c4a4efd73aa1c421d5483"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-hardhat.json",
+          "sha256": "2b4172e8fae08fec0c575cc7e72107dbb1b3935ebc09dafebd17e07e0071c2a4"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-frontend.json",
+          "sha256": "2b21b556cdc855f107f8515754a7b4ac79252b9dee5865675ef4e7fa651b15d2"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "Reproduction completed: F-1/F-2 reproduced via 5 fail-against-old wiring assertions on the old /mint page; F-3 reproduced by source read (permissionless registerFilm, msg.sender filmmaker).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s2-repro.md",
+          "sha256": "29ff6043905b3dd2a07497edf02cf266418fdf877ce5af49a2382117aa2ee232"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "Diff inspected pre-change: planned surface per finding documented; no new contracts; external Cloudflare Worker/indexer flagged as out-of-repo follow-up.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "7540ce2634b68fb4f10ff70b46ba1223717000f0efc578a470c9a6dbf27b970b"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "Tests baselined: Hardhat 237/237 green; frontend 137 pass + 5 fail-against-old (wiring vs old page); tsc final-only per spec.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s4-baseline-tests.md",
+          "sha256": "f9674a711bcae0999cd60eb708ba52bf93503da9a2f5b3737b76ded05705da4c"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-hardhat.json",
+          "sha256": "2b4172e8fae08fec0c575cc7e72107dbb1b3935ebc09dafebd17e07e0071c2a4"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-frontend.json",
+          "sha256": "2b21b556cdc855f107f8515754a7b4ac79252b9dee5865675ef4e7fa651b15d2"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "Changes minimal: 8 source files under frozen paths (245+/101-); regenerated ABI diff limited to the PayPerView delta; unrelated typechain bytecode noise reverted; pre-existing dirty files untouched.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Checks green: Hardhat 239/239, frontend 143/143, tsc clean; no pre-existing test lost; the 5 fail-against-old assertions now pass.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s6-final-checks.md",
+          "sha256": "a484386234d4a090ec32de239cca8ca48e3e8116c2725dbf8bac0f3198fe0c04"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "Final diff reviewed: registerFilm owner-only + explicit nonzero filmmaker; /mint uses mintTicket with exact price and filmmaker fail-closed guards; MovieTicket change NatSpec-only; residual risks documented.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Gate decision: PASS, 0 outstanding findings. F-1/F-2/F-3 FIXED with verification checks. Work uncommitted; contracts UNAUDITED; handback to parent.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s8-decision.md",
+          "sha256": "efb1be6f1d43e01bb3430da9453ee8d5d02a73918497baa4b3873599fa0a4415"
+        }
+      ]
+    }
+  ],
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df15-2026-09-29/initial.json",
+    "sha256": "0d9ce0989c5227f10e8a5c41fed8255fcb43a61711b8acfef621e01d4d97f954"
+  },
+  "coverage": [
+    {
+      "unit_id": "contract-payperview",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 COR: behaves as specified.",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-payperview",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-payperview",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 TST: guarded by automated tests.",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-payperview",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-payperview",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 SEC: no new attacker-reachable surface; fail-closed where value routes.",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-payperview",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "registerFilm is owner-only with explicit nonzero filmmaker; split math and buyAccess untouched \u2014 DAT: on-chain data recorded explicitly, no silent defaults.",
+      "unit_digest": "882cc704bc9515fe251301df410ca373c0848f8d41ac8f1175306dc47b6cc59b",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s5-change-manifest.md",
+          "sha256": "cbb43df4c05beeccf93bf82cde025f99bfa302c233c46088b11abeaf626e3cf6"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-movieticket",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "NatSpec now states operator-mint reality; no logic change \u2014 COR: behaves as specified.",
+      "unit_digest": "4cafc5ea24572f8f2ac873ce0d8519b19c4c84868efe6b86796ad2133983228c",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/MovieTicket.sol",
+          "sha256": "177e6e86baeeccb19abb6c1b9f011931ff9193f4a2d9ee62ef86ed4de0550eff"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-movieticket",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "NatSpec now states operator-mint reality; no logic change \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "4cafc5ea24572f8f2ac873ce0d8519b19c4c84868efe6b86796ad2133983228c",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/MovieTicket.sol",
+          "sha256": "177e6e86baeeccb19abb6c1b9f011931ff9193f4a2d9ee62ef86ed4de0550eff"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-movieticket",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "NatSpec now states operator-mint reality; no logic change \u2014 TST: guarded by automated tests.",
+      "unit_digest": "4cafc5ea24572f8f2ac873ce0d8519b19c4c84868efe6b86796ad2133983228c",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/MovieTicket.sol",
+          "sha256": "177e6e86baeeccb19abb6c1b9f011931ff9193f4a2d9ee62ef86ed4de0550eff"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-movieticket",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "NatSpec now states operator-mint reality; no logic change \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "4cafc5ea24572f8f2ac873ce0d8519b19c4c84868efe6b86796ad2133983228c",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/MovieTicket.sol",
+          "sha256": "177e6e86baeeccb19abb6c1b9f011931ff9193f4a2d9ee62ef86ed4de0550eff"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test-payperview",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "fixture + 3 new tests cover owner-only registration, front-runner revert, zero-filmmaker revert \u2014 COR: behaves as specified.",
+      "unit_digest": "0bc060ce74aab7b20e04464ad3f56a4f02dbca35566714b197d37e2334731820",
+      "evidence": [
+        {
+          "path": "packages/contracts/test/PayPerView.test.ts",
+          "sha256": "d50aacae90a97a774b399750710a87e4e04ef6dce61a16a45390d46efaac8ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test-payperview",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "fixture + 3 new tests cover owner-only registration, front-runner revert, zero-filmmaker revert \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "0bc060ce74aab7b20e04464ad3f56a4f02dbca35566714b197d37e2334731820",
+      "evidence": [
+        {
+          "path": "packages/contracts/test/PayPerView.test.ts",
+          "sha256": "d50aacae90a97a774b399750710a87e4e04ef6dce61a16a45390d46efaac8ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test-payperview",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "fixture + 3 new tests cover owner-only registration, front-runner revert, zero-filmmaker revert \u2014 TST: guarded by automated tests.",
+      "unit_digest": "0bc060ce74aab7b20e04464ad3f56a4f02dbca35566714b197d37e2334731820",
+      "evidence": [
+        {
+          "path": "packages/contracts/test/PayPerView.test.ts",
+          "sha256": "d50aacae90a97a774b399750710a87e4e04ef6dce61a16a45390d46efaac8ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        }
+      ]
+    },
+    {
+      "unit_id": "contract-test-payperview",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "fixture + 3 new tests cover owner-only registration, front-runner revert, zero-filmmaker revert \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "0bc060ce74aab7b20e04464ad3f56a4f02dbca35566714b197d37e2334731820",
+      "evidence": [
+        {
+          "path": "packages/contracts/test/PayPerView.test.ts",
+          "sha256": "d50aacae90a97a774b399750710a87e4e04ef6dce61a16a45390d46efaac8ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 COR: behaves as specified.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 TST: guarded by automated tests.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 SEC: no new attacker-reachable surface; fail-closed where value routes.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 API: call signature and ABI coherent between wrapper, generated ABI, and contract.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-mint",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "/mint sells TicketNFT.mintTicket at exact on-chain price; blocked for missing/inactive/zero-or-buyer filmmaker; demo path kept \u2014 UIX: buyer sees exact price and clear blocked reasons; no guaranteed-revert submissions.",
+      "unit_digest": "38bc7e1c4ae2d7960944f8f4ab1faaaf72eb744e9cd6f2f0853fd0b8a88b0bd7",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s7-final-diff-review.md",
+          "sha256": "feb5af8b6031d03a3feacc3049caf09978e63e53d2278b28e77deb1c802375e0"
+        }
+      ]
+    },
+    {
+      "unit_id": "helper-film-id",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "keccak-derived filmId pinned by known vector; registration and purchase must agree \u2014 COR: behaves as specified.",
+      "unit_digest": "01f6d024137e773effa3563062a377f36db1fe6f706e68160eba79868d722e3b",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.ts",
+          "sha256": "582d115538b74b25892f8ca3b44b455f7b61594caf2a7e6f10d90ae187b37c02"
+        },
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.test.ts",
+          "sha256": "745c4250b4c7dfb47e95e86cd387c84e131dd74eb3ade1e755416df83d965b23"
+        }
+      ]
+    },
+    {
+      "unit_id": "helper-film-id",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "keccak-derived filmId pinned by known vector; registration and purchase must agree \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "01f6d024137e773effa3563062a377f36db1fe6f706e68160eba79868d722e3b",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.ts",
+          "sha256": "582d115538b74b25892f8ca3b44b455f7b61594caf2a7e6f10d90ae187b37c02"
+        },
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.test.ts",
+          "sha256": "745c4250b4c7dfb47e95e86cd387c84e131dd74eb3ade1e755416df83d965b23"
+        }
+      ]
+    },
+    {
+      "unit_id": "helper-film-id",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "keccak-derived filmId pinned by known vector; registration and purchase must agree \u2014 TST: guarded by automated tests.",
+      "unit_digest": "01f6d024137e773effa3563062a377f36db1fe6f706e68160eba79868d722e3b",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.ts",
+          "sha256": "582d115538b74b25892f8ca3b44b455f7b61594caf2a7e6f10d90ae187b37c02"
+        },
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.test.ts",
+          "sha256": "745c4250b4c7dfb47e95e86cd387c84e131dd74eb3ade1e755416df83d965b23"
+        }
+      ]
+    },
+    {
+      "unit_id": "helper-film-id",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "keccak-derived filmId pinned by known vector; registration and purchase must agree \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "01f6d024137e773effa3563062a377f36db1fe6f706e68160eba79868d722e3b",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.ts",
+          "sha256": "582d115538b74b25892f8ca3b44b455f7b61594caf2a7e6f10d90ae187b37c02"
+        },
+        {
+          "path": "apps/frontend/lib/contracts/ticketFilmId.test.ts",
+          "sha256": "745c4250b4c7dfb47e95e86cd387c84e131dd74eb3ade1e755416df83d965b23"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-wiring-test",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "6 regression assertions pin the F-1/F-2 repair against future regressions \u2014 COR: behaves as specified.",
+      "unit_digest": "f00b55a045cbd3474e8eb68b85663dcf4066864ae47ef0b1bda14edaca9e8672",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/mintPageWiring.test.ts",
+          "sha256": "36b6b7d402a7302a0787cb31680ff7e3b6646798e16474353d6bedd53308b80d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-wiring-test",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "6 regression assertions pin the F-1/F-2 repair against future regressions \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "f00b55a045cbd3474e8eb68b85663dcf4066864ae47ef0b1bda14edaca9e8672",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/mintPageWiring.test.ts",
+          "sha256": "36b6b7d402a7302a0787cb31680ff7e3b6646798e16474353d6bedd53308b80d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-wiring-test",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "6 regression assertions pin the F-1/F-2 repair against future regressions \u2014 TST: guarded by automated tests.",
+      "unit_digest": "f00b55a045cbd3474e8eb68b85663dcf4066864ae47ef0b1bda14edaca9e8672",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/mintPageWiring.test.ts",
+          "sha256": "36b6b7d402a7302a0787cb31680ff7e3b6646798e16474353d6bedd53308b80d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-wiring-test",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "6 regression assertions pin the F-1/F-2 repair against future regressions \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "f00b55a045cbd3474e8eb68b85663dcf4066864ae47ef0b1bda14edaca9e8672",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/mintPageWiring.test.ts",
+          "sha256": "36b6b7d402a7302a0787cb31680ff7e3b6646798e16474353d6bedd53308b80d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+          "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+        }
+      ]
+    },
+    {
+      "unit_id": "wrapper-payperview",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "registerFilm wrapper forwards the explicit filmmaker; arg order matches the contract \u2014 COR: behaves as specified.",
+      "unit_digest": "27fa8db100499b3ea6fdf91f505f916d42a684df768a9f465bca303bf20a7069",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.ts",
+          "sha256": "86aaa4b50a258d3d73e2db6ff9777d78c5c2b3c25d0bc5994be1f5747a8071c3"
+        },
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.test.ts",
+          "sha256": "8b3f1cd2dc466fef8dc71dc50a9f2235de48023af65963f9062b1313cd76f895"
+        }
+      ]
+    },
+    {
+      "unit_id": "wrapper-payperview",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "registerFilm wrapper forwards the explicit filmmaker; arg order matches the contract \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "27fa8db100499b3ea6fdf91f505f916d42a684df768a9f465bca303bf20a7069",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.ts",
+          "sha256": "86aaa4b50a258d3d73e2db6ff9777d78c5c2b3c25d0bc5994be1f5747a8071c3"
+        },
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.test.ts",
+          "sha256": "8b3f1cd2dc466fef8dc71dc50a9f2235de48023af65963f9062b1313cd76f895"
+        }
+      ]
+    },
+    {
+      "unit_id": "wrapper-payperview",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "registerFilm wrapper forwards the explicit filmmaker; arg order matches the contract \u2014 TST: guarded by automated tests.",
+      "unit_digest": "27fa8db100499b3ea6fdf91f505f916d42a684df768a9f465bca303bf20a7069",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.ts",
+          "sha256": "86aaa4b50a258d3d73e2db6ff9777d78c5c2b3c25d0bc5994be1f5747a8071c3"
+        },
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.test.ts",
+          "sha256": "8b3f1cd2dc466fef8dc71dc50a9f2235de48023af65963f9062b1313cd76f895"
+        }
+      ]
+    },
+    {
+      "unit_id": "wrapper-payperview",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "registerFilm wrapper forwards the explicit filmmaker; arg order matches the contract \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "27fa8db100499b3ea6fdf91f505f916d42a684df768a9f465bca303bf20a7069",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.ts",
+          "sha256": "86aaa4b50a258d3d73e2db6ff9777d78c5c2b3c25d0bc5994be1f5747a8071c3"
+        },
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.test.ts",
+          "sha256": "8b3f1cd2dc466fef8dc71dc50a9f2235de48023af65963f9062b1313cd76f895"
+        }
+      ]
+    },
+    {
+      "unit_id": "wrapper-payperview",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "registerFilm wrapper forwards the explicit filmmaker; arg order matches the contract \u2014 API: call signature and ABI coherent between wrapper, generated ABI, and contract.",
+      "unit_digest": "27fa8db100499b3ea6fdf91f505f916d42a684df768a9f465bca303bf20a7069",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.ts",
+          "sha256": "86aaa4b50a258d3d73e2db6ff9777d78c5c2b3c25d0bc5994be1f5747a8071c3"
+        },
+        {
+          "path": "apps/frontend/lib/web3/wrappers/payPerView.test.ts",
+          "sha256": "8b3f1cd2dc466fef8dc71dc50a9f2235de48023af65963f9062b1313cd76f895"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "generated ABI diff is exactly the registerFilm signature + ZeroAddress error; abi-drift green \u2014 COR: behaves as specified.",
+      "unit_digest": "296a30ae39c08bd46d93171797f600c1c61a586378140acba4412b26b240cef1",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/abis.generated.ts",
+          "sha256": "a285c4a8a3f4452e1e4541defd7512b9232b02f1226fd43a898512cbdea22cda"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "generated ABI diff is exactly the registerFilm signature + ZeroAddress error; abi-drift green \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "296a30ae39c08bd46d93171797f600c1c61a586378140acba4412b26b240cef1",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/abis.generated.ts",
+          "sha256": "a285c4a8a3f4452e1e4541defd7512b9232b02f1226fd43a898512cbdea22cda"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "generated ABI diff is exactly the registerFilm signature + ZeroAddress error; abi-drift green \u2014 TST: guarded by automated tests.",
+      "unit_digest": "296a30ae39c08bd46d93171797f600c1c61a586378140acba4412b26b240cef1",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/abis.generated.ts",
+          "sha256": "a285c4a8a3f4452e1e4541defd7512b9232b02f1226fd43a898512cbdea22cda"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "generated ABI diff is exactly the registerFilm signature + ZeroAddress error; abi-drift green \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "296a30ae39c08bd46d93171797f600c1c61a586378140acba4412b26b240cef1",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/abis.generated.ts",
+          "sha256": "a285c4a8a3f4452e1e4541defd7512b9232b02f1226fd43a898512cbdea22cda"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+          "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-access",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "TicketNFT.hasValidTicket(derivedFilmId) added as access source behind the zero-address guard \u2014 COR: behaves as specified.",
+      "unit_digest": "ba3023f09164fc3cfda90b26e88c3f0e608911a94638fdc44fbf3d527569a0b6",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/useHasFilmAccess.ts",
+          "sha256": "1182593bb7d05f2b2de95b0a2d7c068ef31d2e1dcd778a991a08e87cf0e33001"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "7540ce2634b68fb4f10ff70b46ba1223717000f0efc578a470c9a6dbf27b970b"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-access",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "TicketNFT.hasValidTicket(derivedFilmId) added as access source behind the zero-address guard \u2014 ARC: fits the existing architecture without new contracts or trust assumptions.",
+      "unit_digest": "ba3023f09164fc3cfda90b26e88c3f0e608911a94638fdc44fbf3d527569a0b6",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/useHasFilmAccess.ts",
+          "sha256": "1182593bb7d05f2b2de95b0a2d7c068ef31d2e1dcd778a991a08e87cf0e33001"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "7540ce2634b68fb4f10ff70b46ba1223717000f0efc578a470c9a6dbf27b970b"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-access",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "TicketNFT.hasValidTicket(derivedFilmId) added as access source behind the zero-address guard \u2014 TST: guarded by automated tests.",
+      "unit_digest": "ba3023f09164fc3cfda90b26e88c3f0e608911a94638fdc44fbf3d527569a0b6",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/useHasFilmAccess.ts",
+          "sha256": "1182593bb7d05f2b2de95b0a2d7c068ef31d2e1dcd778a991a08e87cf0e33001"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "7540ce2634b68fb4f10ff70b46ba1223717000f0efc578a470c9a6dbf27b970b"
+        }
+      ]
+    },
+    {
+      "unit_id": "hook-access",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "TicketNFT.hasValidTicket(derivedFilmId) added as access source behind the zero-address guard \u2014 DOC: documented accurately (NatSpec/comments/evidence).",
+      "unit_digest": "ba3023f09164fc3cfda90b26e88c3f0e608911a94638fdc44fbf3d527569a0b6",
+      "evidence": [
+        {
+          "path": "apps/frontend/lib/contracts/useHasFilmAccess.ts",
+          "sha256": "1182593bb7d05f2b2de95b0a2d7c068ef31d2e1dcd778a991a08e87cf0e33001"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "7540ce2634b68fb4f10ff70b46ba1223717000f0efc578a470c9a6dbf27b970b"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-hardhat.json",
+      "sha256": "2b4172e8fae08fec0c575cc7e72107dbb1b3935ebc09dafebd17e07e0071c2a4"
+    },
+    {
+      "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-frontend.json",
+      "sha256": "2b21b556cdc855f107f8515754a7b4ac79252b9dee5865675ef4e7fa651b15d2"
+    },
+    {
+      "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+      "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+    },
+    {
+      "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-frontend.json",
+      "sha256": "2af47a8d5dcb4157050bee33bcd6849a398c5a1f7a3f01a412e1221f3d5a9f80"
+    },
+    {
+      "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-tsc.json",
+      "sha256": "20adfb401eec9f7a7a584cf6a26bd07a41e773a6558b2ab2a27fbba6ebebd075"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-1",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "/mint called buyer-wallet MovieTicket.mintPermanentPass, which is onlyOwner; every real buyer transaction reverted.",
+      "challenge": "Verified by source read (old page referenced MOVIE_TICKET_ABI/mintPermanentPass; MovieTicket.sol marks both mints onlyOwner) and by 5 fail-against-old wiring assertions.",
+      "location": "apps/frontend/app/mint/page.tsx (pre-change); packages/contracts/contracts/MovieTicket.sol",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s2-repro.md",
+          "sha256": "29ff6043905b3dd2a07497edf02cf266418fdf877ce5af49a2382117aa2ee232"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-frontend.json",
+          "sha256": "2b21b556cdc855f107f8515754a7b4ac79252b9dee5865675ef4e7fa651b15d2"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-frontend",
+        "check-tsc"
+      ]
+    },
+    {
+      "id": "F-2",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Creator silently defaulted to the buyer (creator || connectedAddress), potentially routing the 75% creator share back to the buyer.",
+      "challenge": "Verified by source read of the old page (setCreator(connectedAddress), creator || connectedAddress) and by fail-against-old wiring assertions.",
+      "location": "apps/frontend/app/mint/page.tsx (pre-change)",
+      "evidence": [
+        {
+          "path": "apps/frontend/app/mint/page.tsx",
+          "sha256": "6273b8907b2916e1006e2516f302305072c2f0a4ffceceb4607051f1f7e877ac"
+        },
+        {
+          "path": "apps/frontend/lib/contracts/mintPageWiring.test.ts",
+          "sha256": "36b6b7d402a7302a0787cb31680ff7e3b6646798e16474353d6bedd53308b80d"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/evidence/s2-repro.md",
+          "sha256": "29ff6043905b3dd2a07497edf02cf266418fdf877ce5af49a2382117aa2ee232"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-frontend",
+        "check-tsc"
+      ]
+    },
+    {
+      "id": "F-3",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Permissionless PayPerView.registerFilm allowed filmId front-running: anyone could claim any filmId and irreversibly capture its 75% revenue share (filmmaker was msg.sender).",
+      "challenge": "Verified by source read (external with no onlyOwner; filmmaker: msg.sender). Fixed version covered by owner-only revert test and front-runner revenue-capture test.",
+      "location": "packages/contracts/contracts/PayPerView.sol",
+      "evidence": [
+        {
+          "path": "packages/contracts/contracts/PayPerView.sol",
+          "sha256": "c660fb8e1cba0a01ff8194b3180188ca97c723ea0ddcb1eace5fee186769727b"
+        },
+        {
+          "path": "packages/contracts/test/PayPerView.test.ts",
+          "sha256": "d50aacae90a97a774b399750710a87e4e04ef6dce61a16a45390d46efaac8ae3"
+        },
+        {
+          "path": "devteam/checkups/checkup-df15-2026-09-29/checks/final/check-hardhat.json",
+          "sha256": "3e2c2b47b69f6b825e68e54bbc8c61fa0ea8c6aea7baed6aaddc1e6e064ec6b1"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-hardhat",
+        "check-frontend"
+      ]
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "Muse Spark defect-repair-engineer subagent worker, 2026-09-29 (same session performed the repair and the checkup)",
+  "next_action": "Parent agent: review the repair report at ~/workspace/role-briefs/full-review-2026-09-29/repair-blockchain-F1F2F3-report.md and decide on commit/merge. Follow-ups: Cloudflare Worker/indexer must honor TicketNFT for production playback; consider a local end-to-end purchase test driving the real /mint page."
+}

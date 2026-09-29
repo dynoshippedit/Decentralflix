@@ -64,8 +64,8 @@ describe('payPerView wrappers call the right methods', () => {
   it('owner', () => expectCall('owner', [[]], () => w.owner(RUNNER)));
   it('platformFeeBps reads the immutable on-chain constant', () =>
     expectCall('PLATFORM_FEE_BPS', [[]], () => w.platformFeeBps(RUNNER)));
-  it('registerFilm', () =>
-    expectCall('registerFilm', [[BigInt(5), BigInt(400), {}]], () => w.registerFilm(RUNNER, 5, BigInt(400))));
+  it('registerFilm passes the explicit filmmaker (owner only)', () =>
+    expectCall('registerFilm', [[BigInt(5), BigInt(400), ADDR, {}]], () => w.registerFilm(RUNNER, 5, BigInt(400), ADDR)));
   it('renounceOwnership', () => expectCall('renounceOwnership', [[{}]], () => w.renounceOwnership(RUNNER)));
   it('setFilmPrice', () =>
     expectCall('setFilmPrice', [[BigInt(5), BigInt(450), {}]], () => w.setFilmPrice(RUNNER, 5, BigInt(450))));

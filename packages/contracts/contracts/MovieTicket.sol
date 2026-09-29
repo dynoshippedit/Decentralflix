@@ -13,8 +13,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * - This contract issues UTILITY-ONLY access tokens (Basic/Deluxe/Producer tiers).
  * - Grants on-chain verified access to films + review rights (see hasAccessToVideo).
  * - NO securities, NO investment contracts, NO expectation of profit or returns.
- * - Fully non-custodial: all value flows wallet-to-wallet via direct contract calls.
- * - Platform (operator) never takes custody of funds or NFTs.
+ * - Operator-minted: both mint functions are `onlyOwner`, so the operator
+ *   submits each mint and fronts `msg.value == price` from the operator
+ *   wallet; the payment is split 75/25 atomically in the same transaction
+ *   (75% + rounding remainder to the `creator` argument, 25% to the owner)
+ *   and nothing accrues in the contract. Direct buyer-paid purchases go
+ *   through TicketNFT.mintTicket (see apps/frontend/app/mint/page.tsx).
  *
  * @notice NON-CUSTODIAL SPLITTER: every mint payment is split immediately
  * through the shared RevenueSplitter — 75% (+ rounding remainder) to the

@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-dfbatch2-2026-09-29",
+  "project_root": "/home/dino/Decentralflix",
+  "review_units": [
+    {
+      "id": "lifeboat-server",
+      "paths": [
+        "apps/lifeboat/server.js"
+      ],
+      "lenses": [
+        "SEC",
+        "API",
+        "COR",
+        "TST",
+        "DOC",
+        "REL",
+        "DAT",
+        "ARC"
+      ]
+    },
+    {
+      "id": "lifeboat-pass-lib",
+      "paths": [
+        "apps/lifeboat/lib/pass.js"
+      ],
+      "lenses": [
+        "COR",
+        "DAT",
+        "TST",
+        "DOC",
+        "REL",
+        "ARC"
+      ]
+    },
+    {
+      "id": "lifeboat-tests",
+      "paths": [
+        "apps/lifeboat/test.sh"
+      ],
+      "lenses": [
+        "TST",
+        "COR",
+        "ARC",
+        "DOC"
+      ]
+    },
+    {
+      "id": "splitter",
+      "paths": [
+        "packages/contracts/contracts/RevenueSplitter.sol"
+      ],
+      "lenses": [
+        "COR",
+        "SEC",
+        "TST",
+        "DOC",
+        "ARC"
+      ]
+    },
+    {
+      "id": "splitter-mocks",
+      "paths": [
+        "packages/contracts/contracts/mocks/MockFeeRecipients.sol"
+      ],
+      "lenses": [
+        "TST",
+        "COR",
+        "ARC",
+        "DOC"
+      ]
+    },
+    {
+      "id": "splitter-tests",
+      "paths": [
+        "packages/contracts/test/PayPerView.test.ts"
+      ],
+      "lenses": [
+        "TST",
+        "COR",
+        "DOC",
+        "ARC"
+      ]
+    },
+    {
+      "id": "page-watch",
+      "paths": [
+        "apps/frontend/app/watch/[hash]/page.tsx"
+      ],
+      "lenses": [
+        "COR",
+        "UIX",
+        "DOC",
+        "TST",
+        "ARC"
+      ]
+    },
+    {
+      "id": "page-film",
+      "paths": [
+        "apps/frontend/app/film/[hash]/page.tsx"
+      ],
+      "lenses": [
+        "COR",
+        "UIX",
+        "DOC",
+        "ARC",
+        "TST"
+      ]
+    },
+    {
+      "id": "cf-access",
+      "paths": [
+        "apps/frontend/lib/cloudflare-access.ts"
+      ],
+      "lenses": [
+        "COR",
+        "DOC",
+        "ARC",
+        "TST"
+      ]
+    },
+    {
+      "id": "worker-access",
+      "paths": [
+        "cloudflare-worker/access-control.js"
+      ],
+      "lenses": [
+        "COR",
+        "DOC",
+        "ARC",
+        "TST"
+      ]
+    },
+    {
+      "id": "abi-regen",
+      "paths": [
+        "apps/frontend/lib/contracts/abis.generated.ts"
+      ],
+      "lenses": [
+        "COR",
+        "BLD",
+        "TST",
+        "DOC",
+        "ARC"
+      ]
+    }
+  ],
+  "source_paths": [
+    "apps/lifeboat/server.js",
+    "apps/lifeboat/lib/pass.js",
+    "apps/lifeboat/test.sh",
+    "packages/contracts/contracts/RevenueSplitter.sol",
+    "packages/contracts/contracts/mocks/MockFeeRecipients.sol",
+    "packages/contracts/test/PayPerView.test.ts",
+    "apps/frontend/app/watch/[hash]/page.tsx",
+    "apps/frontend/app/film/[hash]/page.tsx",
+    "apps/frontend/lib/cloudflare-access.ts",
+    "cloudflare-worker/access-control.js",
+    "apps/frontend/lib/contracts/abis.generated.ts"
+  ],
+  "checks": [
+    {
+      "id": "check-hardhat",
+      "argv": [
+        "npx",
+        "hardhat",
+        "test"
+      ],
+      "cwd": "packages/contracts",
+      "timeout_seconds": 900,
+      "baseline_required": true,
+      "final_required": true,
+      "purpose": "Contract suite 245/245 post-repair: 239 pre-existing + 6 new F-DFLIX-1 owner-rotation regression tests on PayPerView; no 75/25 split or access regressions in MovieTicket/TicketNFT/SubscriptionManager inheritors."
+    },
+    {
+      "id": "check-frontend",
+      "argv": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 900,
+      "baseline_required": false,
+      "final_required": true,
+      "purpose": "Frontend suite 225/225 post-repair incl. abi-drift guard after regenerating abis.generated.ts for the new NewOwnerCannotReceive error in 4 contract ABIs."
+    },
+    {
+      "id": "check-tsc",
+      "argv": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 300,
+      "baseline_required": false,
+      "final_required": true,
+      "purpose": "Watch/film page prop changes (r2SignedUrl, preview-unavailable block) type-check cleanly."
+    },
+    {
+      "id": "check-lifeboat",
+      "argv": [
+        "./test.sh"
+      ],
+      "cwd": "apps/lifeboat",
+      "timeout_seconds": 900,
+      "baseline_required": false,
+      "final_required": true,
+      "purpose": "Lifeboat suite 154/154 post-repair: 145 pre-existing + 3 new F-DFLIX-5 buyers-import auth tests + 6 new F-DFLIX-6 webhook idempotency assertions (incl. synthetic HMAC-signed Stripe events)."
+    }
+  ],
+  "exclusions": [
+    {
+      "pattern": ".git",
+      "reason": "Version control internals; inspect git status separately"
+    },
+    {
+      "pattern": "node_modules",
+      "reason": "Installed dependencies"
+    },
+    {
+      "pattern": "**/node_modules",
+      "reason": "Nested installed dependencies"
+    },
+    {
+      "pattern": "__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "**/__pycache__",
+      "reason": "Generated Python bytecode"
+    },
+    {
+      "pattern": "devteam/checkups",
+      "reason": "Changing checkup output, not application source"
+    }
+  ]
+}

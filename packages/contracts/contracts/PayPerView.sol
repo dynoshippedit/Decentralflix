@@ -7,9 +7,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 /**
  * @title PayPerView
  * @author Decentralflix — Phase 2
- * @notice One-time film purchases. Filmmakers register their own films and set
- * prices; buyers pay the EXACT price (under- or overpayment reverts — there are
- * no refunds and no partial credit) and receive permanent access.
+ * @notice One-time film purchases. The platform owner registers films, naming
+ * the filmmaker explicitly (the filmId namespace is payment-bearing, so open
+ * registration would let a front-runner claim any filmId and irreversibly
+ * capture its revenue share); filmmakers set their own prices via
+ * setFilmPrice. Buyers pay the EXACT price (under- or overpayment reverts —
+ * there are no refunds and no partial credit) and receive permanent access.
  * @notice NON-CUSTODIAL SPLITTER: every purchase is split immediately through
  * the shared RevenueSplitter — 75% to the filmmaker, 25% to the platform
  * (owner). The split is an immutable constant; the owner cannot change it and
@@ -21,13 +24,14 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract PayPerView is RevenueSplitter, ReentrancyGuard {
     /// @notice A purchasable film.
     struct Film {
-        address filmmaker; // set at registration to msg.sender; receives the 75% share
+        address filmmaker; // named explicitly by the owner at registration; receives the 75% share
         uint256 priceWei; // exact purchase price in wei (0 = free film)
         bool exists; // registration guard
     }
 
     // ── Errors ────────────────────────────────────────────────────────────
     error InvalidFilmId();
+    error ZeroAddress();
     error FilmAlreadyRegistered(uint256 filmId);
     error FilmNotFound(uint256 filmId);
     error NotFilmmaker(uint256 filmId, address caller);
@@ -50,22 +54,27 @@ contract PayPerView is RevenueSplitter, ReentrancyGuard {
 
     constructor() Ownable(msg.sender) {}
 
-    // ── Film registry (filmmakers) ────────────────────────────────────────
+    // ── Film registry (owner only) ────────────────────────────────────────
 
     /**
-     * @notice Register a film for pay-per-view sale. The caller is recorded as
-     * the filmmaker and is the only address that can update the price. The
-     * filmmaker address can never be changed afterward.
+     * @notice Register a film for pay-per-view sale. Only the platform owner
+     * may register: an open filmId namespace would let a front-runner claim
+     * any filmId and irreversibly capture its 75% filmmaker revenue share
+     * (F-3). The owner names the filmmaker explicitly; the filmmaker is the
+     * only address that can update the price afterward, and the filmmaker
+     * address can never be changed.
      * @param filmId Platform-unique film identifier (must be non-zero and unused).
      * @param priceWei Exact purchase price in wei (0 allowed for free films).
+     * @param filmmaker Address receiving the 75% (+ rounding remainder) share (non-zero).
      */
-    function registerFilm(uint256 filmId, uint256 priceWei) external {
+    function registerFilm(uint256 filmId, uint256 priceWei, address filmmaker) external onlyOwner {
         if (filmId == 0) revert InvalidFilmId();
         if (_films[filmId].exists) revert FilmAlreadyRegistered(filmId);
+        if (filmmaker == address(0)) revert ZeroAddress();
 
-        _films[filmId] = Film({filmmaker: msg.sender, priceWei: priceWei, exists: true});
+        _films[filmId] = Film({filmmaker: filmmaker, priceWei: priceWei, exists: true});
 
-        emit FilmRegistered(filmId, msg.sender, priceWei);
+        emit FilmRegistered(filmId, filmmaker, priceWei);
     }
 
     /// @notice Update the purchase price. Only the film's filmmaker may call.

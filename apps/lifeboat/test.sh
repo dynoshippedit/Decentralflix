@@ -252,6 +252,28 @@ code=$(curl -s -o "$TMPD/aud-pre.csv" -w "%{http_code}" -H "Authorization: Beare
 ! grep -q "^buyer1@example.com," "$TMPD/aud-pre.csv" && ! grep -q "^buyer2@example.com," "$TMPD/aud-pre.csv" \
   && pass "imported export rows grant no entitlements (no access from export alone)" || fail "no auto-grant from export"
 
+# --- F-DFLIX-5: POST /api/buyers/import is filmmaker+owner-gated (regression) ---
+# Fail closed: unauthenticated callers, buyer-role callers, and filmmakers
+# who do not own the film must all be rejected (chief decision 2026-09-29).
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/buyers/import" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"emails\":[\"attacker@example.com\"]}")
+[ "$code" = "401" ] && pass "F-DFLIX-5: unauthenticated buyers import -> 401" || fail "F-DFLIX-5 unauth 401" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/buyers/import" \
+  -H "Authorization: Bearer $BUYER_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"emails\":[\"attacker@example.com\"]}")
+[ "$code" = "403" ] && pass "F-DFLIX-5: buyer-role import -> 403" || fail "F-DFLIX-5 buyer 403" "http=$code"
+curl -s -o "$TMPD/fm2-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"filmmaker2@example.com","password":"testpass123","role":"filmmaker","name":"Second Filmmaker"}'
+FM2_TOKEN=$(jget "$TMPD/fm2-signup.json" token)
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/buyers/import" \
+  -H "Authorization: Bearer $FM2_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"film_id\":\"$FILM1\",\"emails\":[\"attacker@example.com\"]}")
+[ "$code" = "403" ] && pass "F-DFLIX-5: non-owner filmmaker import -> 403" || fail "F-DFLIX-5 non-owner 403" "http=$code"
+
 # --- vimeo claim flow (verified claims: title, email, receipt ref, purchase type, date) --
 code=$(curl -s -o "$TMPD/claim.json" -w "%{http_code}" -X POST "$BASE/api/claims" \
   -H 'Content-Type: application/json' \
@@ -885,6 +907,80 @@ node tools/verify-receipt.js --server "$BASE" "$TMPD/verify-body.json" > "$TMPD/
   && pass "M2: CLI verifies via --server pubkey fetch" || fail "M2: CLI server mode" "$(cat "$TMPD/cli5.txt")"
 
 # === end M2 tests ===============================================================
+
+# --- F-DFLIX-6: invoice.payment_succeeded is idempotent (regression) ---
+# Stripe delivers webhooks at-least-once; a retried invoice.payment_succeeded
+# must NOT double-credit the pass (mirrors the checkout.session.completed
+# alreadyEntitled pattern). Restart with a webhook secret and sign the events
+# locally — no real Stripe involved.
+kill "$SERVER_PID" 2>/dev/null
+rm -rf "data"
+WH_SECRET="testsecret-fdflix6"
+STRIPE_WEBHOOK_SECRET="$WH_SECRET" DECENTRALFLIX_TEST_MINTS=1 PORT="$PORT" node server.js </dev/null >"$TMPD/server-wh.log" 2>&1 &
+SERVER_PID=$!
+ready=0
+for _ in $(seq 1 60); do
+  if curl -sf --max-time 2 "$BASE/api/films" >/dev/null 2>&1; then ready=1; break; fi
+  sleep 0.25
+done
+[ "$ready" = "1" ] && pass "F-DFLIX-6 setup: webhook server ready" || fail "F-DFLIX-6 server restart"
+# HMAC-SHA256(secret, "<t>.<payload>") — the same scheme lib/stripe.js verifies.
+wh_sign() {
+  node -e '
+    const c = require("crypto");
+    const fs = require("fs");
+    const payload = fs.readFileSync(process.argv[1], "utf8");
+    const sig = c.createHmac("sha256", process.argv[3]).update(process.argv[2] + "." + payload, "utf8").digest("hex");
+    process.stdout.write("t=" + process.argv[2] + ",v1=" + sig);
+  ' "$1" "$(date +%s)" "$WH_SECRET"
+}
+wh_post() {
+  curl -s -o "$TMPD/wh-resp.json" -w "%{http_code}" -X POST "$BASE/api/webhooks/stripe" \
+    -H 'Content-Type: application/json' \
+    -H "Stripe-Signature: $(wh_sign "$1")" \
+    --data-binary "@$1"
+}
+wh_balance() {
+  curl -s -o "$TMPD/wh-pass.json" "$BASE/api/passes/$1" -H "Authorization: Bearer $WH_TOKEN"
+  jget "$TMPD/wh-pass.json" balance
+}
+wh_invoice_entries() {
+  node -e '
+    const s = require("./lib/store");
+    const n = s.all("credit_ledger").filter((e) => e.stripe_invoice_id === process.argv[1]).length;
+    process.stdout.write(String(n));
+  ' "$1"
+}
+# Holder account whose email matches the webhook metadata (passDetail is
+# holder-scoped).
+curl -s -o "$TMPD/wh-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"passhook@example.com","password":"testpass123","role":"buyer"}'
+WH_TOKEN=$(jget "$TMPD/wh-signup.json" token)
+HOOK_EMAIL="passhook@example.com"
+printf '%s' '{"id":"evt_sub_1","type":"customer.subscription.created","data":{"object":{"id":"sub_1","metadata":{"product":"collector_pass","buyer_email":"'"$HOOK_EMAIL"'"}}}}' > "$TMPD/ev-sub.json"
+printf '%s' '{"id":"evt_inv_1","type":"invoice.payment_succeeded","data":{"object":{"id":"in_test_001","metadata":{"product":"collector_pass","buyer_email":"'"$HOOK_EMAIL"'"}}}}' > "$TMPD/ev-inv1.json"
+printf '%s' '{"id":"evt_inv_2","type":"invoice.payment_succeeded","data":{"object":{"id":"in_test_002","metadata":{"product":"collector_pass","buyer_email":"'"$HOOK_EMAIL"'"}}}}' > "$TMPD/ev-inv2.json"
+code=$(wh_post "$TMPD/ev-sub.json")
+[ "$code" = "200" ] && pass "F-DFLIX-6: subscription.created -> 200 (pass created)" || fail "F-DFLIX-6 sub.created" "http=$code"
+PASS_ID=$(node -e '
+  const s = require("./lib/store");
+  const p = s.all("passes").find((x) => x.email === "passhook@example.com");
+  process.stdout.write(p ? p.pass_id : "");
+')
+[ -n "$PASS_ID" ] && pass "F-DFLIX-6: pass exists for hook email" || fail "F-DFLIX-6 pass lookup"
+code=$(wh_post "$TMPD/ev-inv1.json")
+[ "$code" = "200" ] && [ "$(wh_balance "$PASS_ID")" = "1" ] \
+  && pass "F-DFLIX-6: first invoice.payment_succeeded grants 1 credit" || fail "F-DFLIX-6 first invoice" "http=$code"
+# The retry: same invoice delivered again. Old code credited twice here.
+code=$(wh_post "$TMPD/ev-inv1.json")
+[ "$code" = "200" ] && [ "$(wh_balance "$PASS_ID")" = "1" ] && [ "$(wh_invoice_entries in_test_001)" = "1" ] \
+  && pass "F-DFLIX-6: retried invoice.payment_succeeded does not double-credit" || fail "F-DFLIX-6 retry double-credit" "http=$code"
+# A genuinely new invoice still credits — dedup is keyed on the invoice id.
+code=$(wh_post "$TMPD/ev-inv2.json")
+[ "$code" = "200" ] && [ "$(wh_balance "$PASS_ID")" = "2" ] \
+  && pass "F-DFLIX-6: new invoice id still credits (dedup is invoice-keyed)" || fail "F-DFLIX-6 second invoice" "http=$code"
+
 
 # --- DAT-002: crash between multi-file grant writes converges on reboot ---
 # The node script stages a journaled txn, applies only part of it (simulating

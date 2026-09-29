@@ -46,6 +46,7 @@ export interface PayPerViewInterface extends Interface {
       | "getFilm"
       | "hasAccess"
       | "owner"
+      | "platformRenounced"
       | "registerFilm"
       | "renounceOwnership"
       | "setFilmPrice"
@@ -83,8 +84,12 @@ export interface PayPerViewInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "platformRenounced",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "registerFilm",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -111,6 +116,10 @@ export interface PayPerViewInterface extends Interface {
   decodeFunctionResult(functionFragment: "getFilm", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasAccess", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "platformRenounced",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "registerFilm",
     data: BytesLike
@@ -302,8 +311,10 @@ export interface PayPerView extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
+  platformRenounced: TypedContractMethod<[], [boolean], "view">;
+
   registerFilm: TypedContractMethod<
-    [filmId: BigNumberish, priceWei: BigNumberish],
+    [filmId: BigNumberish, priceWei: BigNumberish, filmmaker: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -353,9 +364,12 @@ export interface PayPerView extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "platformRenounced"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
     nameOrSignature: "registerFilm"
   ): TypedContractMethod<
-    [filmId: BigNumberish, priceWei: BigNumberish],
+    [filmId: BigNumberish, priceWei: BigNumberish, filmmaker: AddressLike],
     [void],
     "nonpayable"
   >;

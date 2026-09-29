@@ -32,11 +32,12 @@ function isDemoFilm(filmHash) {
 }
 
 function getDemoSignedUrl(filmHash) {
-  // Public, reliable HLS test stream (Big Buck Bunny variant hosted for testing).
-  // In a real demo you would swap this for a Livepeer demo playback URL
-  // that matches the uploaded demo content.
+  // F-2 (df-batch2): the old test-streams.github.io URL returns 404.
+  // Mux's public test stream is maintained for player testing/embedding
+  // (verified live 2026-09-29). In a real demo you would swap this for a
+  // Livepeer demo playback URL that matches the uploaded demo content.
   // The player will work with this immediately in simulation.
-  return 'https://test-streams.github.io/streams/xbox.m3u8?demo=' + encodeURIComponent(filmHash);
+  return 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8?demo=' + encodeURIComponent(filmHash);
 }
 
 export default {

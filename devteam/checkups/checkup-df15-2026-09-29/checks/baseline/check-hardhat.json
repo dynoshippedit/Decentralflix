@@ -1,0 +1,22 @@
+{
+  "review_id": "checkup-df15-2026-09-29",
+  "spec_digest": "118124847fe8eb6fb1359dd4bc6e4c4d9806ca4faa15e39da5bbaf23d6e0de7b",
+  "check_id": "check-hardhat",
+  "phase": "baseline",
+  "argv": [
+    "npx",
+    "hardhat",
+    "test"
+  ],
+  "cwd": "/home/dino/Decentralflix/packages/contracts",
+  "started_at": "2026-09-29T21:47:57.996973+00:00",
+  "finished_at": "2026-09-29T21:48:03.131312+00:00",
+  "source_before": "6feb1c01d08d5d4c10ac03fba7c85724dfa891e0c806b841b89fa9a7ea5e7a6f",
+  "source_after": "6feb1c01d08d5d4c10ac03fba7c85724dfa891e0c806b841b89fa9a7ea5e7a6f",
+  "exit_code": 0,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-hardhat.json.log",
+    "sha256": "fd3820bd56117b8e7b202467a90fc056ea6a673e24c3ece39fccd009d95e59ec"
+  }
+}

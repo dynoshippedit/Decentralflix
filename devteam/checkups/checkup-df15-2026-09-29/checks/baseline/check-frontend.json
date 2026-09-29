@@ -1,0 +1,25 @@
+{
+  "review_id": "checkup-df15-2026-09-29",
+  "spec_digest": "118124847fe8eb6fb1359dd4bc6e4c4d9806ca4faa15e39da5bbaf23d6e0de7b",
+  "check_id": "check-frontend",
+  "phase": "baseline",
+  "argv": [
+    "npx",
+    "vitest",
+    "run",
+    "lib/contracts",
+    "lib/web3/wrappers",
+    "lib/web3/contracts.test.ts"
+  ],
+  "cwd": "/home/dino/Decentralflix/apps/frontend",
+  "started_at": "2026-09-29T21:48:30.259470+00:00",
+  "finished_at": "2026-09-29T21:48:32.483731+00:00",
+  "source_before": "6feb1c01d08d5d4c10ac03fba7c85724dfa891e0c806b841b89fa9a7ea5e7a6f",
+  "source_after": "6feb1c01d08d5d4c10ac03fba7c85724dfa891e0c806b841b89fa9a7ea5e7a6f",
+  "exit_code": 1,
+  "timed_out": false,
+  "log": {
+    "path": "devteam/checkups/checkup-df15-2026-09-29/checks/baseline/check-frontend.json.log",
+    "sha256": "be0f081957c7cbee605607cf665d7c13b1620b9f3a41234026a9fc585cb9f3a8"
+  }
+}

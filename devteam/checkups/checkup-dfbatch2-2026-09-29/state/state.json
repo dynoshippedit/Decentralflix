@@ -1,0 +1,994 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-dfbatch2-2026-09-29",
+  "spec_digest": "effd9caf8c696f43a85c124a058c5e2451e95597a75034d833b84c295d856ac1",
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/initial.json",
+    "sha256": "ae469ec44d7cd397ed0049175944cd13ea7c96634fb3ea1c4280a89fd1b3b142"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Scope frozen: 11 units, 11 source paths, 4 checks; DF-RENOUNCE-1 out of scope; SELF_REVIEW mode recorded.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s0-scope.md",
+          "sha256": "1803089acd81c5bb593fb7e7b38a9a65e5837a2120b9d58fcd959f05f63f5001"
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "summary": "5 gate receipts, all exit 0, argv/cwd match spec; baseline caveat recorded (true pre-change baseline observed pre-repair).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s1-receipts.md",
+          "sha256": "48fedb0a1b877a63bbd75a05076dec04293a1cc9ac80247893ab9b79c65ca866"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/baseline-check-hardhat.json",
+          "sha256": "a6741a5547ddea94b0ecfabc8cc1fdeff614303b2ec9d6d6d758fcef6a550624"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "status": "PASS",
+      "summary": "Fail-against-old demonstrated for SEC repairs (contracts + lifeboat); media defects reproduced by source read/fetch.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "status": "PASS",
+      "summary": "Diff reviewed across all 6 tasks; DF-MEDIA-3 verified no-change; D-4 settled via GROK.md supremacy.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "status": "PASS",
+      "summary": "Final: 245/245 hardhat, 225/225 vitest, tsc clean, 154/154 lifeboat; assertions are behavioral.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "status": "PASS",
+      "summary": "5 tasks repaired, DF-MEDIA-3 conditional no-change; decisions recorded in code comments.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s5-repair.md",
+          "sha256": "24fccd3b002fb25cbfb367f2494a4c343ca43eefdbb8712d26a15c2788f63a4e"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Lens review: no defects in repairs; 2 non-findings noted; residuals are Dino's explicit decisions.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "4 final gate receipts exit 0; checks evaluated as meaningful (no empty suites).",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s7-final.md",
+          "sha256": "17d275b329d3903af2793e632564c0f8d2b2c7f70ba4bfc80f026a0eb774f897"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-hardhat.json",
+          "sha256": "e6a06587964e6d2712c06917ed7c97f3bea9cbf4ed96c476b5941c90ceee8e00"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-frontend.json",
+          "sha256": "d5defe7c8c988cf504dcc6cc75dff5d0a80e2948a13670a011ff640ac5678f42"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-tsc.json",
+          "sha256": "64557accd00a8173664c701b00f704c11590b419d7f3e1df4f61f1ada5f0852b"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-lifeboat.json",
+          "sha256": "fe4a0c7d0dabe9ab3c81bb0fd231b947548996ba57949365344297de1165361a"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Checkup complete for declared scope. 6 FIXED, 1 QUEUED (DF-MEDIA-3, Dino D-1). Limitations recorded.",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s8-verdict.md",
+          "sha256": "225eb3800ec7c400d29f25551cfc6b778bf934cd66ec40e018762d44c7f06408"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "Buyers-import route enforces authN (requireFilmmaker, 401) and authZ (ownsFilm, 403) at the route handler, the authoritative boundary; negative tests cover all three rejections.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "API",
+      "status": "REVIEWED",
+      "reason": "401 for unauthenticated vs 403 for unauthorized is correct; webhook returns 200 on handled events.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "importBuyers 404s on unknown film before authz; webhook dedups on (pass_id, invoice_id) and still credits genuinely new invoices.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Auth lives in the route handler via existing requireFilmmaker/ownsFilm helpers; idempotency check delegates to the pass lib.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Wire-level assertions: HTTP statuses, credit balances, ledger counts; HMAC-signed synthetic webhooks exercise the real verification path.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Comments record the fail-closed chief decision (2026-09-29) and the deliberate-revert escape hatch for Dino.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "Fail-closed on missing auth and unknown film; retried webhooks are idempotent (at-least-once safe).",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-server",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "No contact-dedup semantics changed; invoice dedup is keyed per-pass so cross-pass invoices cannot collide.",
+      "unit_digest": "511780c7954e539f617319ba06c381753074bd47e1b2352469261263da35dbe4",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "invoiceCredited matches ledger entries on stripe_invoice_id equality within the pass; null ids fail toward under-credit (safe direction).",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Dedup query lives with the ledger it scans; called by the webhook handler.",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "DAT",
+      "status": "REVIEWED",
+      "reason": "Ledger remains the source of truth; no schema change; dedup is a read-only scan before issueCredits.",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Covered via the webhook integration section in test.sh (retry adds no ledger entry; new invoice does).",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Name and inline comment state the at-least-once rationale, mirroring the checkout alreadyEntitled guard.",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-pass-lib",
+      "lens": "REL",
+      "status": "REVIEWED",
+      "reason": "Duplicate delivery is absorbed; genuinely new invoices are never suppressed (dedup key is the invoice id).",
+      "unit_digest": "74b61f0609e68db83e75b2813173a265f97562e228066b014872f45f1b153ca0",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-tests",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Bash assertions check exact HTTP codes and numeric balances; bash -n clean; no silent masking.",
+      "unit_digest": "b578dac96ef38f05f1c34526e5978ae052760638df318a9f11ad6d7cbd87377b",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-tests",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "New sections follow the existing test.sh idiom; webhook section restarts the server with a synthetic secret and restores state.",
+      "unit_digest": "b578dac96ef38f05f1c34526e5978ae052760638df318a9f11ad6d7cbd87377b",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-tests",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "9 new assertions: 3 auth rejections + 6 webhook. Fail-against-old proven (5 fail on old code).",
+      "unit_digest": "b578dac96ef38f05f1c34526e5978ae052760638df318a9f11ad6d7cbd87377b",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        }
+      ]
+    },
+    {
+      "unit_id": "lifeboat-tests",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Test names state the defect under test (F-DFLIX-5/6); comments explain the synthetic webhook construction.",
+      "unit_digest": "b578dac96ef38f05f1c34526e5978ae052760638df318a9f11ad6d7cbd87377b",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Probe-then-rotate keeps state unchanged on probe failure; creator-first ordering preserves exact 75/25 math.",
+      "unit_digest": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Guard in the shared base covers all four inheritors with no per-contract duplication.",
+      "unit_digest": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter",
+      "lens": "SEC",
+      "status": "REVIEWED",
+      "reason": "Non-receiving owner unreachable at the rotation boundary; probe is reentrancy-safe. Residual renounce-to-zero is DF-RENOUNCE-1 (Dino).",
+      "unit_digest": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "6 regression tests: blocked rotation, ownership unchanged, payments intact, receiving-contract flow, EOA no-overblock, zero-address OZ rule, non-owner. Fail-against-old proven.",
+      "unit_digest": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "NatSpec records the F-DFLIX-1 rationale, probe mechanism, and that renounceOwnership is deliberately untouched.",
+      "unit_digest": "f492ab0a543e77812e62984423a25b274bcaaac8f151bf5e1feab42fa36efbb5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-mocks",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "RevertingReceiver has no payable receive/fallback; AcceptingReceiver accepts \u2014 the two sides of the threat model.",
+      "unit_digest": "de8ed725d51ded8fe4d5753a67f17ea279a61b320e739a768d3cf4594c7f514c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-mocks",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Test-only contract under contracts/mocks/, never referenced by production code.",
+      "unit_digest": "de8ed725d51ded8fe4d5753a67f17ea279a61b320e739a768d3cf4594c7f514c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-mocks",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Mocks exist solely to exercise the rotation guard; both deployed and asserted against.",
+      "unit_digest": "de8ed725d51ded8fe4d5753a67f17ea279a61b320e739a768d3cf4594c7f514c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-mocks",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Contract header states test-only purpose.",
+      "unit_digest": "de8ed725d51ded8fe4d5753a67f17ea279a61b320e739a768d3cf4594c7f514c",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-tests",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Assertions use changeEtherBalances with exact 75/25 expectations and custom-error reverts with args.",
+      "unit_digest": "6356c774c120c7f557b03a4ee9741fe07745e4695b5e65cad2377e5b88cedbca",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-tests",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "New describe block appended to the existing suite; reuses deployFixture.",
+      "unit_digest": "6356c774c120c7f557b03a4ee9741fe07745e4695b5e65cad2377e5b88cedbca",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-tests",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Root falsification pair fails on old code (harness artifact for 3 explained in S2); no-overblock guards pass on both; 25/25 on new code.",
+      "unit_digest": "6356c774c120c7f557b03a4ee9741fe07745e4695b5e65cad2377e5b88cedbca",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        }
+      ]
+    },
+    {
+      "unit_id": "splitter-tests",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "File header updated to record the F-DFLIX-1 guard and probe semantics.",
+      "unit_digest": "6356c774c120c7f557b03a4ee9741fe07745e4695b5e65cad2377e5b88cedbca",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-watch",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "r2SignedUrl receives the URL value; matches the useVideoSources r2 branch. Mangled nested-URL defect structurally eliminated.",
+      "unit_digest": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-watch",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Single-prop change; canonical delivery story now matches GROK.md R2-primary.",
+      "unit_digest": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-watch",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Player receives a playable source in both simulation and worker modes instead of a guaranteed-broken Livepeer URL.",
+      "unit_digest": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-watch",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Inline comment cites GROK.md 2026-09-28 supremacy and the mangled-URL mechanism (settles D-4).",
+      "unit_digest": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-watch",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Covered by tsc (prop types) and vitest; no page-level player test exists \u2014 noted, acceptable.",
+      "unit_digest": "c5a869a12362237d8955571386e52233db7ff4c8359c8e16ab1f31de8b0cb7d5",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-film",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "No fabricated livepeerPlaybackId; demo films wire their real videoUrl to r2SignedUrl; others get preview-unavailable.",
+      "unit_digest": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-film",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Conditional render on demoFilm videoUrl; preview card links to /watch \u2014 no dead player instantiated.",
+      "unit_digest": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-film",
+      "lens": "UIX",
+      "status": "REVIEWED",
+      "reason": "Explicit preview-unavailable card with Watch CTA replaces the dead '#EXT-X-ERROR' player.",
+      "unit_digest": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-film",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Comment states the never-fabricate-IDs rule and why the old value failed.",
+      "unit_digest": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "page-film",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Covered by tsc (JSX types, Link href); no page-level render test \u2014 noted, acceptable.",
+      "unit_digest": "de9a40e1b73eb559f60ce27448458783a627e23006b5f0e535ff4b30f5a1e4f1",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "cf-access",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Demo playback URL swapped to the verified-live Mux test stream; simulation path otherwise unchanged.",
+      "unit_digest": "92299f5bc5879b54cd5157c30a7da5cc66112ce8e35634f79463ffa22f2ac5bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "cf-access",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "One constant changed in getDemoPlaybackUrl; consistent with demo-content.ts which already used the Mux URL.",
+      "unit_digest": "92299f5bc5879b54cd5157c30a7da5cc66112ce8e35634f79463ffa22f2ac5bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "cf-access",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Comment marks the URL as a public test/simulation asset and records the 404 verification date.",
+      "unit_digest": "92299f5bc5879b54cd5157c30a7da5cc66112ce8e35634f79463ffa22f2ac5bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "cf-access",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Covered by tsc (module typechecks) and the vitest suite; the URL constant itself has no dedicated unit test \u2014 noted, acceptable for a config-value swap.",
+      "unit_digest": "92299f5bc5879b54cd5157c30a7da5cc66112ce8e35634f79463ffa22f2ac5bd",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "worker-access",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "getDemoSignedUrl returns the verified-live Mux test stream; signature path untouched.",
+      "unit_digest": "acb7ddf1e22bdfc64874b2b71d6fa5f3a1451e09f23c51cecf3bfbd32a7d7e84",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "worker-access",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Simulation-only branch; production signed-URL path unchanged.",
+      "unit_digest": "acb7ddf1e22bdfc64874b2b71d6fa5f3a1451e09f23c51cecf3bfbd32a7d7e84",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "worker-access",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "Comment marks the URL as a public test asset for player testing/embedding.",
+      "unit_digest": "acb7ddf1e22bdfc64874b2b71d6fa5f3a1451e09f23c51cecf3bfbd32a7d7e84",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "worker-access",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "Plain JS worker file outside the vitest/tsc scope; change is a single URL constant with identical shape \u2014 noted.",
+      "unit_digest": "acb7ddf1e22bdfc64874b2b71d6fa5f3a1451e09f23c51cecf3bfbd32a7d7e84",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "COR",
+      "status": "REVIEWED",
+      "reason": "Regenerated from compiled artifacts via npm run export:abi; NewOwnerCannotReceive present in 4 contract ABIs.",
+      "unit_digest": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "ARC",
+      "status": "REVIEWED",
+      "reason": "Generated file via the documented pipeline; not hand-edited.",
+      "unit_digest": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "BLD",
+      "status": "REVIEWED",
+      "reason": "Regeneration is reproducible from artifacts; drift guard enforces exact match going forward.",
+      "unit_digest": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s6-review.md",
+          "sha256": "ccb9215f4850172861a23e3a32f41e8d4297129c64c2be666d642ce76dec159a"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "TST",
+      "status": "REVIEWED",
+      "reason": "abi-drift guard green; it failed 4/14 pre-regen, proving it guards this exact drift.",
+      "unit_digest": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ]
+    },
+    {
+      "unit_id": "abi-regen",
+      "lens": "DOC",
+      "status": "REVIEWED",
+      "reason": "File header documents the generator and regen command.",
+      "unit_digest": "fe9110545a4d6a299e66237481600a4d268203ce7500a60a29f8aefb4021116d",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/baseline-check-hardhat.json",
+      "sha256": "a6741a5547ddea94b0ecfabc8cc1fdeff614303b2ec9d6d6d758fcef6a550624"
+    },
+    {
+      "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-hardhat.json",
+      "sha256": "e6a06587964e6d2712c06917ed7c97f3bea9cbf4ed96c476b5941c90ceee8e00"
+    },
+    {
+      "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-frontend.json",
+      "sha256": "d5defe7c8c988cf504dcc6cc75dff5d0a80e2948a13670a011ff640ac5678f42"
+    },
+    {
+      "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-tsc.json",
+      "sha256": "64557accd00a8173664c701b00f704c11590b419d7f3e1df4f61f1ada5f0852b"
+    },
+    {
+      "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/checks/final-check-lifeboat.json",
+      "sha256": "fe4a0c7d0dabe9ab3c81bb0fd231b947548996ba57949365344297de1165361a"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-DFLIX-5",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "POST /api/buyers/import had no authentication or ownership check; anyone could inject emails into any film's migration contacts.",
+      "challenge": "Fail-against-old: unauthenticated/buyer/non-owner imports returned 201 on old code; 401/403/403 on new code.",
+      "location": "apps/lifeboat/server.js: POST /api/buyers/import -> importBuyers",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-lifeboat"
+      ]
+    },
+    {
+      "id": "F-DFLIX-6",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "invoice.payment_succeeded credited the pass on every delivery; Stripe at-least-once retries double-credited.",
+      "challenge": "Fail-against-old: retried synthetic invoice gave balance 2 on old code; stays 1 on new code with one ledger entry.",
+      "location": "apps/lifeboat/server.js: stripeWebhook invoice.payment_succeeded; apps/lifeboat/lib/pass.js: invoiceCredited",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-lifeboat"
+      ]
+    },
+    {
+      "id": "F-DFLIX-1",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "transferOwnership could install a non-receiving owner, after which every paid flow's fee leg would revert (platform-wide payment brick).",
+      "challenge": "Fail-against-old: rotation to RevertingReceiver succeeded on old code; reverts NewOwnerCannotReceive on new code; 75/25 math unchanged (245/245).",
+      "location": "packages/contracts/contracts/RevenueSplitter.sol: transferOwnership override, _splitRevenue ordering",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s2-repro.md",
+          "sha256": "960c6b62d74e719d379167dc36e1943e24c49332a9b5dbc90d819a57929ba736"
+        },
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s4-tests.md",
+          "sha256": "1c6e664901bcd789beb8cc4d111bb25659361c201c9c45d110f94bcedd80fc43"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-hardhat"
+      ]
+    },
+    {
+      "id": "F-1",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Watch page passed a full signed URL as livepeerPlaybackId, producing a mangled nested Livepeer URL that can never play.",
+      "challenge": "Source read of useVideoSources URL construction; fixed by wiring the URL to r2SignedUrl (canonical per GROK.md 2026-09-28).",
+      "location": "apps/frontend/app/watch/[hash]/page.tsx",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-frontend",
+        "check-tsc"
+      ]
+    },
+    {
+      "id": "F-3",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Film page fabricated livepeerPlaybackId='demo-'+hash, resolving to Livepeer '#EXT-X-ERROR: Stream open failed'.",
+      "challenge": "Fabrication removed; demo films use their real videoUrl via r2SignedUrl; others render preview-unavailable.",
+      "location": "apps/frontend/app/film/[hash]/page.tsx",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-frontend",
+        "check-tsc"
+      ]
+    },
+    {
+      "id": "F-2",
+      "classification": "CONFIRMED_DEFECT",
+      "claim": "Demo playback URL https://test-streams.github.io/streams/xbox.m3u8 returns 404; simulation playback broken.",
+      "challenge": "Old URL fetched -> 404; Mux test stream verified live 2026-09-29; matches demo-content.ts.",
+      "location": "apps/frontend/lib/cloudflare-access.ts; cloudflare-worker/access-control.js",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s3-diff-review.md",
+          "sha256": "b7f9ad57718efad7de358e293d4a57d396e7755ec66a696a9cb1e13f58980039"
+        }
+      ],
+      "resolution": "FIXED",
+      "verification_checks": [
+        "check-tsc",
+        "check-frontend"
+      ]
+    },
+    {
+      "id": "DF-MEDIA-3",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "claim": "Native <video> cannot attach the Authorization: Bearer header that /stream requires; no query-param token support exists.",
+      "challenge": "Verified getAuthAccount reads only the header and searchParams never carries a token; the brief explicitly forbids inventing an auth scheme.",
+      "location": "apps/lifeboat/server.js: getAuthAccount; apps/lifeboat/public/film.html (unmodified)",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-dfbatch2-2026-09-29/evidence/s5-repair.md",
+          "sha256": "24fccd3b002fb25cbfb367f2494a4c343ca43eefdbb8712d26a15c2788f63a4e"
+        }
+      ],
+      "resolution": "QUEUED",
+      "queue_task_id": "DF-MEDIA-3",
+      "remaining_reason": "Blocked on Dino's D-1 decision: signed short-lived playback URLs vs cookie sessions for native video auth."
+    }
+  ],
+  "reviewer_mode": "SELF_REVIEW",
+  "reviewer_identity": "Repair Engineer subagent, session d8a18cb5-586c-438b-bb5b-b0fdce0df079 (writer ran the gate on own change; no independent principal reviewer staffed this cycle)",
+  "next_action": "Controller: move the six claimed queue JSONs (DF-SEC-1/2/3, DF-MEDIA-1/2/3) to done/ with per-task evidence; hand Dino the open decisions: DF-MEDIA-3 D-1 (signed URLs vs cookie sessions) and DF-RENOUNCE-1 (renounceOwnership economics). No commit/push/merge performed."
+}

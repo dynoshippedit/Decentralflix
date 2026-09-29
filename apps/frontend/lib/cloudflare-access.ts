@@ -30,10 +30,12 @@ function isDemoFilm(filmHash: string): boolean {
 }
 
 function getDemoPlaybackUrl(filmHash: string): string {
-  // Reliable public HLS test stream used for simulation.
-  // In a real demo environment you would map this to the actual Livepeer playback
-  // for the uploaded demo content.
-  return `https://test-streams.github.io/streams/xbox.m3u8?demo=${encodeURIComponent(filmHash)}`;
+  // F-2 (df-batch2): the old test-streams.github.io URL returns 404.
+  // Mux's public test stream is maintained for player testing/embedding
+  // (verified live 2026-09-29; matches the videoUrl already used in
+  // lib/demo-content.ts). In a real demo environment you would map this to
+  // the actual Livepeer playback for the uploaded demo content.
+  return `https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8?demo=${encodeURIComponent(filmHash)}`;
 }
 
 export async function getVideoSignedUrl(

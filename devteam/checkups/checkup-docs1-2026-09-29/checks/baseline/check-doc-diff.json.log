@@ -1,0 +1,40 @@
+CHECK check-doc-diff
+diff --git a/docs/PHASE2_AUDIT.md b/docs/PHASE2_AUDIT.md
+index dfc9238..9f90090 100644
+--- a/docs/PHASE2_AUDIT.md
++++ b/docs/PHASE2_AUDIT.md
+@@ -1,6 +1,15 @@
+ # Decentralflix Phase 2 — Full Codebase Audit
+ Date: 2026-09-28. Scope: entire repository at /home/dino/Decentralflix, commit ccf762c.
+ 
++**Correction note 2026-09-29 (DOCS-1):** this audit was pinned to commit ccf762c, *before*
++df-cycle-12/13 replaced the per-contract `platformFeeBps` admin field with the shared
++`RevenueSplitter` (`PLATFORM_FEE_BPS = 2500`, immutable constant, no setter, creator receives
++`msg.value - fee` so the rounding remainder favors the creator, zero-creator reverts
++`MissingCreator`, no owner withdraw path). The `platformFeeBps` mentions in §1 (repo map)
++and §2 (MovieTicket function surface) no longer exist anywhere in `packages/contracts/`
++(repo-wide grep for `platformFeeBps` across `*.sol`: zero hits) and are marked inline below.
++For the current fee mechanics see `DEPLOYMENT_CHECKLIST.md` and `docs/WHITEPAPER.md` §§3.1–3.3.
++
+ ## 1. Repository map
+ 
+ ```
+@@ -53,7 +62,8 @@ Decentralflix/
+ │   └── contracts/                # Hardhat + Solidity 0.8.28 (evmVersion cancun) + ethers v6
+ │       ├── contracts/
+ │       │   ├── MovieTicket.sol        # ERC721A: Permanent Pass / Burnable Ticket tiers,
+-│       │   │                          # videoMetadata registry, platformFeeBps, pausable
++│       │   │                          # videoMetadata registry, RevenueSplitter
++│       │   │                          #   (was platformFeeBps — see correction note), pausable
+ │       │   ├── FilmmakerCampaign.sol  # crowdfunding campaigns
+ │       │   ├── Reviews.sol            # on-chain reviews
+ │       │   ├── SeederCredits.sol      # off-chain-reported seeding credits, owner attestor,
+@@ -74,7 +84,7 @@ Decentralflix/
+ ## 2. Every function surface (by module)
+ 
+ **packages/contracts (Solidity):**
+-- `MovieTicket` (ERC721A, Ownable, ReentrancyGuard): video registration (`registerVideo`), tiered minting (Permanent Pass / Burnable Ticket), `hasAccessToVideo`, per-token URIs, `platformFeeBps` admin, pause, burn-on-redeem for single-watch tickets, spot-minting keeping `_videoCounter` in sync.
++- `MovieTicket` (ERC721A, Ownable, ReentrancyGuard): video registration (`registerVideo`), tiered minting (Permanent Pass / Burnable Ticket), `hasAccessToVideo`, per-token URIs, RevenueSplitter (was `platformFeeBps` admin — see correction note), pause, burn-on-redeem for single-watch tickets, spot-minting keeping `_videoCounter` in sync.
+ - `FilmmakerCampaign`: campaign creation, pledging, refunds, payout on goal.
+ - `Reviews`: review submission gated on ticket ownership, rating aggregation.
+ - `SeederCredits`: `claimCredits(seeder, uptime, bytes, reportArweaveTx, attestorSig)` with 1-day cooldown, 7-day max report age, `claimsPaused` kill-switch, tier multipliers via MovieTicket.

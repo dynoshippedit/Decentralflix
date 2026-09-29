@@ -102,6 +102,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FilmmakerCampaign__factory>;
     getContractFactory(
+      name: "AcceptingReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AcceptingReceiver__factory>;
+    getContractFactory(
+      name: "RevertingReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.RevertingReceiver__factory>;
+    getContractFactory(
       name: "MockTicketGate",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockTicketGate__factory>;
@@ -265,6 +273,16 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.FilmmakerCampaign>;
     getContractAt(
+      name: "AcceptingReceiver",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AcceptingReceiver>;
+    getContractAt(
+      name: "RevertingReceiver",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.RevertingReceiver>;
+    getContractAt(
       name: "MockTicketGate",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -419,6 +437,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilmmakerCampaign>;
     deployContract(
+      name: "AcceptingReceiver",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AcceptingReceiver>;
+    deployContract(
+      name: "RevertingReceiver",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.RevertingReceiver>;
+    deployContract(
       name: "MockTicketGate",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockTicketGate>;
@@ -581,6 +607,16 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilmmakerCampaign>;
+    deployContract(
+      name: "AcceptingReceiver",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AcceptingReceiver>;
+    deployContract(
+      name: "RevertingReceiver",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.RevertingReceiver>;
     deployContract(
       name: "MockTicketGate",
       args: any[],
