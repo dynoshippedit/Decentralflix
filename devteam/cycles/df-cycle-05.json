@@ -1,0 +1,113 @@
+{
+  "blockers": [],
+  "changed_files": [
+    "apps/frontend/app/legal/page.tsx",
+    "apps/frontend/app/dashboard/page.tsx",
+    "devteam/TASKS.md",
+    "devteam/cycles/df-cycle-05.json"
+  ],
+  "checks": [
+    {
+      "artifacts": [],
+      "command": [
+        "grep",
+        "-rni",
+        "audit",
+        "--include=*.ts",
+        "--include=*.tsx",
+        "--include=*.md",
+        "--include=*.json",
+        "--include=*.sol",
+        "."
+      ],
+      "cwd": "/home/dino/Decentralflix",
+      "exit_code": 0,
+      "id": "grep-audit-before",
+      "notes": "Two false present-tense claims found in product copy: legal/page.tsx 'audited smart contracts on Arbitrum'; dashboard/page.tsx 'Ownership verified on Arbitrum'. Admin 'audit log' (action log), AGENTS.md/GROK.md (already honest), WHITEPAPER.md (honest: 'no third-party security audit'), and build recommendations are not false claims.",
+      "status": "PASS",
+      "tested_source_identity": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "grep",
+        "-rni",
+        "arbitrum",
+        "--include=*.ts",
+        "--include=*.tsx",
+        "--include=*.md",
+        "--include=*.json",
+        "--include=*.sol",
+        "."
+      ],
+      "cwd": "/home/dino/Decentralflix",
+      "exit_code": 0,
+      "id": "grep-arbitrum-before",
+      "notes": "Demo page TECH_STACK ('Arbitrum L2' role listing, labeled INVESTOR DEMO) and homepage stack strip are aspirational architecture lists with no deployed/audited claim \u2014 left alone. Chain-ID config constants are config, not claims. Remainder of repo copy already honest ('contract not deployed', conditional on deployment).",
+      "status": "PASS",
+      "tested_source_identity": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "git",
+        "diff",
+        "apps/frontend/app/legal/page.tsx",
+        "apps/frontend/app/dashboard/page.tsx"
+      ],
+      "cwd": "/home/dino/Decentralflix",
+      "exit_code": 0,
+      "id": "diff-review",
+      "notes": "legal: 'via audited smart contracts on Arbitrum' -> 'The smart contracts are unaudited and have not been deployed to any network \u2014 on-chain value movement is not live.' dashboard: 'Ownership verified on Arbitrum' (static string, nothing verifies on-chain) -> 'Contracts not yet deployed \u2014 on-chain ownership not verified'. No replacement claims invented.",
+      "status": "PASS",
+      "tested_source_identity": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "pnpm",
+        "test"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/frontend",
+      "exit_code": 0,
+      "id": "frontend-vitest",
+      "notes": "203/203 tests passed. No snapshot/copy tests cover this copy; nothing broke.",
+      "status": "PASS",
+      "tested_source_identity": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa"
+    },
+    {
+      "artifacts": [],
+      "command": [
+        "pnpm",
+        "build"
+      ],
+      "cwd": "/home/dino/Decentralflix/apps/frontend",
+      "exit_code": 0,
+      "id": "frontend-build",
+      "notes": "next build exit 0, all routes compiled.",
+      "status": "PASS",
+      "tested_source_identity": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa"
+    }
+  ],
+  "cycle_id": "df-cycle-05",
+  "lessons": [
+    "File edits transferred to the Threadripper via stdin piping ('cat > dest' < localfile) never pass through the remote shell parser \u2014 the reliable path after heredoc mangling lessons from earlier cycles."
+  ],
+  "next_action": {
+    "disposition": "CONTINUE",
+    "reason": "All S1s through DOC-001 complete or proposed-verified; next ready S1 is DAT-013 (claim.html broken, creator monetization path dead, effort S). MUS-001 stays parked pending Dino's decision per devteam/QUESTIONS.md.",
+    "task_id": "DAT-013"
+  },
+  "project_id": "decentralflix",
+  "project_root": "/home/dino/Decentralflix",
+  "proposed_status": "IMPLEMENTED",
+  "root_cause": "Marketing/legal copy written when the chain layer was planned stated present-tense facts ('audited smart contracts on Arbitrum', 'Ownership verified on Arbitrum') that never became true: the contracts are UNAUDITED and nothing has been deployed to any chain. The dashboard string was static \u2014 no code path verified ownership on-chain.",
+  "schema_version": "1.0",
+  "source_identity": {
+    "after": "aea946c (branch devteam/review-2026-09-29, tree clean)",
+    "before": "692e0f8b57da2c0ea0d9b7c09b978a9a2ab34caa (branch devteam/review-2026-09-29, tree clean at cycle start)",
+    "method": "git rev-parse HEAD + git status --porcelain over threadripper-ssh"
+  },
+  "summary": "DOC-001: corrected the two false present-tense claims in product copy. apps/frontend/app/legal/page.tsx now states the contracts are unaudited and undeployed (was: 'audited smart contracts on Arbitrum'); apps/frontend/app/dashboard/page.tsx no longer claims 'Ownership verified on Arbitrum'. Rest of repo copy audited via grep and found already honest or aspirational-only. Frontend vitest 203/203, next build exit 0.",
+  "task_id": "DF-005"
+}

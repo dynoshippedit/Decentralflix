@@ -310,7 +310,7 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <div className="text-xs text-emerald-400 tracking-[3px] mb-1">CONNECTED</div>
                 <div className="font-mono text-lg break-all">{connectedAddress}</div>
-                <div className="text-sm text-white/50 mt-1">Authenticated via Privy + SIWE • Ownership verified on Arbitrum</div>
+                <div className="text-sm text-white/50 mt-1">Authenticated via Privy + SIWE • Contracts not yet deployed — on-chain ownership not verified</div>
               </div>
               <div>
                 <a href="/collection" className="inline-block px-6 py-3 border border-white/40 rounded-2xl text-sm hover:bg-white/5">Full Collection View →</a>
