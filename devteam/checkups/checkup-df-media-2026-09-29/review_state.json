@@ -1,0 +1,656 @@
+{
+  "coverage": [
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "COR",
+      "reason": "verifyPlaybackUrl reproduces mint's exact signed string (Number(exp) interpolates identically); boundaries: exp<=now expired, non-integer 'bad expiry', missing params rejected; length guard precedes timingSafeEqual so no throw path is reachable.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "lens": "ARC",
+      "reason": "Pure module, sole dependency node:crypto; minimal export surface; secret read from env at call time (not require time), so test and prod secrets are picked up per invocation.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "TST",
+      "reason": "No dedicated unit tests for the pure verify branches; covered indirectly by the 11 e2e tests (missing/expired/same-length-tampered). GAP: 'bad expiry' and sig length-guard branches untested -> finding F1.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOC",
+      "reason": "Header comment (problem/fix/TTL/secret) and JSDoc (caller must authZ before mint; pure verify) match the implementation; TTL 900 matches the e2e expires_in=900 assertion.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "SEC",
+      "reason": "HMAC-SHA256 with constant-time compare and length guard; secret from DECENTRALFLIX_MEDIA_SECRET with dev-only default + startup warning; signature binds (passId, filmId, exp). Tamper/retarget/expiry all 403 in e2e.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOM",
+      "reason": "15-minute presigned URL is the standard headerless-video pattern; satisfies Dino's chief decision and requirements R1/R2.",
+      "status": "REVIEWED",
+      "unit_digest": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+      "unit_id": "U1-playback-lib"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "COR",
+      "reason": "passPlaybackUrl order: auth(401) -> pass 404 -> holder 403 -> film param 400 -> film 404 -> entitlement 403 -> mint; no leak to strangers. mediaPlay: verify -> 403 fail-closed, film 404, CDN.streamFile honors Range (e2e: 206, exactly 100 bytes).",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "lens": "ARC",
+      "reason": "Reuses requireAuth/ownsFilm/hasEntitlement \u2014 the same predicates as the stream route, no duplicated policy. Clean boundary: server does authZ, lib does crypto. Routes registered in handleApi with the existing route table.",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "TST",
+      "reason": "11 e2e tests cover both routes: success, authZ matrix (401/403/403), TTL=900, URL shape, headerless 200 with bytes, Range 206, tamper/retarget/expiry/missing-params 403. Assertions check codes, non-empty bodies, byte counts.",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOC",
+      "reason": "Handler comments (fail-closed 403, Range via streamFile, holder check reuses passDetail's) match the code; the startup warning text matches secretIsDefault() behavior.",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "SEC",
+      "reason": "Identity+authZ enforced at the mint boundary (authoritative). Play enforces signature only; entitlement is mint-time (revocation/refund propagation <= 15 min \u2014 inherent to the presigned pattern, Dino's pick, documented). No new injection surface: IDs via store lookups, params via URLSearchParams.",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "API",
+      "reason": "Mint 200 JSON {url, expires_at, expires_in, pass_id, film_id, legal_notice} matches the frontend client's snake_case expectation exactly; 401/403/404/400 used consistently with the rest of the API; mediaPlay 403 fail-closed, 404 when the film is gone.",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOM",
+      "reason": "Presigned-URL pattern resolves R1 (video cannot send headers); mint-side authZ equals stream-route authZ (R3: ownsFilm || hasEntitlement; a bare pass never grants a film).",
+      "status": "REVIEWED",
+      "unit_digest": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+      "unit_id": "U2-server-playback-routes"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "COR",
+      "reason": "Expired-URL fixture crafts HMAC with the same test secret and [passId,filmId,exp].join('.') \u2014 identical to signPlayback's template. Tampered sig uses 64 zeros (same length as a real sig), exercising timingSafeEqual's false path.",
+      "status": "REVIEWED",
+      "unit_digest": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+      "unit_id": "U3-lifeboat-e2e-tests"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "lens": "ARC",
+      "reason": "DF-MEDIA-3 section sits after the pass-buyer setup so PASSID/PB_TOKEN/FILM1/FILM2/OTHER_TOKEN exist and the buyer is entitled to FILM1 only; server started with the fixed test secret on the start line.",
+      "status": "REVIEWED",
+      "unit_digest": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+      "unit_id": "U3-lifeboat-e2e-tests"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "TST",
+      "reason": "11 meaningful assertions; each fail branch prints the http code/url for diagnosis. GAP: no non-integer-exp case and no short-sig length-mismatch case -> finding F1.",
+      "status": "REVIEWED",
+      "unit_digest": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+      "unit_id": "U3-lifeboat-e2e-tests"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOC",
+      "reason": "Section header explains the why (video cannot send Authorization) and the fixture rationale (redeemed FILM1, not FILM2) \u2014 both accurate.",
+      "status": "REVIEWED",
+      "unit_digest": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+      "unit_id": "U3-lifeboat-e2e-tests"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "SEC",
+      "reason": "Tests assert the negative security matrix (401 + 4x403 paths). The expired fixture hardcodes the test secret matching the server start line \u2014 drift fails loudly. No real secrets in the file.",
+      "status": "REVIEWED",
+      "unit_digest": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+      "unit_id": "U3-lifeboat-e2e-tests"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "COR",
+      "reason": "film.html reads dfl.pass_id in try/catch (private-mode safe), encodeURIComponent on both IDs, D.getJSON attaches the Bearer <redacted> (app.js:96), sets player.src on success, shows a status banner on failure. pass.html persists r.pass.pass_id after successful test subscribe. Legacy fallback preserved when no pass_id.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "lens": "ARC",
+      "reason": "Two small hunks; shared localStorage key dfl.pass_id is consistent across the pages; no new dependencies.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "lens": "TST",
+      "reason": "STR-001 covers the auth helper (login stores token, helpers send Bearer); the HTML glue itself has no automated test \u2014 consistent with this repo's strategy for static pages (no browser harness). The server path is e2e-covered.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOC",
+      "reason": "Inline comments state the why (video cannot send the header) and the legacy fallback condition \u2014 both accurate.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "UIX",
+      "reason": "Error state is visible (status banner on mint failure); no loading indicator while minting (minor, noted). Player stays empty on mint failure \u2014 a visible failure, acceptable.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOM",
+      "reason": "Native video + presigned URL is the required pattern (R1/R6); the legacy path is preserved for pass-less browsers.",
+      "status": "REVIEWED",
+      "unit_digest": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+      "unit_id": "U4-legacy-player-pages"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "COR",
+      "reason": "snake_case -> camelCase mapping matches the server response exactly (url/expires_at/expires_in/pass_id/film_id); fallbacks apply only when url is present but fields are missing. resolvePlaybackSrc handles absolute passthrough and relative join correctly.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        },
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "lens": "ARC",
+      "reason": "Module is self-contained (fetch only) but has no importers in apps/frontend \u2014 unwired scaffolding for the Next.js watch page. Complete and tested; wiring is a product-loop call, not a defect.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "TST",
+      "reason": "7 vitest tests mock fetch at the right boundary; assert endpoint URL, Authorization header on the mint call, typed 401/403, no-network on missing token, malformed body, and both resolvePlaybackSrc branches. GAP: the documented 404 path is untested -> finding F5.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "DOC",
+      "reason": "Header + JSDoc describe the flow, 15-min expiry, and typed 401/403/404/transport errors \u2014 accurate against the implementation.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "SEC",
+      "reason": "Bearer <redacted> is sent only on the mint call and never attached to the video src (asserted in the test); a missing token fails before any network I/O; no secret handling client-side.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "lens": "API",
+      "reason": "Typed errors map to the server's status codes (401/403/404); 5xx/429 fall through to a generic PlaybackUrlError carrying the status \u2014 reasonable.",
+      "status": "REVIEWED",
+      "unit_digest": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34",
+      "unit_id": "U5-frontend-playback-client"
+    }
+  ],
+  "findings": [
+    {
+      "challenge": "Alternative 'covered enough by the tamper test' rejected: the tampered test uses a 64-char sig (same length as real), so it cannot reach the length guard; the exp branch fires before sig comparison, so no existing test reaches 'bad expiry'. Counter-check: read test.sh tamper test and verifyPlaybackUrl lines 63-70.",
+      "claim": "Two rejection branches of verifyPlaybackUrl (apps/lifeboat/lib/playback.js:63-70) have no test coverage: 'bad expiry' (non-integer exp) and the signature length-mismatch guard.",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "F1",
+      "location": "apps/lifeboat/lib/playback.js:verifyPlaybackUrl (lines 63-70); exercised via apps/lifeboat/server.js:mediaPlay",
+      "resolution": "QUEUED",
+      "queue_task_id": "DF-MEDIA-3-F1",
+      "remaining_reason": "Read-only run rule: the test edit must be applied by the main loop; exact patch and acceptance criteria recorded in evidence/s5-improvements.md."
+    },
+    {
+      "challenge": "Alternative '404 unreachable because callers always have valid ids' rejected: ids come from localStorage and URL params, both user-influenceable. Counter-check: read the test file \u2014 200/401/403/missing-token/malformed covered, 404 absent.",
+      "claim": "fetchPlaybackUrl documents and implements a typed 404 error (apps/frontend/lib/playback-url.ts:62) but apps/frontend/lib/playback-url.test.ts has no 404 test.",
+      "classification": "SUPPORTED_IMPROVEMENT",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "F5",
+      "location": "apps/frontend/lib/playback-url.test.ts (83 lines, 7 tests)",
+      "resolution": "QUEUED",
+      "queue_task_id": "DF-MEDIA-3-F5",
+      "remaining_reason": "Read-only run rule: the test edit must be applied by the main loop; exact patch and acceptance criteria recorded in evidence/s5-improvements.md."
+    },
+    {
+      "challenge": "Counter-evidence: mint and verify use the identical serialization, so a signature is only checked against the exact triple it was minted for; IDs are server-generated, so an attacker cannot arrange a colliding triple without the secret. No reachable violation.",
+      "claim": "Considered: ${passId}.${filmId}.${exp} dot-joined serialization could let a signature for one (pass,film) triple validate as a different triple.",
+      "classification": "REJECTED_LEAD",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "R1",
+      "location": "apps/lifeboat/lib/playback.js:signPlayback (line 36)",
+      "resolution": "REJECTED"
+    },
+    {
+      "challenge": "Counter-evidence: failure is visible (status banner), success populates the player, and the mint is a single local JSON round-trip. Cosmetic with no acceptance measure here.",
+      "claim": "Considered: film.html shows nothing while the mint call is in flight (no loading indicator).",
+      "classification": "REJECTED_LEAD",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "R2",
+      "location": "apps/lifeboat/public/film.html (DF-MEDIA-3 hunk ~lines 97-117)",
+      "resolution": "REJECTED"
+    },
+    {
+      "challenge": "Counter-evidence: the oracle needs a valid pass-holder session, and the pre-existing stream route has the identical property \u2014 no new exposure introduced by this change.",
+      "claim": "Considered: an authenticated pass holder can distinguish film non-existence (404) from non-entitlement (403) at the mint endpoint.",
+      "classification": "REJECTED_LEAD",
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "R3",
+      "location": "apps/lifeboat/server.js:passPlaybackUrl (~lines 990-1014)",
+      "resolution": "REJECTED"
+    }
+  ],
+  "independent_review_evidence": [],
+  "initial_snapshot": {
+    "path": "devteam/checkups/checkup-df-media-2026-09-29/initial.json",
+    "sha256": "7716656e16de681521a3464b034031ada3712de09969acd7a161f488e0f2f372"
+  },
+  "next_action": "Main loop: apply the F1 patch (2 e2e assertions, apps/lifeboat/test.sh) and F5 patch (1 vitest test, apps/frontend/lib/playback-url.test.ts) from evidence/s5-improvements.md \u2014 acceptance test.sh 167 PASS / 0 FAIL and vitest 233 passed. Optional: README endpoint rows, wire playback-url.ts into the Next.js watch page. No commits/pushes/deploys made by this run.",
+  "receipts": [
+    {
+      "path": "devteam/checkups/checkup-df-media-2026-09-29/receipts/baseline-lifeboat-e2e.json",
+      "sha256": "726e46cbcbfbc9e0dde53084a9e60a13458961d08bd356e46f36570c4f8cd198"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-media-2026-09-29/receipts/final-lifeboat-e2e.json",
+      "sha256": "c3acf5f8725a5a651e62cf30320de177d8dd20a872a5d8e21c1390a39ff95672"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-media-2026-09-29/receipts/final-frontend-vitest.json",
+      "sha256": "2a06856ad471fa4491297732fa104b1b3f3cd9f0ef66be05f83cd6572cad4d70"
+    },
+    {
+      "path": "devteam/checkups/checkup-df-media-2026-09-29/receipts/final-frontend-tsc.json",
+      "sha256": "8320dd29ef65cd32b6a7b96853be958c726ab096292ea9fd3ad885a2f1a8740e"
+    }
+  ],
+  "review_id": "checkup-df-media-2026-09-29",
+  "reviewer_identity": "Principal Engineer checkup worker (subagent session a675321d-b614-4669-b7f3-61005cab3f67); no independent reviewer available or authorized",
+  "reviewer_mode": "SELF_REVIEW",
+  "schema_version": "1.0",
+  "spec_digest": "e25073b9ab21906c48574d0926f4843dee3b688e6933483c11da1dae1ed0fd20",
+  "stages": [
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s0-scope.md",
+          "sha256": "d2a9d4ff065ec028a613e40361b59814d9d6513808636a5e88db0faed5711a25"
+        }
+      ],
+      "id": "S0",
+      "status": "PASS",
+      "summary": "Scope frozen: change checkup for Repair 2 (DF-MEDIA-3) only \u2014 7 files (3 new, 4 modified); pre-existing unrelated changes in server.js/test.sh and the rest of the dirty tree recorded as out-of-scope. Requirements R1-R6 and omitted-lens rationale recorded; initial snapshot taken (source_digest 713c1aba09164799)."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s1-baseline.md",
+          "sha256": "7e54131194401d8dc132bcc88a87b05b3a10888c0f95d1e8563a97edc2c8f9bc"
+        }
+      ],
+      "id": "S1",
+      "status": "PASS",
+      "summary": "Baseline lifeboat-e2e executed through the gate recorder: exit 0, 165 PASS / 0 FAIL, 0 skips; all 11 DF-MEDIA-3 tests green (authZ matrix, headerless play 200, Range 206, tamper/retarget/expiry/missing-params 403). Suite did not mutate selected source. Named limit: test-secret path exercised; prod secret path is behaviorally identical."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s2-architecture.md",
+          "sha256": "0b7db3b69a3fac2f8478a587f9deba498a54ea570b41d4b80c52feb22938b68b"
+        }
+      ],
+      "id": "S2",
+      "status": "PASS",
+      "summary": "As-is design reconstructed: mint flow (film.html -> authed mint -> HMAC sign -> 200 JSON) and play flow (video -> verify -> fail-closed 403 or CDN.streamFile with Range). Invariants I1-I5 recorded (sig binds pass+film+exp, 15-min TTL, mint-time entitlement, fail-closed play, token never touches video). Discrepancies D1-D4 noted (frontend client unwired; dot-join serialization; no mint loading state; 404-vs-403 oracle)."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s3-matrix.md",
+          "sha256": "c5ec35d4679f9e08501994a43a6eb9929bbb867bfd7286a039525aefea791dbb"
+        }
+      ],
+      "id": "S3",
+      "status": "PASS",
+      "summary": "All 30 unit/lens cells reviewed with source-bound observations (U1:6, U2:7, U3:5, U4:6, U5:6). No confirmed defects: authZ ordering, fail-closed verification, entitlement parity with the stream route, and the headerless-play contract all verified against code and e2e behavior. Two test-coverage gaps filed as supported improvements (F1, F5); three leads rejected with counter-evidence (R1-R3)."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s4-findings.md",
+          "sha256": "640418ad99f8bf9073e65a457848d149123f18d3c66c5f9c8fb7ff8fd229bbcc"
+        }
+      ],
+      "id": "S4",
+      "status": "PASS",
+      "summary": "Findings challenged and prioritized: F1 (untested 'bad expiry' + sig length-guard branches -> add 2 e2e assertions), F5 (untested 404 path in frontend client -> add 1 vitest test). R1 (dot-join ambiguity), R2 (mint loading state), R3 (404-vs-403 oracle) rejected with recorded counter-evidence. Zero confirmed defects."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s5-improvements.md",
+          "sha256": "513565ff259040eb07aafbf27da2cc8dab596e64625e7ce05bb2fab4109aaae2"
+        }
+      ],
+      "id": "S5",
+      "status": "PASS",
+      "summary": "S5 disposition: read-only run \u2014 no source edits made. F1/F5 recorded as exact ready-to-apply patches with acceptance measures (s5-improvements.md) and queued for the main loop. Zero confirmed defects found in S3/S4, so no product-code repair was indicated."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s6-final.md",
+          "sha256": "c1ea7cd1ff84dbe9724fd0cceeb4f265a529be5d53df8747acc5c93fed61ce0c"
+        }
+      ],
+      "id": "S6",
+      "status": "PASS",
+      "summary": "Final checks executed through the gate recorder: lifeboat-e2e 165 PASS / 0 FAIL, frontend-vitest 19 files / 232 passed, frontend-tsc clean \u2014 all exit 0, no timeouts, source unmutated. Final source digest equals initial digest (no source edits this run)."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s7-challenge.md",
+          "sha256": "204d368c689170626f634c8e898725215e6024c08a00aeb51eac82f1e9d0cb24"
+        }
+      ],
+      "id": "S7",
+      "status": "PASS",
+      "summary": "SELF_REVIEW challenge pass completed: no symptom-suppression risk (no edits, no defects); test-vs-broken-implementation limits stated honestly (constant-time property rests on inspection); no check, assertion, or threshold changed to obtain a pass; all 30 coverage cells current (source unchanged since S3). F1/F5 QUEUED with patches, R1-R3 REJECTED with counter-evidence."
+    },
+    {
+      "evidence": [
+        {
+          "path": "devteam/checkups/checkup-df-media-2026-09-29/evidence/s8-handback.md",
+          "sha256": "61ce6a60b205ad68638f3459da04c3f6ca086de736f1547a2b32e9d8e00908b1"
+        }
+      ],
+      "id": "S8",
+      "status": "PASS",
+      "summary": "Checkup complete for declared scope. Gate PASS through S8. 0 confirmed defects; 2 supported improvements queued with exact patches (F1, F5); 3 leads rejected. Handback: apply F1/F5 patches (acceptance: test.sh 167 PASS / 0 FAIL, vitest 233 passed); optional README endpoint rows and frontend client wiring. No commits, pushes, or deploys made."
+    }
+  ]
+}

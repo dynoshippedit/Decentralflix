@@ -99,6 +99,9 @@
         D.postJSON("/api/passes/test", { email: email })
           .then(function (r) {
             currentPass = r.pass;
+            // DF-MEDIA-3: remember the pass on this browser so film.html can
+            // mint short-lived signed playback URLs for the <video> element.
+            try { window.localStorage.setItem("dfl.pass_id", r.pass.pass_id); } catch (e) {}
             document.getElementById("pass-info").hidden = false;
             document.getElementById("redeem-panel").hidden = false;
             document.getElementById("pass-id").textContent = r.pass.pass_id;

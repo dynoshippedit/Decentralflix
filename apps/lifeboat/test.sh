@@ -42,7 +42,9 @@ jget() {
 # DECIDED 2026-09-29 (Dino): this suite exercises the DEV build - the
 # TEST-ONLY mint endpoints are enabled here. Production-mode refusal is
 # covered by the dedicated section at the end of this file.
-DECENTRALFLIX_TEST_MINTS=1 node server.js </dev/null >"$TMPD/server.log" 2>&1 &
+# DF-MEDIA-3: fixed media-signing secret for the signed-playback-URL tests below
+# (the server would otherwise fall back to its dev-only default).
+DECENTRALFLIX_TEST_MINTS=1 DECENTRALFLIX_MEDIA_SECRET=test-media-secret-xyz node server.js </dev/null >"$TMPD/server.log" 2>&1 &
 SERVER_PID=$!
 trap 'kill "$SERVER_PID" 2>/dev/null; rm -rf "data"; if [ -n "$DATA_BACKUP" ]; then mv "$DATA_BACKUP" "data"; fi; rm -rf "$TMPD"' EXIT
 
@@ -699,6 +701,81 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/
   -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\"}")
 [ "$code" = "409" ] && pass "M2: redemption with zero balance rejected (409)" || fail "M2: insufficient credit" "http=$code"
 # (redeem email-validation is obsolete: the holder is the authenticated account)
+
+# --- DF-MEDIA-3: signed short-lived playback URLs ------------------------------------------
+# The native <video> element cannot send an Authorization header, so the
+# Bearer-authed /api/films/:id/stream is unreachable from the player. The
+# presigned-URL pattern fixes it: an entitled pass holder mints a short-lived
+# HMAC-signed URL (authed JSON call), and the player loads THAT with no header.
+# The pass buyer above redeemed FILM1, so they are entitled to it (but not FILM2).
+
+# unauthenticated mint: rejected BEFORE any URL is minted (no existence leak)
+code=$(curl -s -o "$TMPD/pburl-unauth.json" -w "%{http_code}" "$BASE/api/passes/$PASSID/playback-url?film=$FILM1")
+[ "$code" = "401" ] && [ -z "$(jget "$TMPD/pburl-unauth.json" url)" ] \
+  && pass "DF-MEDIA-3: unauthenticated playback-URL mint rejected (401), no URL minted" || fail "DF-MEDIA-3: mint 401" "http=$code"
+
+# wrong holder: a different account cannot mint for this pass
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $OTHER_TOKEN" "$BASE/api/passes/$PASSID/playback-url?film=$FILM1")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: cross-account playback-URL mint rejected (403)" || fail "DF-MEDIA-3: mint cross-account 403" "http=$code"
+
+# not entitled: the holder has no license for FILM2
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID/playback-url?film=$FILM2")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: unentitled film rejected (403), no URL minted" || fail "DF-MEDIA-3: mint unentitled 403" "http=$code"
+
+# entitled holder: mints a signed URL
+code=$(curl -s -o "$TMPD/pburl.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/passes/$PASSID/playback-url?film=$FILM1")
+PBURL=$(jget "$TMPD/pburl.json" url)
+[ "$code" = "200" ] && [ -n "$PBURL" ] && [ "$(jget "$TMPD/pburl.json" expires_in)" = "900" ] \
+  && pass "DF-MEDIA-3: entitled holder mints signed playback URL (15 min TTL)" || fail "DF-MEDIA-3: mint 200" "http=$code url=$PBURL"
+echo "$PBURL" | grep -q "^/api/media/play?pass=" \
+  && pass "DF-MEDIA-3: minted URL is a query-token media URL" || fail "DF-MEDIA-3: URL shape" "$PBURL"
+
+# the signed URL plays with NO Authorization header (this is the whole point:
+# <video> cannot send one)
+code=$(curl -s -o "$TMPD/pbplay.mp4" -w "%{http_code}" "$BASE$PBURL")
+[ "$code" = "200" ] && [ -s "$TMPD/pbplay.mp4" ] \
+  && pass "DF-MEDIA-3: signed playback URL streams video with no auth header (200)" || fail "DF-MEDIA-3: play 200" "http=$code"
+
+# Range requests work through the signed URL (seeking in <video>)
+code=$(curl -s -o "$TMPD/pbplay-range.mp4" -w "%{http_code}" -H "Range: bytes=0-99" "$BASE$PBURL")
+[ "$code" = "206" ] && [ "$(wc -c < "$TMPD/pbplay-range.mp4")" = "100" ] \
+  && pass "DF-MEDIA-3: signed URL honors Range (206, seeking works)" || fail "DF-MEDIA-3: range 206" "http=$code"
+
+# tampered signature: rejected
+TAMPERED=$(node -e 'const u = new URL(process.argv[1], "http://x"); const p = u.searchParams; p.set("sig", "0".repeat(64)); console.log(u.pathname + "?" + p.toString());' "$PBURL")
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$TAMPERED")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: tampered signature rejected (403)" || fail "DF-MEDIA-3: tamper 403" "http=$code"
+
+# retargeted film: signature binds pass+film, so swapping the film breaks it
+RETARGET=$(node -e 'const u = new URL(process.argv[1], "http://x"); const p = u.searchParams; p.set("film", process.argv[2]); console.log(u.pathname + "?" + p.toString());' "$PBURL" "$FILM2")
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$RETARGET")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: film-swapped URL rejected (403)" || fail "DF-MEDIA-3: retarget 403" "http=$code"
+
+# expired URL: rejected (crafted with the test secret, expired 60s ago)
+EXPIRED=$(node -e '
+  const crypto = require("node:crypto");
+  const exp = Math.floor(Date.now() / 1000) - 60;
+  const sig = crypto.createHmac("sha256", "test-media-secret-xyz").update([process.argv[1], process.argv[2], exp].join(".")).digest("hex");
+  console.log(`/api/media/play?pass=${process.argv[1]}&film=${process.argv[2]}&exp=${exp}&sig=${sig}`);
+' "$PASSID" "$FILM1")
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$EXPIRED")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: expired playback URL rejected (403)" || fail "DF-MEDIA-3: expired 403" "http=$code"
+
+# missing parameters: rejected
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/media/play?film=$FILM1")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: parameter-less play URL rejected (403)" || fail "DF-MEDIA-3: missing params 403" "http=$code"
+
+# non-integer expiry: rejected (exercises the bad-expiry branch of
+# verifyPlaybackUrl — Number.isInteger(exp) is checked before the signature)
+BAD_EXP=$(node -e 'const u = new URL(process.argv[1], "http://x"); const p = u.searchParams; p.set("exp", "not-a-number"); console.log(u.pathname + "?" + p.toString());' "$PBURL")
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$BAD_EXP")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: non-integer expiry rejected (403)" || fail "DF-MEDIA-3: bad expiry 403" "http=$code"
+
+# truncated signature: rejected (exercises the length guard before
+# crypto.timingSafeEqual — the tamper test uses a full-length signature)
+SHORT_SIG=$(node -e 'const u = new URL(process.argv[1], "http://x"); const p = u.searchParams; p.set("sig", "abcd"); console.log(u.pathname + "?" + p.toString());' "$PBURL")
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$SHORT_SIG")
+[ "$code" = "403" ] && pass "DF-MEDIA-3: truncated signature rejected (403)" || fail "DF-MEDIA-3: short sig 403" "http=$code"
 
 # --- M2: buyer library (purchase history) ----------------------------------------------------
 # (pass-buyer account + PB_TOKEN were created at the start of the Collector Pass section)

@@ -1,0 +1,1 @@
+{"gate": "PASS", "review_id": "checkup-df-media-2026-09-29", "through": "S8", "outstanding_findings": 2, "source_digest": "713c1aba091647996c22108413434f35fede8c705c854218daeee28898be947b", "meaning": "Record and evidence checks passed; semantic review and controller ownership remain required."}

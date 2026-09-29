@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "review_id": "checkup-df-media-2026-09-29",
+  "project_root": "/home/dino/Decentralflix",
+  "source_paths": [
+    "apps/lifeboat/lib/playback.js",
+    "apps/lifeboat/server.js",
+    "apps/lifeboat/test.sh",
+    "apps/lifeboat/public/film.html",
+    "apps/lifeboat/public/pass.html",
+    "apps/frontend/lib/playback-url.ts",
+    "apps/frontend/lib/playback-url.test.ts"
+  ],
+  "exclusions": [
+    { "pattern": ".git", "reason": "Version control internals; inspect git status separately" },
+    { "pattern": "node_modules", "reason": "Installed dependencies; inspect manifests and locks separately" },
+    { "pattern": "**/node_modules", "reason": "Nested installed dependencies" },
+    { "pattern": "devteam/checkups", "reason": "Checkup output (changing recorder logs), not application source" },
+    { "pattern": "apps/lifeboat/data", "reason": "Runtime test data dir (gitignored); created/removed by test.sh runs" }
+  ],
+  "review_units": [
+    {
+      "id": "U1-playback-lib",
+      "paths": ["apps/lifeboat/lib/playback.js"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "SEC", "DOM"]
+    },
+    {
+      "id": "U2-server-playback-routes",
+      "paths": ["apps/lifeboat/server.js"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "SEC", "API", "DOM"]
+    },
+    {
+      "id": "U3-lifeboat-e2e-tests",
+      "paths": ["apps/lifeboat/test.sh"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "SEC"]
+    },
+    {
+      "id": "U4-legacy-player-pages",
+      "paths": ["apps/lifeboat/public/film.html", "apps/lifeboat/public/pass.html"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "UIX", "DOM"]
+    },
+    {
+      "id": "U5-frontend-playback-client",
+      "paths": ["apps/frontend/lib/playback-url.ts", "apps/frontend/lib/playback-url.test.ts"],
+      "lenses": ["COR", "ARC", "TST", "DOC", "SEC", "API"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "lifeboat-e2e",
+      "purpose": "End-to-end acceptance of the lifeboat server incl. the 11 DF-MEDIA-3 tests: mint authZ matrix (401 unauth / 403 cross-account / 403 unentitled / 200+900s-TTL entitled), URL shape, headerless play 200 with bytes, Range 206, tampered-sig 403, film-swapped 403, expired 403, missing-params 403. Expect 165 PASS / 0 FAIL.",
+      "argv": ["bash", "test.sh"],
+      "cwd": "apps/lifeboat",
+      "timeout_seconds": 1800,
+      "baseline_required": true,
+      "final_required": true
+    },
+    {
+      "id": "frontend-vitest",
+      "purpose": "Frontend unit suite incl. the 7 new DF-MEDIA-3 playback-url tests (mint URL/header assertions, typed 401/403/404 errors, no-network-on-missing-token, malformed body, resolvePlaybackSrc relative+absolute). Expect 232 passed.",
+      "argv": ["npx", "vitest", "run"],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 900,
+      "baseline_required": false,
+      "final_required": true
+    },
+    {
+      "id": "frontend-tsc",
+      "purpose": "TypeScript type-check of the frontend incl. the new typed playback-url client. Expect clean (no errors).",
+      "argv": ["npx", "tsc", "--noEmit"],
+      "cwd": "apps/frontend",
+      "timeout_seconds": 300,
+      "baseline_required": false,
+      "final_required": true
+    }
+  ],
+  "template_instructions": "Change checkup for Repair 2 (DF-MEDIA-3): signed short-lived playback URLs. Scope note: server.js and test.sh contain pre-existing UNRELATED uncommitted changes (F-DFLIX-5 import gating, F-DFLIX-6 webhook idempotency, others); the Repair 2 review covers only the playback routes/sections. apps/frontend/lib/contracts/abis.generated.ts belongs to the sibling Repair 1 checkup and is excluded from this scope."
+}

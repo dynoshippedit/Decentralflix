@@ -94,8 +94,28 @@
             ma.href = "filmmaker.html?id=" + encodeURIComponent(film.filmmaker.filmmaker_id);
           }
 
-          var streamUrl = film.playback_url || D.api("/api/films/" + encodeURIComponent(filmId) + "/stream");
-          document.getElementById("player").src = streamUrl;
+          // DF-MEDIA-3: the native <video> element cannot send the
+          // Authorization header that /api/films/:id/stream requires, so the
+          // entitled stream was unreachable from the player. Mint a
+          // short-lived signed playback URL (authed JSON call) and give THAT
+          // to the player — the signature in the query string is the
+          // credential, no header needed.
+          var passId = null;
+          try { passId = window.localStorage.getItem("dfl.pass_id"); } catch (e) {}
+          if (passId) {
+            D.getJSON("/api/passes/" + encodeURIComponent(passId) + "/playback-url?film=" + encodeURIComponent(filmId))
+              .then(function (r) {
+                document.getElementById("player").src = D.api(r.url);
+              })
+              .catch(function (err) {
+                D.showStatus("status", "Could not get a playback URL: " + err.message, "error");
+              });
+          } else {
+            // No pass on this browser — legacy path (requires the filmmaker's
+            // own session cookie/header; the player request itself is unauthed).
+            document.getElementById("player").src =
+              film.playback_url || D.api("/api/films/" + encodeURIComponent(filmId) + "/stream");
+          }
 
           if (film.download_allowed) {
             var dl = document.getElementById("dl-box");

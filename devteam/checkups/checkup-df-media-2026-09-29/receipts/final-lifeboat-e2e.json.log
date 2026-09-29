@@ -1,0 +1,168 @@
+CHECK lifeboat-e2e
+PASS: server ready on :8080
+PASS: filmmaker signup returns token
+PASS: buyer signup returns token
+PASS: second buyer signup returns token
+PASS: duplicate signup rejected (409)
+PASS: login returns token
+PASS: wrong password rejected (401)
+PASS: auth/me returns account
+PASS: auth/me without token -> 401
+PASS: SEC-002 setup: second login returns token
+PASS: SEC-002: logout returns 200 with session_revoked
+PASS: SEC-002: logged-out token rejected (401)
+PASS: SEC-002: other session for same account still valid
+PASS: test mp4 present (162594 bytes)
+PASS: import film returns 201
+PASS: film_id returned (film_f32cea34f64f)
+PASS: download_url present (download_allowed=true)
+PASS: playback_url present
+PASS: cleared_music_attested=false rejected (400)
+PASS: price_usd_cents=0 rejected (400)
+PASS: empty territories rejected (400)
+PASS: GET /api/films lists film
+PASS: GET /api/films/:id returns metadata + playback_url
+PASS: unknown film returns 404
+PASS: stream without token -> 401
+PASS: stream without purchase -> 403
+PASS: download without token -> 401
+PASS: audience.csv without token -> 401
+PASS: audience.csv as buyer -> 403
+PASS: import without token -> 401
+PASS: import as buyer -> 403
+PASS: test purchase returns test_mode=true
+PASS: stream full returns 200
+PASS: stream content-type video/mp4
+PASS: stream advertises Accept-Ranges
+PASS: Range request returns 206
+PASS: Content-Range header correct
+PASS: range body is 1024 bytes
+PASS: range bytes match stream start
+PASS: out-of-range Range returns 416
+PASS: buyers import records 2 migration contacts
+PASS: invalid email reported
+PASS: imported export rows grant no entitlements (no access from export alone)
+PASS: F-DFLIX-5: unauthenticated buyers import -> 401
+PASS: F-DFLIX-5: buyer-role import -> 403
+PASS: F-DFLIX-5: non-owner filmmaker import -> 403
+PASS: claim filed as pending with verification fields
+PASS: claim without purchase_type/purchase_date rejected
+PASS: claim.html collects + posts purchase_type/purchase_date (DAT-013)
+PASS: claim with invalid purchase_type rejected
+PASS: claim with future purchase_date rejected
+PASS: duplicate open claim rejected
+PASS: filmmaker claim list shows pending claim
+PASS: second claim filed
+PASS: uncertain claim routed to manual review
+PASS: review queue lists only needs_review claims
+PASS: approve without token -> 401
+PASS: approve as buyer -> 403
+PASS: manually reviewed claim approved
+PASS: claim approved with signed receipt (empty {} body, frontend shape)
+PASS: receipt is non-transferable
+PASS: valid receipt signature verifies
+PASS: unwrapped receipt body verifies (frontend shape)
+PASS: tampered receipt rejected
+PASS: pubkey endpoint serves Ed25519 key
+PASS: audience.csv returns 200
+PASS: CSV header correct
+PASS: CSV contains claimer@example.com
+PASS: CSV contains buyer@example.com
+PASS: CSV sources claim/purchase present
+PASS: CSV has no import-granted rows (export never grants access)
+PASS: download allowed film returns 200
+PASS: download sends attachment disposition
+PASS: download bytes equal stream bytes
+PASS: streaming-only film has no download_url
+PASS: streaming-only download → 403 with AB2426 message
+PASS: streaming-only film still streams
+PASS: GET / serves frontend index.html
+PASS: static app.js served with JS content-type
+PASS: missing static file returns 404
+PASS: path traversal blocked (404)
+PASS: GET /api/health returns service info
+PASS: stripe webhook without secret → 503 not configured
+PASS: M2: import film with genres returns 201
+PASS: M2: search q=zebra finds the film
+PASS: M2: search q=nomatch returns no film
+PASS: M2: genre=documentary filter finds the film
+PASS: M2: genre=horror filter excludes the film
+PASS: M2: filmmaker account created (fmk_5f1348c9917a)
+PASS: M2: filmmaker account requires valid email
+PASS: M2: GET filmmaker returns profile
+PASS: M2: unknown filmmaker returns 404
+PASS: M2: PATCH filmmaker updates display_name
+PASS: M2: raw bank details rejected (400)
+PASS: M2: payout_method=stripe_connect accepted
+PASS: M2: Connect without keys returns 503 + legal warning
+PASS: M2: onboarding checklist (connect pending keys, complete=false)
+PASS: M2: public profile lists filmmaker films
+PASS: M2: unknown filmmaker profile returns 404
+PASS: M2: film detail links to filmmaker profile
+PASS: bundle: 1 new film (FILM1 already owned), total 799c, order recorded
+PASS: bundle: signed receipt verifies
+PASS: bundle: other-seller film imported
+PASS: bundle: multi-seller rejected (400)
+PASS: bundle: duplicate film_ids rejected (400)
+PASS: bundle: unknown film returns 404
+PASS: bundle: single film rejected (400)
+PASS: bundle: all-owned returns 200, zero total, no new grants
+PASS: bundle: already-owned film not re-granted
+PASS: CSV records bundle_purchase source
+PASS: M2: pass-buyer signup returns token
+PASS: M2: unauthenticated pass subscribe rejected (401), mints nothing
+PASS: M2: test pass subscription grants 1 credit, bound to the account
+PASS: M2: pass responses carry the legal-review warning
+PASS: M2: pass subscribe carries the economics warning
+PASS: M2: unauthenticated pass detail rejected (401)
+PASS: M2: unknown pass returns 404 (authenticated)
+PASS: M2: grant ledger entry is non-transferable + non-cashable
+PASS: M2: real pass checkout without keys returns 503 + legal warning
+PASS: M2: unauthenticated redemption rejected (401)
+PASS: M2: redemption by a different account rejected (403)
+PASS: M2: balance unchanged after rejected redemption
+PASS: M2: pass detail by a different account rejected (403)
+PASS: M2: credit redemption grants permanent test-mode license (balance 0)
+PASS: M2: ledger shows +1 grant and -1 redemption, all non-transferable
+PASS: M2: duplicate redemption returns already_owned (200)
+PASS: M2: duplicate redemption spent no credit (balance 0, 2 ledger entries)
+PASS: M2: redemption with zero balance rejected (409)
+PASS: DF-MEDIA-3: unauthenticated playback-URL mint rejected (401), no URL minted
+PASS: DF-MEDIA-3: cross-account playback-URL mint rejected (403)
+PASS: DF-MEDIA-3: unentitled film rejected (403), no URL minted
+PASS: DF-MEDIA-3: entitled holder mints signed playback URL (15 min TTL)
+PASS: DF-MEDIA-3: minted URL is a query-token media URL
+PASS: DF-MEDIA-3: signed playback URL streams video with no auth header (200)
+PASS: DF-MEDIA-3: signed URL honors Range (206, seeking works)
+PASS: DF-MEDIA-3: tampered signature rejected (403)
+PASS: DF-MEDIA-3: film-swapped URL rejected (403)
+PASS: DF-MEDIA-3: expired playback URL rejected (403)
+PASS: DF-MEDIA-3: parameter-less play URL rejected (403)
+PASS: M2: library shows redeemed film, permanent license, signed receipt
+PASS: M2: library without token -> 401
+PASS: M2: library with wrong email -> 403
+PASS: M2: receipt terms v2 (yours-to-keep, no copyright transfer, hash matches)
+PASS: M2: pure-JS Ed25519 (lib + browser) matches node:crypto on 4 vectors
+PASS: M2: webhook signature verifies valid, rejects bad/stale/missing secret
+PASS: M2: CLI verifies valid receipt offline (--pubkey)
+PASS: M2: CLI rejects tampered receipt
+PASS: M2: CLI rejects wrong-key receipt
+PASS: M2: CLI rejects malformed signature
+PASS: M2: CLI verifies via --server pubkey fetch
+PASS: F-DFLIX-6 setup: webhook server ready
+PASS: F-DFLIX-6: subscription.created -> 200 (pass created)
+PASS: F-DFLIX-6: pass exists for hook email
+PASS: F-DFLIX-6: first invoice.payment_succeeded grants 1 credit
+PASS: F-DFLIX-6: retried invoice.payment_succeeded does not double-credit
+PASS: F-DFLIX-6: new invoice id still credits (dedup is invoice-keyed)
+PASS: DAT-002 crash-recovery converges (journal + reconcile)
+PASS: STR-001 UI auth (login stores token, helpers send Bearer)
+PASS: prod-mode: server restarted without test mints
+PASS: prod-mode: buyer signup works
+PASS: prod-mode: POST /api/passes/test refused (403), mints nothing
+PASS: prod-mode: POST /api/purchases/test refused (403), mints nothing
+PASS: prod-mode: POST /api/purchases/bundle/test refused (403), mints nothing
+PASS: prod-mode: unauthenticated test mint rejected (401)
+PASS: prod-mode: stripe webhook without keys has no credit path (503)
+----------------------------------------
+RESULT: PASS=165 FAIL=0

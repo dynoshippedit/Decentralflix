@@ -17,6 +17,7 @@ const cdn = require('./lib/cdn');
 const stripe = require('./lib/stripe');
 const passLib = require('./lib/pass');
 const authLib = require('./lib/auth');
+const playback = require('./lib/playback');
 
 const PORT = parseInt(process.env.PORT || '8080', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -977,6 +978,54 @@ function passDetail(req, res, passId) {
   });
 }
 
+// DF-MEDIA-3: mint a short-lived signed playback URL for an entitled holder.
+// Holder check reuses passDetail's (BUG-011): auth first, then only the pass
+// owner may mint — no existence/entitlement leak to strangers. The film
+// entitlement check matches the stream route: the filmmaker or an entitled
+// buyer. A bare pass alone never grants a film.
+function passPlaybackUrl(req, res, url, passId) {
+  const account = requireAuth(req, res);
+  if (!account) return;
+  const p = passLib.getPass(passId);
+  if (!p) return sendError(res, 404, 'pass not found');
+  if (p.email !== account.email) {
+    return sendError(res, 403, 'pass does not belong to this account');
+  }
+  const filmId = (url.searchParams.get('film') || '').trim();
+  if (!filmId) return sendError(res, 400, 'film query parameter required');
+  const film = store.get('films', filmId);
+  if (!film) return sendError(res, 404, 'film not found');
+  if (!ownsFilm(account, film) && !hasEntitlement(account, film.film_id))
+    return sendError(res, 403, 'purchase required to stream this film');
+  const minted = playback.mintPlaybackUrl({ passId: p.pass_id, filmId: film.film_id });
+  return sendJson(res, 200, {
+    url: minted.url,
+    expires_at: minted.expires_at,
+    expires_in: minted.expires_in,
+    pass_id: p.pass_id,
+    film_id: film.film_id,
+    legal_notice: passLib.LEGAL_NOTICE,
+  });
+}
+
+// DF-MEDIA-3: play the master behind a verified signed playback URL.
+// Rejects missing/tampered/expired tokens with 403 (fail closed). The
+// signature binds pass + film + expiry, so a URL cannot be retargeted at a
+// different film. Range requests are honored via CDN.streamFile, so seeking
+// works in the native <video> element.
+function mediaPlay(req, res, url) {
+  const v = playback.verifyPlaybackUrl({
+    pass: url.searchParams.get('pass'),
+    film: url.searchParams.get('film'),
+    exp: url.searchParams.get('exp'),
+    sig: url.searchParams.get('sig'),
+  });
+  if (!v.ok) return sendError(res, 403, 'invalid or expired playback URL');
+  const film = store.get('films', v.filmId);
+  if (!film) return sendError(res, 404, 'film not found');
+  return CDN.streamFile(req, res, film);
+}
+
 async function passRedeem(req, res, passId) {
   const account = requireAuth(req, res);
   if (!account) return;
@@ -1331,6 +1380,17 @@ async function handleApi(req, res, url, seg, method) {
   if (seg[0] === 'passes' && seg.length === 2 && method === 'GET') {
     return passDetail(req, res, seg[1]);
   }
+  // DF-MEDIA-3: mint a short-lived signed playback URL for an entitled pass
+  // holder. The <video> element cannot send an Authorization header, so the
+  // signed URL (query-token) is the playable credential.
+  if (seg[0] === 'passes' && seg[2] === 'playback-url' && seg.length === 3 && method === 'GET') {
+    return passPlaybackUrl(req, res, url, seg[1]);
+  }
+  // DF-MEDIA-3: serve the master behind a verified signed playback URL.
+  // No Authorization header needed — the signature IS the credential.
+  if (seg[0] === 'media' && seg[1] === 'play' && seg.length === 2 && method === 'GET') {
+    return mediaPlay(req, res, url);
+  }
   if (seg[0] === 'passes' && seg[2] === 'redeem' && seg.length === 3 && method === 'POST') {
     return passRedeem(req, res, seg[1]);
   }
@@ -1399,4 +1459,7 @@ if (recovery.recovered > 0) {
 
 server.listen(PORT, HOST, () => {
   console.log(`decentralflix-lifeboat M2 listening on http://${HOST}:${PORT} (cdn=${CDN.constructor.name})`);
+  if (playback.secretIsDefault()) {
+    console.warn('WARNING: DECENTRALFLIX_MEDIA_SECRET is not set — signed playback URLs use a dev-only default secret. Set the env var in production.');
+  }
 });

@@ -1,0 +1,21 @@
+{
+  "review_id": "checkup-df-media-2026-09-29",
+  "spec_digest": "e25073b9ab21906c48574d0926f4843dee3b688e6933483c11da1dae1ed0fd20",
+  "source_digest": "713c1aba091647996c22108413434f35fede8c705c854218daeee28898be947b",
+  "files": {
+    "apps/lifeboat/lib/playback.js": "a3954ce012a5252c4f6cdf26982693ef4429358ad3a84731f6e5ee3024838927",
+    "apps/lifeboat/server.js": "d3a64b227b3cdb28b51b8218273f6e570d4a9f7a7434538aa8ea596c9e004cb4",
+    "apps/lifeboat/test.sh": "13a75902ca1e018b982b382870fe075d4a9a06d311e37a432017715d42eb88dd",
+    "apps/lifeboat/public/film.html": "cd95d16bdc7a08539fabf90dd2fd1599512bd1c11e922fd77bcca04ea725832a",
+    "apps/lifeboat/public/pass.html": "26f0a9216af9c1515b95b1a20f96443c217d230c3abb03e05d76e65f3642e56b",
+    "apps/frontend/lib/playback-url.ts": "621cb5ebf34bd4f9f0dd2882cf2a5ba744f13d411242bdf241648ae06b6e8812",
+    "apps/frontend/lib/playback-url.test.ts": "694f1f70bae844e04edc379d62c6d9d93316f67c7505d2527dab519ddd2c0f4b"
+  },
+  "unit_digests": {
+    "U1-playback-lib": "923eb4592d0ea028f0d77eec7afe7b50b1606e647492db56ddfa45fd64d89dd2",
+    "U2-server-playback-routes": "072f37d468bd2525a5a124eeedeb79de6c88fa84baec6df05e3f0ff2123a6282",
+    "U3-lifeboat-e2e-tests": "546818b88598cdbd8eceffb1c195dd61a385373851e44d3f7a4d8af5e2291cf4",
+    "U4-legacy-player-pages": "f6d87f52e7984a49c7638e2c0d79f45099239f8a3987340ce55f113db1fb4f29",
+    "U5-frontend-playback-client": "9ed56bb6cbd4ef8218f06de3630a3035af8665179cccdbfd5732d7d3a4ec7e34"
+  }
+}
