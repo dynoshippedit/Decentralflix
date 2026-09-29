@@ -1,1 +1,73 @@
-{"deployment_check":{"broadcast_dir":false,"chain_id":31337,"deploy_scripts_require_key":true,"env_files":"only examples, no real keys","found_records":["packages/contracts/deployments/dry-run-local.json"],"hardhat_live_configs":"testnets only; deploy script refuses mainnet","ignition_records":false,"live_network":false,"network":"hardhat","result":"NO CONTRACT DEPLOYED WITH REAL FUNDS — proceed authorized by step-1 gate"},"falsification":{"focus_files":["test/PayPerView.test.ts","test/MovieTicket.test.ts","test/SubscriptionManager.test.ts"],"method":"git stash push packages/contracts/contracts/ (tests kept), run, git stash pop","with_fix_restored":"all green","with_fix_stashed":"44 failing / 42 passing — new tests fail without the fix"},"new_files":["packages/contracts/contracts/RevenueSplitter.sol"],"refusal_tests":{"method":"hasFunction checks + interface lookup (revertWithCustomError on MissingCreator), plus direct-ETH-revert test","scope":"every changed contract"},"residual_followups":["apps/frontend/lib/web3/wrappers/payPerView.ts references removed setPlatformFeeBps/withdrawPlatformFees/withdrawRevenue","apps/frontend/lib/contracts/useMovieTicket.ts reads removed platformFeeBps","apps/frontend/lib/contracts/abis.generated.ts needs regeneration from new ABIs","No live deployment; off-chain drift is not production-breaking but must be fixed before any integration work."],"results":{"MovieTicket":37,"PayPerView":17,"SubscriptionManager":32,"full_contract_suite":"230/230 passing, 0 failing"},"safety":{"audited":false,"broadcast":false,"funded_key":false,"mainnet_deploy":false,"real_customer_payment":false,"verdict":"UNAUDITED — no deployment, broadcast, funded key, production payment, or real-customer action"},"source":{"base_head":"f8092c9 (controller: df-cycle-10 + df-cycle-11 VERIFIED)","branch":"devteam/review-2026-09-29","identity":"source diff + full test suite inspected on remote Threadripper repo; nothing inherited from prior agent reports unverified"},"task":"df-cycle-12","task_source":"Dino 2026-09-29 ~03:10: '75/25 covers every contract that takes money from a viewer. One rule, everywhere, so the copy is true.'"}
+{
+  "deployment_check": {
+    "broadcast_dir": false,
+    "chain_id": 31337,
+    "deploy_scripts_require_key": true,
+    "env_files": "only examples, no real keys",
+    "found_records": [
+      "packages/contracts/deployments/dry-run-local.json"
+    ],
+    "hardhat_live_configs": "testnets only; deploy script refuses mainnet",
+    "ignition_records": false,
+    "live_network": false,
+    "network": "hardhat",
+    "result": "NO CONTRACT DEPLOYED WITH REAL FUNDS \u2014 proceed authorized by step-1 gate"
+  },
+  "falsification": {
+    "focus_files": [
+      "test/PayPerView.test.ts",
+      "test/MovieTicket.test.ts",
+      "test/SubscriptionManager.test.ts"
+    ],
+    "method": "git stash push packages/contracts/contracts/ (tests kept), run, git stash pop",
+    "with_fix_restored": "all green",
+    "with_fix_stashed": "44 failing / 42 passing \u2014 new tests fail without the fix"
+  },
+  "new_files": [
+    "packages/contracts/contracts/RevenueSplitter.sol"
+  ],
+  "refusal_tests": {
+    "method": "hasFunction checks + interface lookup (revertWithCustomError on MissingCreator), plus direct-ETH-revert test",
+    "scope": "every changed contract"
+  },
+  "residual_followups": [
+    "apps/frontend/lib/web3/wrappers/payPerView.ts references removed setPlatformFeeBps/withdrawPlatformFees/withdrawRevenue",
+    "apps/frontend/lib/contracts/useMovieTicket.ts reads removed platformFeeBps",
+    "apps/frontend/lib/contracts/abis.generated.ts needs regeneration from new ABIs",
+    "No live deployment; off-chain drift is not production-breaking but must be fixed before any integration work."
+  ],
+  "results": {
+    "MovieTicket": 37,
+    "PayPerView": 17,
+    "SubscriptionManager": 32,
+    "full_contract_suite": "230/230 passing, 0 failing"
+  },
+  "safety": {
+    "audited": false,
+    "broadcast": false,
+    "funded_key": false,
+    "mainnet_deploy": false,
+    "real_customer_payment": false,
+    "verdict": "UNAUDITED \u2014 no deployment, broadcast, funded key, production payment, or real-customer action"
+  },
+  "source": {
+    "base_head": "f8092c9 (controller: df-cycle-10 + df-cycle-11 VERIFIED)",
+    "branch": "devteam/review-2026-09-29",
+    "identity": "source diff + full test suite inspected on remote Threadripper repo; nothing inherited from prior agent reports unverified"
+  },
+  "task": "df-cycle-12",
+  "task_source": "Dino 2026-09-29 ~03:10: '75/25 covers every contract that takes money from a viewer. One rule, everywhere, so the copy is true.'",
+  "proposed_status": "VERIFIED",
+  "controller_verification": {
+    "date": "2026-09-29",
+    "checks": [
+      "source identity 4f02003 on devteam/review-2026-09-29, tree clean, nothing pushed",
+      "deployment check: only dry-run-local.json (hardhat chainId 31337), no real-funds deployment",
+      "RevenueSplitter.sol read in full: immutable 2500bps, remainder to creator, MissingCreator revert, no setter",
+      "PayPerView: no fee setter/withdraw; MovieTicket: no withdraw, exact-price mint, splits at mint; SubscriptionManager inherits splitter",
+      "full hardhat suite independently re-run: 230/230 passing",
+      "TicketNFT unchanged; Q-df12-001 open for Dino"
+    ],
+    "result": "VERIFIED except TicketNFT, pending Q-df12-001"
+  }
+}
