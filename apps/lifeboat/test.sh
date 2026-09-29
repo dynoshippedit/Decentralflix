@@ -261,6 +261,16 @@ code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
   -H 'Content-Type: application/json' \
   -d "{\"film_id\":\"$FILM1\",\"email\":\"noref@example.com\",\"vimeo_receipt_ref\":\"vimeo-ord-999\"}")
 [ "$code" = "400" ] && pass "claim without purchase_type/purchase_date rejected" || fail "claim field validation" "http=$code"
+# --- DAT-013: claim.html must post the verification fields the API requires ---
+# The UI page is the only claim-filing surface; if it omits purchase_type /
+# purchase_date, every UI claim fails with 400. Pin the page/API contract.
+grep -q 'id="c-ptype"' public/claim.html \
+  && grep -q 'id="c-pdate"' public/claim.html \
+  && grep -q 'purchase_type: ptype' public/claim.html \
+  && grep -q 'purchase_date: pdate' public/claim.html \
+  && pass "claim.html collects + posts purchase_type/purchase_date (DAT-013)" \
+  || fail "claim.html missing purchase_type/purchase_date (DAT-013)"
+
 
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/claims" \
   -H 'Content-Type: application/json' \

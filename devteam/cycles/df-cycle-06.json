@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "cycle_id": "df-cycle-06",
+  "project_id": "decentralflix",
+  "task_id": "DF-006",
+  "project_root": "/home/dino/Decentralflix",
+  "proposed_status": "IMPLEMENTED",
+  "source_identity": {
+    "before": "24d8cdb",
+    "after": "df-cycle-06-fix",
+    "method": "git rev-parse + git status --porcelain on branch devteam/review-2026-09-29 (clean tree at start)"
+  },
+  "summary": "DAT-013: claim.html omitted purchase_type/purchase_date the server requires, so every UI claim failed with 400. Added a purchase_type (buy/rent) select and a purchase_date date input with client-side validation (required + no future dates), and included both fields in the POST /api/claims body. Added a test.sh regression assertion pinning the page/API contract (fails on the pre-fix page).",
+  "changed_files": [
+    "apps/lifeboat/public/claim.html",
+    "apps/lifeboat/test.sh",
+    "devteam/TASKS.md"
+  ],
+  "checks": [
+    {
+      "name": "bug reproduction (before)",
+      "command": "POST /api/claims with the page's exact pre-fix body {film_id, email, vimeo_receipt_ref} on fresh port 18097",
+      "result": "400 'purchase_type must be \"buy\" or \"rent\"' — bug confirmed; same body + purchase_type/purchase_date -> 201"
+    },
+    {
+      "name": "regression test falsifiability",
+      "command": "new DAT-013 grep assertions run against git show HEAD:claim.html (pre-fix)",
+      "result": "fails as expected"
+    },
+    {
+      "name": "inline JS syntax",
+      "command": "node --check on extracted inline script",
+      "result": "pass"
+    },
+    {
+      "name": "full lifeboat suite (after)",
+      "command": "PORT=18099 bash test.sh (fresh port, never :8080)",
+      "result": "PASS=134 FAIL=0 (133 baseline + 1 new DAT-013 test), exit 0"
+    }
+  ],
+  "blockers": [],
+  "next_action": "Controller verification, then dispatch DF-007 with the next ready S1 (recommend DAT-002 grant-sequence atomicity, S1/Confirmed; MUS-001 stays parked pending Dino's decision per devteam/QUESTIONS.md)."
+}

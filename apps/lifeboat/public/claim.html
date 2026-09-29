@@ -37,6 +37,22 @@
         <div class="hint">The order ID from your Vimeo On Demand receipt email.</div>
       </div>
 
+      <div class="field">
+        <label for="c-ptype">Purchase type</label>
+        <select id="c-ptype" required>
+          <option value="">Select&hellip;</option>
+          <option value="buy">Buy (own it)</option>
+          <option value="rent">Rent</option>
+        </select>
+        <div class="hint">Did you buy or rent it on Vimeo On Demand?</div>
+      </div>
+
+      <div class="field">
+        <label for="c-pdate">Purchase date</label>
+        <input type="date" id="c-pdate" required>
+        <div class="hint">The purchase date on your Vimeo receipt.</div>
+      </div>
+
       <button type="submit" class="btn" id="claim-btn">Submit claim</button>
     </form>
 
@@ -83,15 +99,21 @@
         var filmId = select.value;
         var email = document.getElementById("c-email").value.trim();
         var ref = document.getElementById("c-ref").value.trim();
+        var ptype = document.getElementById("c-ptype").value;
+        var pdate = document.getElementById("c-pdate").value;
 
         if (!filmId) return D.showStatus("status", "Choose the film you bought.", "error");
         if (!email) return D.showStatus("status", "Enter your email.", "error");
         if (!ref) return D.showStatus("status", "Enter your Vimeo receipt reference (order ID).", "error");
+        if (!ptype) return D.showStatus("status", "Choose whether you bought or rented it.", "error");
+        if (!pdate) return D.showStatus("status", "Enter the purchase date from your receipt.", "error");
+        if (pdate > new Date().toISOString().slice(0, 10))
+          return D.showStatus("status", "Purchase date cannot be in the future.", "error");
 
         var btn = document.getElementById("claim-btn");
         btn.disabled = true;
 
-        D.postJSON("/api/claims", { film_id: filmId, email: email, vimeo_receipt_ref: ref })
+        D.postJSON("/api/claims", { film_id: filmId, email: email, vimeo_receipt_ref: ref, purchase_type: ptype, purchase_date: pdate })
           .then(function (claim) {
             var title = select.options[select.selectedIndex].textContent;
             document.getElementById("claim-summary").textContent =
