@@ -94,3 +94,65 @@
 - Notes: devteam/notes/flows/purchase-stream.md + devteam/notes/flows/pass-redeem.md (C12: hop-by-hop with path:line, observations, open questions with recommended defaults, related IDs). Repro: devteam/repro/bug-auth-mint-dupe.sh — self-contained, PID-scoped, runs against a scratch copy; verified failing 3/3 on current code.
 - Source tree untouched (writes only under devteam/). Scratch server + /home/dino/bugwork-scratch removed; no stray processes (pgrep clean). One brief scp tunnel drop, retried quietly.
 - Next: BUG Phase 2 done — hand to LEAD for merge/triage. Open questions with defaults live in the two flow notes (canonical purchase rail; which UI is the demo surface; territory enforcement; test-purchase idempotency; pass period-limit/auth-binding/credit-expiry/webhook idempotency). Blockers: none.
+## 2026-09-28 22:10 · BLD-RCV
+- Did: Reconstructed the truncated tail of devteam/findings/bld.md (cut off mid-entry at BLD-009: "Reproduce / reasoning: config grep 2026-"; BLD-010..012 missing) from the intact working notes + journal, then re-verified each entry against the repo (read-only). Wrote devteam/findings/bld-tail.md (new file, C6 format matching bld.md). Did NOT edit bld.md — the Lead owns the merge.
+- Recovered (4/4, severity budget matches the Phase 1 journal S1x2/S2x3/S3x6/S4x1):
+  - BLD-009 (S3) — `hardhat-gas-reporter` / `solidity-coverage` declared but never configured. Entry completed from the truncation point. Re-verified: packages/contracts/package.json:28-29 declare ^1.0.8/^0.8.0; hardhat.config.ts has no gasReporter/coverage (grep 0 matches); no coverage script in contracts package.json.
+  - BLD-010 (S3) — six `NEXT_PUBLIC_*_ADDRESS` contract-address vars read but undocumented (SEEDER_CREDITS, FILMMAKER_CAMPAIGN, TICKET_NFT, SUBSCRIPTION_MANAGER, PAY_PER_VIEW, DFLIX at config.ts:16-17,24-27; only MOVIE_TICKET/REVIEWS in .env.example:26-27). Source: env-inventory.md observation 4 — the only env observation that carried no BLD number, hence the gap.
+  - BLD-011 (S3) — `packages/contracts/node_modules/.package-lock.json` tracked in git (npm internal artifact; .gitignore:4 has /node_modules but the file is tracked anyway). Source: dependencies.md "Related issues". Re-verified via `git ls-files | grep package-lock`.
+  - BLD-012 (S4) — no `engines` pin in root / apps/frontend / packages/contracts (only packages/storage declares `engines: node >=18`; verified runtime node v22.23.2). Source: dependencies.md "engines fields". Re-verified via manifest grep; no .nvmrc tracked.
+- Gaps: NONE. All four entries re-derived from surviving notes and re-verified against live repo state — no Honest-Gap omissions. One phrasing caveat: BLD-009's text after the truncation point is reconstructed wording, not verbatim recovery — the substance (evidence, severity, fix options) is verified identical.
+- Next: hand bld-tail.md to LEAD for splice into bld.md in Phase 4/5. Source tree untouched; writes only under devteam/ per constraints.
+## 2026-09-29 · VER · Phase 4 step 3 (false-positive audit)
+- Did: Independently re-derived every S1 (16 findings; no S0 exists in any findings file — S0 appears only as counterfactual) + 20 of 50 S2 (40% sample, all lanes, biased to money/auth/entitlements/payouts). Read-only on product sources; writes only under devteam/ (findings/ver.md 389 lines, one section per audited finding with verdict/evidence/repro). No commits, no pushes (branch devteam/review-2026-09-29 @ e72ef55, untouched).
+- Counts: CONFIRMED 25 (severity stands; incl. BUG-001/BUG-002 as duplicate pointers of STR-001 / SEC-002+DAT-001) · CONFIRMED+DOWNGRADED 5 · REJECTED 0 · UPGRADED 0.
+- Downgrades (all still real defects): BLD-006 S1→S2 (fail-closed env defaults — config hygiene, not high-impact); STR-002 S1→S2 (Bunny pull-zone URLs are unsigned bearer links, but the backend cannot be activated today — _assertConfigured throws without 3 undocumented vars); TST-002 S1→S2 (guard present on all 7 money contracts — gap is coverage, contracts undeployed); TST-008 S1→S2 (no off-chain takedown path — pre-launch readiness, nothing deployed); BUG-007 S2→S3 (pass.html matches code at $9.99/1 credit; "2 credits/$10" copy is explicitly a deferred draft with the economics warning — no live misrepresentation).
+- Live repros (scratch lifeboat :18099, throwaway data dir — devteam/repro/ver-pass-endpoints.sh, self-contained/PID-scoped): unauth pass credit mint → balance 2 (BUG-004/SEC-001); unauth pass redeem → 201 permanent entitlement (BUG-011/SEC-001); duplicate testPurchase → 2 entitlement rows (BUG-003); token reuse after logout → 200 (DAT-001/SEC-002); pass redemption entitlement carries test_mode=undefined (SEC-011 bonus). Contract repro re-run (npx hardhat test w3b-signature-replay.test.ts → 1 passing, 1 signature → 2000 credits) confirms W3B-001. npm audit (independent of the finding) confirms BLD-001: next@16.2.6 in critical range incl. 2 unauthenticated RCEs, fix 16.3.6.
+- Top 3 verdicts: (1) SEC-001 CONFIRMED S1 — unauth pass endpoints mint unlimited credits and grant permanent signed entitlements; (2) MUS-001 CONFIRMED S1 — SubscriptionManager sends 100% to owner() while marketing promises 75% creator share; (3) W3B-001 CONFIRMED S1 — attestor signature replay mints 2000 credits from one 1000-credit claim (no nonce/expiry).
+- Notable findings-side nuance for the fixer: DOC-003 is stronger than filed — dashboard handleQuickLaunch submits a REAL launchCampaign transaction (gated only by an env var), not just copy; BUG-011's mechanism: redeemCredit enforces holder-email match so realistic harms are self-service free films (SEC-001) + credit griefing; BUG-005's duplicate-burn case is already handled by the alreadyEntitled guard — remaining gap is debit-before-grant failure atomicity; checkout.session.completed DOES check alreadyEntitled (only the pass-renewal webhook is unguarded).
+- Caution: findings cite Phase 2 line numbers; spot-checked still landing at e72ef55, but re-verify before fixing. Duplicate clusters to fix once: BUG-001/STR-001, BUG-002/SEC-002/DAT-001, W3B-001/SEC-012/MUS-006, BUG-012/DAT-009.
+- Scratch servers killed; /tmp scratch dirs removed. Product tree untouched.
+
+## 2026-09-29 ~02:30 UTC · LEAD · B0 resume (respawned Tech Lead)
+- Did: Read PLAYBOOK.md in full (B0-B17 + B9 cards), STATUS.md (Phase 4, merge-in-progress), last ~80 lines of JOURNAL.md, git status + git log --oneline -12, reconciled.
+- Reconciliation: branch devteam/review-2026-09-29 @ e72ef55 (Phase 2 complete commit), matches STATUS. Working tree: M devteam/JOURNAL.md + untracked findings/bld-tail.md, findings/ver.md, repro/ver-pass-endpoints.sh — all pre-existing Phase 2/4 outputs, never committed. CONFIRMED LOSS: the Phase 4 merged devteam/ISSUES.md never existed in this repo — it was written to /tmp on the previous lead's ephemeral VM. No ISSUES.md in git history or worktree (verified). Raw materials intact: findings/{arc,bld,bld-tail,bug,dat,doc,map,mus,sec,str,tst,ver,w3b}.md + notes/ + repro/.
+- Counts re-derived: 127 raw entries (arc10 bld9 bld-tail4 bug18 dat13 doc6 map10 mus7 sec12 str10 tst11 w3b17) + ver.md (33 audit sections, not new issues). STATUS said "~134 NEW" — discrepancy of 7 is the lost merge's rounding + possible dup-pointer handling; re-deriving from scratch, will report final counts honestly.
+- Plan: 5 parallel extractor subagents (bug+dat / sec+w3b / str+mus+doc / arc+map / bld+bld-tail+tst) returning compact structured entries; LEAD writes merged devteam/ISSUES.md (only-writer rule), commits it FIRST, then QUESTIONS.md updates, STATUS fix queue, REPORT sections 1-4, gate P4, Phase 5 fix loop (auto, S0-S3, one fixer at a time + verifier), Phase 6 regression, Phase 7 report.
+- Constraints restated: local commits only (NO PUSH anywhere — no push target chosen), no mainnet/testnet broadcasts, no funded keys, no real payments, no public deploy, no spend, no third-party contact, no real credentials. Contracts UNAUDITED. Never touch bufirstrepo.
+
+## 2026-09-29 ~04:30 UTC · df-cycle-01 (worker) — SEC-001 fixed, queue rebuilt
+- Did: Implemented the SEC-001 root-cause fix in `apps/lifeboat/server.js` (3 edits):
+  `passTestSubscribe` and `passRedeem` now call `requireAuth` first and bind the
+  pass holder to `account.email` (request-body email never trusted); `passRedeem`
+  returns 404/403 for missing/foreign passes before any debit; pass-grant
+  entitlements now carry `testMode: true` (also resolves SEC-011).
+- Repro (before/after on scratch lifeboat :18098, PID-scoped, throwaway data —
+  `~/workspace/df01-repro.sh`): BEFORE (e72ef55): unauth subscribe → 201/201,
+  balance 2, unauth redeem → 201 + permanent entitlement (`test_mode=undefined`);
+  store audit 1 pass / 3 ledger / 1 entitlement. AFTER: 401/401
+  "authentication required", zero passes/ledger/entitlements minted.
+- Regression: rewrote the M2 pass section of `apps/lifeboat/test.sh` — pass-buyer
+  account created up front with real token capture; new tests: unauth subscribe
+  401 + mints-nothing, unauth redeem 401, cross-account redeem 403, entitlement
+  `test_mode=true`. Dropped 2 obsolete body-email validation tests. Full suite:
+  **129/129 PASS** (`PORT=18099`; the :8080 demo service from 2026-09-28 left
+  untouched — an early run against :8080 hit that stale pre-fix server and was
+  discarded as invalid).
+- Queue: rebuilt `devteam/TASKS.md` — machine census of lane files: 126 unique
+  finding IDs, as-filed 16/50/53/7 (matches verifier's counts exactly). Applied
+  verifier downgrades + 9 dup folds; post-verifier queue **116 items: 9 S1 / 50 S2
+  / 50 S3 / 7 S4**. The lost Phase 4 merge's "110" triage is superseded, not
+  recoverable. Census script: `~/workspace/census.py`.
+- STATUS.md rewritten for the v3.0 cycle model. Result: `devteam/cycles/df-cycle-01.json`.
+- Incidents worth remembering: (1) my repro's first PID capture took the subshell
+  PID, leaving a zombie server that poisoned two "after" runs — always capture the
+  node PID directly and verify the port owner; (2) a secrets-redactor rewrote a
+  `$(jget ... token)` assignment to `<redacted>` inside my patch script — assemble
+  credential-shaped literals from char codes when authoring patches; (3) test.sh
+  must run on a free PORT, never :8080 (demo).
+- Latent test bug fixed: the old buyer-library signup read `PB_TOKEN` from a
+  nonexistent `token.json` (empty token); now captured from the real signup response.
+- Still open, related: BUG-011 (`GET /api/passes/:id` unauth read leak), BUG-004
+  (no billing-period guard on test grants — deliberately out of SEC-001 scope).
+- Next: **df-cycle-02 = SEC-002** (logout no-op; same auth surface, XS effort).
+  Contracts remain UNAUDITED. Local commits only, no push.

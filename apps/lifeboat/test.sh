@@ -558,12 +558,30 @@ grep -q ",bundle_purchase," "$TMPD/audb3.csv" \
   && pass "CSV records bundle_purchase source" || fail "CSV bundle source"
 
 # --- M2: Collector Pass (test mode) -------------------------------------------------------
+# SEC-001 (df-cycle-01): pass subscribe + redeem REQUIRE authentication and bind
+# to the authenticated account; the request-body email is never trusted.
+# Create the pass-buyer account first (its token is used for all pass calls below).
+curl -s -o "$TMPD/pb-signup.json" -X POST "$BASE/api/auth/signup" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$PBEMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}"
+PB_TOKEN=$(jget "$TMPD/pb-signup.json" token)
+[ -n "$PB_TOKEN" ] && pass "M2: pass-buyer signup returns token" || fail "M2: pass-buyer signup"
+
+# unauthenticated subscribe: rejected BEFORE any pass/credit is minted
+code=$(curl -s -o "$TMPD/passunauth.json" -w "%{http_code}" -X POST "$BASE/api/passes/test" \
+  -H 'Content-Type: application/json' -d '{"email":"attacker@example.com"}')
+[ "$code" = "401" ] && [ "$(jget "$TMPD/passunauth.json" error)" = "authentication required" ] \
+  && pass "M2: unauthenticated pass subscribe rejected (401), mints nothing" || fail "M2: unauth pass subscribe 401" "http=$code"
+
+# authenticated subscribe: exactly 1 credit, bound to the account (body email ignored)
 code=$(curl -s -o "$TMPD/pass.json" -w "%{http_code}" -X POST "$BASE/api/passes/test" \
-  -H 'Content-Type: application/json' -d "{\"email\":\"$PBEMAIL\"}")
+  -H "Authorization: Bearer $PB_TOKEN" \
+  -H 'Content-Type: application/json' -d '{"email":"attacker@example.com"}')
 PASSID=$(jget "$TMPD/pass.json" pass.pass_id)
 [ "$code" = "201" ] && [ "$(jget "$TMPD/pass.json" balance)" = "1" ] \
   && [ "$(jget "$TMPD/pass.json" test_mode)" = "true" ] \
-  && pass "M2: test pass subscription grants 1 credit" || fail "M2: pass subscribe" "http=$code"
+  && [ "$(jget "$TMPD/pass.json" pass.email)" = "$PBEMAIL" ] \
+  && pass "M2: test pass subscription grants 1 credit, bound to the account" || fail "M2: pass subscribe" "http=$code"
 grep -q "REQUIRES LEGAL REVIEW BEFORE LAUNCH" "$TMPD/pass.json" \
   && pass "M2: pass responses carry the legal-review warning" || fail "M2: pass legal warning"
 node -e '
@@ -571,9 +589,6 @@ node -e '
   if (!/do not rely on subscribers forgetting to redeem/i.test(j.economics_warning || "")) process.exit(1);
 ' "$TMPD/pass.json" \
   && pass "M2: pass subscribe carries the economics warning" || fail "M2: pass economics warning"
-code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/test" \
-  -H 'Content-Type: application/json' -d '{"email":"not-an-email"}')
-[ "$code" = "400" ] && pass "M2: pass subscribe validates email" || fail "M2: pass email validation" "http=$code"
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/passes/pass_nope")
 [ "$code" = "404" ] && pass "M2: unknown pass returns 404" || fail "M2: pass 404" "http=$code"
 
@@ -591,22 +606,32 @@ code=$(curl -s -o "$TMPD/passco.json" -w "%{http_code}" -X POST "$BASE/api/passe
 [ "$code" = "503" ] && grep -q "REQUIRES LEGAL REVIEW" "$TMPD/passco.json" \
   && pass "M2: real pass checkout without keys returns 503 + legal warning" || fail "M2: pass checkout 503" "http=$code"
 
-# non-transferability: a different email cannot spend this pass's credits
+# unauthenticated redeem: rejected BEFORE any credit is burned or entitlement granted.
+# Placed before the real redemption: a phantom grant here would surface as
+# already_owned (200) instead of 201 below.
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
-  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"thief@example.com\"}")
-[ "$code" = "403" ] && pass "M2: redemption by non-holder email rejected (403)" || fail "M2: non-transferable redeem" "http=$code"
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
+[ "$code" = "401" ] && pass "M2: unauthenticated redemption rejected (401)" || fail "M2: unauth redeem 401" "http=$code"
+
+# non-transferability: a different AUTHENTICATED account cannot spend this pass's credits
+code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
+  -H "Authorization: Bearer $OTHER_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
+[ "$code" = "403" ] && pass "M2: redemption by a different account rejected (403)" || fail "M2: non-transferable redeem" "http=$code"
 code=$(curl -s -o "$TMPD/passbal.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
 [ "$(jget "$TMPD/passbal.json" balance)" = "1" ] \
   && pass "M2: balance unchanged after rejected redemption" || fail "M2: balance after 403"
 
 # redeem for real
 code=$(curl -s -o "$TMPD/redeem.json" -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
-  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"$PBEMAIL\"}")
+  -H "Authorization: Bearer $PB_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
 [ "$code" = "201" ] && [ "$(jget "$TMPD/redeem.json" already_owned)" = "false" ] \
   && [ "$(jget "$TMPD/redeem.json" balance)" = "0" ] \
   && [ "$(jget "$TMPD/redeem.json" license_term)" = "permanent" ] \
   && [ "$(jget "$TMPD/redeem.json" redemption.delta)" = "-1" ] \
-  && pass "M2: credit redemption grants permanent license (balance 0)" || fail "M2: redeem" "http=$code"
+  && [ "$(jget "$TMPD/redeem.json" entitlement.test_mode)" = "true" ] \
+  && pass "M2: credit redemption grants permanent test-mode license (balance 0)" || fail "M2: redeem" "http=$code"
 
 code=$(curl -s -o "$TMPD/passdetail2.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
 LEDGER2=$(node -e '
@@ -620,7 +645,8 @@ LEDGER2=$(node -e '
 
 # duplicate redemption: must NOT spend a credit
 code=$(curl -s -o "$TMPD/redeem2.json" -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
-  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\",\"email\":\"$PBEMAIL\"}")
+  -H "Authorization: Bearer $PB_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM1\"}")
 [ "$code" = "200" ] && [ "$(jget "$TMPD/redeem2.json" already_owned)" = "true" ] \
   && pass "M2: duplicate redemption returns already_owned (200)" || fail "M2: duplicate redeem" "http=$code"
 code=$(curl -s -o "$TMPD/passdetail3.json" -w "%{http_code}" "$BASE/api/passes/$PASSID")
@@ -633,18 +659,13 @@ LEDGER3=$(node -e '
 
 # insufficient credit: a different film with zero balance
 code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
-  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\",\"email\":\"$PBEMAIL\"}")
+  -H "Authorization: Bearer $PB_TOKEN" \
+  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\"}")
 [ "$code" = "409" ] && pass "M2: redemption with zero balance rejected (409)" || fail "M2: insufficient credit" "http=$code"
-code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/passes/$PASSID/redeem" \
-  -H 'Content-Type: application/json' -d "{\"film_id\":\"$FILM2\",\"email\":\"nope\"}")
-[ "$code" = "400" ] && pass "M2: redeem validates email (400)" || fail "M2: redeem email validation" "http=$code"
+# (redeem email-validation is obsolete: the holder is the authenticated account)
 
 # --- M2: buyer library (purchase history) ----------------------------------------------------
-# Create an account for the pass buyer so the library (auth-required) can be viewed
-curl -s -o /dev/null -X POST "$BASE/api/auth/signup" \
-  -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$PBEMAIL\",\"password\":\"testpass123\",\"role\":\"buyer\"}"
-PB_TOKEN=$(curl -s -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$PBEMAIL\",\"password\":\"testpass123\"}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))")
+# (pass-buyer account + PB_TOKEN were created at the start of the Collector Pass section)
 code=$(curl -s -o "$TMPD/lib.json" -w "%{http_code}" -H "Authorization: Bearer $PB_TOKEN" "$BASE/api/buyers/$PBEMAIL/library")
 LIBCHECK=$(node -e '
   const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));

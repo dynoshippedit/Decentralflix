@@ -1,24 +1,38 @@
 # STATUS — resume here
-Updated: 2026-09-29 02:10 UTC by LEAD (Tech Lead)
-Phase: 4 — Triage and verification · Mode: A multi-agent · Branch: devteam/review-2026-09-29
+Updated: 2026-09-29 ~04:30 UTC · df-cycle-01 (worker) · Branch: devteam/review-2026-09-29
 
-## Progress
-- Coverage: tiers set (262 files); Phase 3 deep lanes deferred — flow tracing + pattern sweeps give high confidence on crown jewels; remaining cells recorded as NOT REVIEWED with reason in Phase 4
-- Issues: ~134 NEW across findings/{doc,map,bld,tst,bug,sec,arc,dat,str,w3b,mus}.md — merge into ISSUES.md in progress
-- Gates passed: P0 ✔ P1 ✔ P2 ✔ (all 6 critical flows traced hop by hop; threat model + authz matrix drafted)
+## Model
+Engineering Kit v3.0 cycle model (supersedes the old-kit Phase 0–9 Tech-Lead plan as
+of 2026-09-29 ~02:25 UTC). Worker implements + reports; controller independently
+re-runs acceptance checks and dispatches the next cycle. Local commits only — **no push**.
 
-## In progress
-- LEAD: Phase 4 triage — merge findings into ISSUES.md, dedupe, calibrate, build fix queue
-- VER (verifier agent): false-positive audit of all S0/S1 + 20% S2 sample → findings/ver.md
+## Cycle history
+- **df-cycle-01 — DONE (2026-09-29):** SEC-001 fixed (auth boundary on pass
+  subscribe/redeem; account binding; 403 on foreign pass; testMode on pass grants).
+  Rebuilt the executable queue at `devteam/TASKS.md` (116 items: 9 S1 / 50 S2 /
+  50 S3 / 7 S4) from the durable findings + verifier audit after the Phase 4
+  merged ISSUES.md was lost. Lifeboat suite: **129/129 PASS** (PORT=18099; the :8080
+  demo service from 2026-09-28 was left running untouched).
+  Result: `devteam/cycles/df-cycle-01.json`.
 
-## Next actions (in order)
-1. Merge findings → ISSUES.md with dedup + severity calibration
-2. Fold verifier verdicts into ledger; mark NEEDS-OWNER items + QUESTIONS.md
-3. Build fix queue in STATUS; draft REPORT sections 1–4
-4. Gate P4, then Phase 5 fix loop (FIX_MODE=auto, S0–S3)
+## Fix queue
+Authoritative: `devteam/TASKS.md` (rebuilt 2026-09-29; reconciles to the verifier's
+counts: 126 unique raw findings → 116 queue items after 9 dup folds + SEC-011 resolved).
 
-## Fix queue (from Phase 4)
-- (being built)
+S1 order: SEC-001 DONE → **SEC-002 (recommended DF-002)** → W3B-001 → BLD-001 →
+DOC-001 → DAT-013 → MUS-001 (needs Dino decision) → STR-001 → TST-001.
 
 ## Blockers / waiting on owner
-- Q-001..Q-004 (ARC) + package-manager question pending — recorded in QUESTIONS.md
+- MUS-001: fix the contract's 100%-to-owner payout or fix the 75%-creator marketing
+  copy — Dino's call (see devteam/QUESTIONS.md Q-001..Q-004 from ARC).
+- TST-001: wire the storage module or correct the whitepaper/docs — triage call.
+- Contracts remain **UNAUDITED** — no mainnet/testnet broadcasts, no funded keys.
+
+## Notes
+- `devteam/ISSUES.md` (old-kit Phase 4 merged ledger) was lost with its VM and is
+  superseded by `devteam/TASKS.md`. Do not try to recover it; the raw lane files
+  under `devteam/findings/` are the source of truth.
+- Lifeboat test suite: run with `PORT=<free>` — port 8080 is the long-running demo
+  service (started 2026-09-28, pre-fix code). Never run the suite against :8080.
+- `GET /api/passes/:id` is still unauthenticated (BUG-011, S2) — read-only leak,
+  separate from the SEC-001 mint fix.

@@ -873,10 +873,14 @@ async function passCheckout(req, res) {
 }
 
 async function passTestSubscribe(req, res) {
+  const account = requireAuth(req, res);
+  if (!account) return;
   const body = await readJson(req, res);
   if (body === null) return;
-  if (!isEmail(body.email)) return sendError(res, 400, 'email must be a valid email');
-  const email = body.email.trim().toLowerCase();
+  // SEC-001 (df-cycle-01): the pass is bound to the authenticated account.
+  // The request-body email is never trusted — unauthenticated callers used to
+  // mint credits for any address.
+  const email = account.email;
   let p = passLib.getPassByEmail(email);
   if (!p) {
     p = passLib.createPass({ email, testMode: true });
@@ -913,14 +917,20 @@ function passDetail(req, res, passId) {
 }
 
 async function passRedeem(req, res, passId) {
+  const account = requireAuth(req, res);
+  if (!account) return;
   const body = await readJson(req, res);
   if (body === null) return;
   const film = body.film_id ? store.get('films', body.film_id) : null;
   if (!film) return sendError(res, 404, 'film not found');
-  const email = String(body.email || '').trim().toLowerCase();
-  if (!isEmail(email)) {
-    return sendError(res, 400, 'email must be a valid email', { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
+  // SEC-001 (df-cycle-01): redemption is bound to the authenticated pass
+  // holder. The request-body email is never trusted.
+  const pass = passLib.getPass(passId);
+  if (!pass) return sendError(res, 404, 'pass not found', { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
+  if (pass.email !== account.email) {
+    return sendError(res, 403, 'pass does not belong to this account', { legal_notice: passLib.LEGAL_NOTICE, economics_warning: passLib.ECONOMICS_WARNING });
   }
+  const email = account.email;
   // CRITICAL: ownership is checked BEFORE any credit is debited. A duplicate
   // redemption must never consume a credit.
   if (alreadyEntitled(film.film_id, email)) {
@@ -945,7 +955,7 @@ async function passRedeem(req, res, passId) {
   // A redeemed film takes the same entitlement path as a purchase,
   // so it grants a permanent DRM-free download (yours to keep — wording
   // pending counsel review; NOT copyright ownership).
-  const { entitlement } = grantEntitlement({ film, email, source: 'pass_redemption' });
+  const { entitlement } = grantEntitlement({ film, email, source: 'pass_redemption', testMode: true });
   return sendJson(res, 201, {
     pass_id: passId,
     film_id: film.film_id,
