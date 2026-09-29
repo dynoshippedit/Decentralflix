@@ -91,4 +91,17 @@ function update(name, id, patch) {
   return arr[idx];
 }
 
-module.exports = { all, get, insert, update, DATA_DIR };
+// Delete the record with the given id from a collection.
+// Returns true when a row was actually removed, false when absent.
+// SEC-002: logout (and expired-session cleanup) depend on this to revoke
+// bearer sessions; it previously did not exist, so logout was a silent no-op.
+function remove(name, id) {
+  const key = ID_FIELDS[name];
+  const arr = all(name);
+  const kept = arr.filter((r) => r[key] !== id);
+  if (kept.length === arr.length) return false;
+  saveAll(name, kept);
+  return true;
+}
+
+module.exports = { all, get, insert, update, remove, DATA_DIR };

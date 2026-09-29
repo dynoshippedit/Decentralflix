@@ -106,6 +106,23 @@ code=$(curl -s -o "$TMPD/me.json" -w "%{http_code}" "$BASE/api/auth/me" -H "Auth
 code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/auth/me")
 [ "$code" = "401" ] && pass "auth/me without token -> 401" || fail "auth/me no token" "http=$code"
 
+# --- SEC-002: logout invalidates the session token (regression) ---
+# Throwaway second login for the buyer: logging out must not disturb the
+# primary BUYER_TOKEN used by the rest of the suite.
+curl -s -o "$TMPD/buyer-login2.json" -X POST "$BASE/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$BUYER_EMAIL\",\"password\":\"testpass123\"}"
+BUYER_TOKEN2=$(jget "$TMPD/buyer-login2.json" token)
+[ -n "$BUYER_TOKEN2" ] && pass "SEC-002 setup: second login returns token" || fail "SEC-002 setup login" "http=$code"
+code=$(curl -s -o "$TMPD/logout2.json" -w "%{http_code}" -X POST "$BASE/api/auth/logout" -H "Authorization: Bearer $BUYER_TOKEN2")
+[ "$code" = "200" ] && [ "$(jget "$TMPD/logout2.json" session_revoked)" = "true" ] \
+  && pass "SEC-002: logout returns 200 with session_revoked" || fail "SEC-002 logout" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/auth/me" -H "Authorization: Bearer $BUYER_TOKEN2")
+[ "$code" = "401" ] && pass "SEC-002: logged-out token rejected (401)" || fail "SEC-002 token valid after logout" "http=$code"
+code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/auth/me" -H "Authorization: Bearer $BUYER_TOKEN")
+[ "$code" = "200" ] && pass "SEC-002: other session for same account still valid" || fail "SEC-002 other session killed" "http=$code"
+
+
 # --- generate test film ------------------------------------------------------
 if [ ! -s /tmp/testfilm.mp4 ]; then
   if ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libx264; then VCODEC=libx264; else VCODEC=mpeg4; fi

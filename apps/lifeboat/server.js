@@ -321,8 +321,16 @@ async function login(req, res) {
 async function logout(req, res) {
   const header = req.headers.authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(header);
-  if (m) { try { store.remove('sessions', m[1].trim()); } catch {} }
-  return sendJson(res, 200, { logged_out: true });
+  // SEC-002: actually revoke the session row. The old code called a
+  // store.remove that did not exist; the empty catch swallowed the
+  // TypeError, making logout a silent no-op. Logout stays idempotent:
+  // unknown/absent tokens still return 200.
+  let revoked = false;
+  if (m) {
+    const token = m[1].trim();
+    if (token) revoked = store.remove('sessions', token);
+  }
+  return sendJson(res, 200, { logged_out: true, session_revoked: revoked });
 }
 
 async function authMe(req, res) {
