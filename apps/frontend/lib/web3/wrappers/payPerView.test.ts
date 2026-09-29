@@ -57,29 +57,20 @@ async function expectCall(key: string, expectedArgs: unknown[][], fn: () => Prom
 }
 
 describe('payPerView wrappers call the right methods', () => {
-  it('MAX_PLATFORM_FEE_BPS', () => expectCall('MAX_PLATFORM_FEE_BPS', [[]], () => w.maxPlatformFeeBps(RUNNER)));
-  it('accruedPlatformFees', () =>
-    expectCall('accruedPlatformFees', [[]], () => w.accruedPlatformFees(RUNNER)));
   it('buyAccess passes value', () =>
     expectCall('buyAccess', [[BigInt(5), { value: BigInt(400) }]], () => w.buyAccess(RUNNER, 5, BigInt(400))));
-  it('filmRevenue', () => expectCall('filmRevenue', [[BigInt(5)]], () => w.filmRevenue(RUNNER, 5)));
   it('hasAccess', () =>
     expectCall('hasAccess', [[ADDR, BigInt(5)]], () => w.hasAccess(RUNNER, ADDR, 5)));
   it('owner', () => expectCall('owner', [[]], () => w.owner(RUNNER)));
-  it('platformFeeBps', () => expectCall('platformFeeBps', [[]], () => w.platformFeeBps(RUNNER)));
+  it('platformFeeBps reads the immutable on-chain constant', () =>
+    expectCall('PLATFORM_FEE_BPS', [[]], () => w.platformFeeBps(RUNNER)));
   it('registerFilm', () =>
     expectCall('registerFilm', [[BigInt(5), BigInt(400), {}]], () => w.registerFilm(RUNNER, 5, BigInt(400))));
   it('renounceOwnership', () => expectCall('renounceOwnership', [[{}]], () => w.renounceOwnership(RUNNER)));
   it('setFilmPrice', () =>
     expectCall('setFilmPrice', [[BigInt(5), BigInt(450), {}]], () => w.setFilmPrice(RUNNER, 5, BigInt(450))));
-  it('setPlatformFeeBps', () =>
-    expectCall('setPlatformFeeBps', [[BigInt(750), {}]], () => w.setPlatformFeeBps(RUNNER, 750)));
   it('transferOwnership', () =>
     expectCall('transferOwnership', [[ADDR2, {}]], () => w.transferOwnership(RUNNER, ADDR2)));
-  it('withdrawPlatformFees', () =>
-    expectCall('withdrawPlatformFees', [[{}]], () => w.withdrawPlatformFees(RUNNER)));
-  it('withdrawRevenue', () =>
-    expectCall('withdrawRevenue', [[BigInt(5), {}]], () => w.withdrawRevenue(RUNNER, 5)));
 
   it('getFilm maps the tuple', async () => {
     stubState.instances.length = 0;
@@ -90,9 +81,6 @@ describe('payPerView wrappers call the right methods', () => {
 });
 
 describe('payPerView input validation', () => {
-  it('rejects fee bps above 10000', async () => {
-    await expect(w.setPlatformFeeBps(RUNNER, 10001)).rejects.toThrow(/≤ 10000/);
-  });
   it('rejects bad user address', async () => {
     await expect(w.hasAccess(RUNNER, 'bad', 1)).rejects.toThrow(/user.*address/i);
   });

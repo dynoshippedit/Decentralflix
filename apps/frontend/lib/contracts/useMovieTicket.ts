@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { createPublicClient, http } from 'viem';
 import { arbitrumSepolia } from 'viem/chains';
-import { MOVIE_TICKET_ADDRESS, MOVIE_TICKET_ABI } from './config';
+import { MOVIE_TICKET_ADDRESS, MOVIE_TICKET_ABI, PLATFORM_FEE_BPS } from './config';
 
 /**
  * Hook for reading from MovieTicket contract.
  * Provides platform fee, total supply, and helper functions.
  * Use this for UI displays (fee breakdown, etc.).
+ * df-cycle-12/13: the split is the immutable on-chain PLATFORM_FEE_BPS constant
+ * (2500 = 25% platform, 75% creator), shared via RevenueSplitter. Read on-chain
+ * when a deployment exists; falls back to the canonical build-time mirror.
  */
 export function useMovieTicket() {
-  const [platformFeeBps, setPlatformFeeBps] = useState<number | null>(null);
+  const [platformFeeBps, setPlatformFeeBps] = useState<number>(PLATFORM_FEE_BPS);
   const [totalSupply, setTotalSupply] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,7 +32,7 @@ export function useMovieTicket() {
         publicClient.readContract({
           address: MOVIE_TICKET_ADDRESS,
           abi: MOVIE_TICKET_ABI,
-          functionName: 'platformFeeBps',
+          functionName: 'PLATFORM_FEE_BPS',
         }),
         publicClient.readContract({
           address: MOVIE_TICKET_ADDRESS,
@@ -51,15 +54,9 @@ export function useMovieTicket() {
     fetchData();
   }, []);
 
-  const getPlatformFee = (price: bigint) => {
-    if (!platformFeeBps) return BigInt(0);
-    return (price * BigInt(platformFeeBps)) / BigInt(10000);
-  };
+  const getPlatformFee = (price: bigint) => (price * BigInt(platformFeeBps)) / BigInt(10000);
 
-  const getCreatorShare = (price: bigint) => {
-    if (!platformFeeBps) return price;
-    return price - getPlatformFee(price);
-  };
+  const getCreatorShare = (price: bigint) => price - getPlatformFee(price);
 
   return {
     platformFeeBps,

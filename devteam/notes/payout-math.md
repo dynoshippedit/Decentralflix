@@ -68,6 +68,8 @@ zero address reverts), `subscribe`/`renew` push 75% (+ rounding remainder) to
 the creator and 25% to the owner immediately. `withdraw()` is gone; no
 subscription balance accrues. Diagnosis above describes the pre-fix contract.
 
+> **SUPERSEDED 2026-09-29 (owner decision, df-cycle-13):** TicketNFT now inherits the shared `RevenueSplitter` — mint splits **75/25** at purchase (75% + rounding remainder to the filmmaker, 25% platform, `MissingCreator` revert, owner cannot redirect or alter). The 100%-to-filmmaker text below is kept for history; do not treat it as current.
+
 ### Path 4 — TicketNFT: ticket mint → direct filmmaker forward
 `packages/contracts/contracts/TicketNFT.sol` (241 lines, full read)
 - `mintTicket` (L289–312): exact payment; **forwards 100% of `msg.value` to the filmmaker**;

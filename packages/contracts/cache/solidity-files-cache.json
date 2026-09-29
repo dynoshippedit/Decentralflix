@@ -1344,8 +1344,8 @@
       ]
     },
     "/home/dino/Decentralflix/packages/contracts/contracts/TicketNFT.sol": {
-      "lastModificationDate": 1790628041649,
-      "contentHash": "90fd1dae0f74d164a031051b6a564919",
+      "lastModificationDate": 1790665055084,
+      "contentHash": "b9109e7d96a549ae7b06f2a61c4478bc",
       "sourceName": "contracts/TicketNFT.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1375,7 +1375,8 @@
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "@openzeppelin/contracts/utils/Strings.sol"
+        "@openzeppelin/contracts/utils/Strings.sol",
+        "./RevenueSplitter.sol"
       ],
       "versionPragmas": [
         "^0.8.20"

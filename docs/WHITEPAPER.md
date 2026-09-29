@@ -28,7 +28,7 @@ A note on scope: the protocol handles **access control and payment**. It does no
 
 ### 3.1 Film registration and tickets (TicketNFT)
 
-A film is registered on-chain with a `filmId`, title, price, filmmaker payout address, and an active flag. Viewers call `mintTicket(filmId)` and pay exactly the listed price in the chain's native currency; the full price is forwarded to the filmmaker. The ticket is an ERC-721 NFT:
+A film is registered on-chain with a `filmId`, title, price, filmmaker payout address, and an active flag. Viewers call `mintTicket(filmId)` and pay exactly the listed price in the chain's native currency; the payment is split immediately at purchase — 75% (+ rounding remainder) to the filmmaker, 25% to the platform — through the protocol's shared immutable splitter, like every other viewer-payment contract. The ticket is an ERC-721 NFT:
 
 - **Transferable tickets** can be resold or gifted; validity follows the current holder.
 - **Soulbound tickets** (per-film flag) cannot be transferred — they are bound to the purchaser.

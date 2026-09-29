@@ -5,13 +5,7 @@
 
 export const MOVIE_TICKET_ABI_FULL = [
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_initialPlatformFeeBps",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -31,6 +25,22 @@ export const MOVIE_TICKET_ABI_FULL = [
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "expected",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "received",
+        "type": "uint256"
+      }
+    ],
+    "name": "IncorrectPayment",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "MintERC2309QuantityExceedsLimit",
     "type": "error"
@@ -43,6 +53,11 @@ export const MOVIE_TICKET_ABI_FULL = [
   {
     "inputs": [],
     "name": "MintZeroQuantity",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MissingCreator",
     "type": "error"
   },
   {
@@ -110,6 +125,11 @@ export const MOVIE_TICKET_ABI_FULL = [
   {
     "inputs": [],
     "name": "TransferCallerNotOwnerNorApproved",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferFailed",
     "type": "error"
   },
   {
@@ -330,19 +350,25 @@ export const MOVIE_TICKET_ABI_FULL = [
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
-        "name": "oldFeeBps",
+        "name": "creatorShare",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "newFeeBps",
+        "name": "platformFee",
         "type": "uint256"
       }
     ],
-    "name": "PlatformFeeUpdated",
+    "name": "RevenueSplit",
     "type": "event"
   },
   {
@@ -481,6 +507,32 @@ export const MOVIE_TICKET_ABI_FULL = [
     ],
     "name": "VideoMinted",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "BPS_DENOMINATOR",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PLATFORM_FEE_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -647,20 +699,7 @@ export const MOVIE_TICKET_ABI_FULL = [
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getCurrentPlatformFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -679,7 +718,7 @@ export const MOVIE_TICKET_ABI_FULL = [
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -981,19 +1020,6 @@ export const MOVIE_TICKET_ABI_FULL = [
   },
   {
     "inputs": [],
-    "name": "platformFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1077,19 +1103,6 @@ export const MOVIE_TICKET_ABI_FULL = [
       }
     ],
     "name": "setApprovalForAll",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "setPlatformFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1305,13 +1318,6 @@ export const MOVIE_TICKET_ABI_FULL = [
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ] as const;
@@ -3425,6 +3431,11 @@ export const TICKET_NFT_ABI_FULL = [
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "MissingCreator",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -3464,11 +3475,6 @@ export const TICKET_NFT_ABI_FULL = [
   },
   {
     "inputs": [],
-    "name": "PaymentFailed",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "ReentrancyGuardReentrantCall",
     "type": "error"
   },
@@ -3481,6 +3487,11 @@ export const TICKET_NFT_ABI_FULL = [
       }
     ],
     "name": "SoulboundTransferBlocked",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferFailed",
     "type": "error"
   },
   {
@@ -3643,6 +3654,31 @@ export const TICKET_NFT_ABI_FULL = [
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "RevenueSplit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -3718,6 +3754,32 @@ export const TICKET_NFT_ABI_FULL = [
     ],
     "name": "Transfer",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "BPS_DENOMINATOR",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PLATFORM_FEE_BPS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -4290,13 +4352,7 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "planId",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "MissingCreator",
     "type": "error"
   },
@@ -4542,6 +4598,31 @@ export const SUBSCRIPTION_MANAGER_ABI_FULL = [
       }
     ],
     "name": "Renewed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "RevenueSplit",
     "type": "event"
   },
   {
@@ -4831,22 +4912,6 @@ export const PAY_PER_VIEW_ABI_FULL = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "requestedBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maxBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "FeeTooHigh",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "filmId",
         "type": "uint256"
       }
@@ -4888,18 +4953,7 @@ export const PAY_PER_VIEW_ABI_FULL = [
   },
   {
     "inputs": [],
-    "name": "NoPlatformFees",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "filmId",
-        "type": "uint256"
-      }
-    ],
-    "name": "NoRevenue",
+    "name": "MissingCreator",
     "type": "error"
   },
   {
@@ -4969,6 +5023,24 @@ export const PAY_PER_VIEW_ABI_FULL = [
         "indexed": false,
         "internalType": "uint256",
         "name": "pricePaid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "filmmaker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "filmmakerShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
         "type": "uint256"
       }
     ],
@@ -5048,59 +5120,15 @@ export const PAY_PER_VIEW_ABI_FULL = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldFeeBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "PlatformFeeUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
-        "name": "owner",
+        "name": "creator",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "PlatformFeesWithdrawn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "filmId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "filmmaker",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "filmmakerAmount",
+        "name": "creatorShare",
         "type": "uint256"
       },
       {
@@ -5110,12 +5138,12 @@ export const PAY_PER_VIEW_ABI_FULL = [
         "type": "uint256"
       }
     ],
-    "name": "RevenueWithdrawn",
+    "name": "RevenueSplit",
     "type": "event"
   },
   {
     "inputs": [],
-    "name": "MAX_PLATFORM_FEE_BPS",
+    "name": "BPS_DENOMINATOR",
     "outputs": [
       {
         "internalType": "uint256",
@@ -5128,7 +5156,7 @@ export const PAY_PER_VIEW_ABI_FULL = [
   },
   {
     "inputs": [],
-    "name": "accruedPlatformFees",
+    "name": "PLATFORM_FEE_BPS",
     "outputs": [
       {
         "internalType": "uint256",
@@ -5150,25 +5178,6 @@ export const PAY_PER_VIEW_ABI_FULL = [
     "name": "buyAccess",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "filmId",
-        "type": "uint256"
-      }
-    ],
-    "name": "filmRevenue",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -5245,19 +5254,6 @@ export const PAY_PER_VIEW_ABI_FULL = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "platformFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -5303,45 +5299,12 @@ export const PAY_PER_VIEW_ABI_FULL = [
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "setPlatformFeeBps",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdrawPlatformFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "filmId",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawRevenue",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

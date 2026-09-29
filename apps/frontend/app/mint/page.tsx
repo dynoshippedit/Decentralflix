@@ -66,7 +66,7 @@ function MintPageInner() {
   const priceWei = parseEther(price || '0.01');
   const platformFee = getPlatformFee(priceWei);
   const creatorShare = getCreatorShare(priceWei);
-  const feePct = platformFeeBps ? (Number(platformFeeBps) / 100).toFixed(0) : '30';
+  const feePct = (Number(platformFeeBps) / 100).toFixed(0);
 
   const handleGetAccess = () => {
     if (!authenticated) { login(); return; }

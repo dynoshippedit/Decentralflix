@@ -15,6 +15,8 @@ Solidity 0.8.28 toolchain per MAP (pragma `^0.8.20` in sources). All contracts u
 - **Stuck funds:** if the filmmaker never withdraws, funds sit forever — no sweep, no expiry, no owner recovery. Platform fees likewise never accrue until withdrawal.
 - **Issues:** none open beyond the fee-timing note (by design). No unregister/delist function (moderation gap noted in W3B-013 context).
 
+> **SUPERSEDED 2026-09-29 (owner decision, df-cycle-13):** TicketNFT now inherits the shared `RevenueSplitter` — mint splits **75/25** at purchase (75% + rounding remainder to the filmmaker, 25% platform, `MissingCreator` revert, owner cannot redirect or alter). The 100%-to-filmmaker text below is kept for history; do not treat it as current.
+
 ## TicketNFT.sol (241 lines) — ERC721 single-use tickets, direct-forward payment
 - **What it does:** Owner registers films (title, price, filmmaker payee, soulbound flag). Buyers `mintTicket` with EXACT payment, 100% forwarded immediately to the filmmaker (no platform fee, no escrow). `redeemTicket` burns on entry. Soulbound films block transfers via `_update` override.
 - **Trust assumptions:** owner is the sole registrar/minter-of-record (permissioned model, unlike PayPerView).

@@ -24,6 +24,8 @@ Two different payout models exist side by side. This trace follows each hop: sal
 
 **Stuck funds:** if the filmmaker never calls `withdrawRevenue`, the ETH is stuck FOREVER — no sweep, no expiry, no owner recovery. Platform fees on that revenue likewise never materialize (they accrue only at withdrawal). There is no `delistFilm`/unregister in PayPerView.
 
+> **SUPERSEDED 2026-09-29 (owner decision, df-cycle-13):** TicketNFT now inherits the shared `RevenueSplitter` — mint splits **75/25** at purchase (75% + rounding remainder to the filmmaker, 25% platform, `MissingCreator` revert, owner cannot redirect or alter). The 100%-to-filmmaker text below is kept for history; do not treat it as current.
+
 ## Model B — MovieTicket / TicketNFT: immediate forward, no escrow
 
 - **TicketNFT.mintTicket** (`TicketNFT.sol:134-156`): exact payment, 100% forwarded to the filmmaker in the same transaction. No platform fee, no escrow, nothing to withdraw. If the filmmaker address can't receive ETH, the whole mint reverts (W3B-006: no way to change the payee).

@@ -2,6 +2,10 @@
  * Typed wrappers for the PayPerView contract (one-off film purchases).
  * One function per contract function. All inputs validated before any
  * chain interaction; writes need a signer, reads accept signer or provider.
+ *
+ * df-cycle-12/13: PayPerView splits every purchase 75/25 at buy time through
+ * the shared RevenueSplitter. There is no fee setter, no withdraw, no accrued
+ * balance — those functions do not exist on-chain.
  */
 import type {
   Contract,
@@ -14,17 +18,16 @@ import { reqAddress, reqUint, reqWei } from './validate';
 
 export type { PpvFilm, WriteOverrides };
 
-export async function maxPlatformFeeBps(runner: ContractRunner): Promise<bigint> {
+/**
+ * Read the immutable platform fee (basis points) from the contract.
+ * 2500 = 25% platform, 75% creator. No setter exists on-chain by design.
+ */
+export async function platformFeeBps(runner: ContractRunner): Promise<bigint> {
   const c: Contract = getPayPerView(runner);
-  return c.MAX_PLATFORM_FEE_BPS() as Promise<bigint>;
+  return c.PLATFORM_FEE_BPS() as Promise<bigint>;
 }
 
-export async function accruedPlatformFees(runner: ContractRunner): Promise<bigint> {
-  const c: Contract = getPayPerView(runner);
-  return c.accruedPlatformFees() as Promise<bigint>;
-}
-
-/** Buy access to a film. `valueWei` must cover the film price. */
+/** Buy access to a film. `valueWei` must equal the film price exactly (split at purchase). */
 export async function buyAccess(
   signer: ContractRunner,
   filmId: number | bigint | string,
@@ -36,14 +39,6 @@ export async function buyAccess(
     value: reqWei(valueWei, 'valueWei'),
     ...(overrides ?? {}),
   });
-}
-
-export async function filmRevenue(
-  runner: ContractRunner,
-  filmId: number | bigint | string,
-): Promise<bigint> {
-  const c: Contract = getPayPerView(runner);
-  return c.filmRevenue(reqUint(filmId, 'filmId')) as Promise<bigint>;
 }
 
 export async function getFilm(runner: ContractRunner, filmId: number | bigint | string): Promise<PpvFilm> {
@@ -66,11 +61,6 @@ export async function hasAccess(
 export async function owner(runner: ContractRunner): Promise<string> {
   const c: Contract = getPayPerView(runner);
   return c.owner() as Promise<string>;
-}
-
-export async function platformFeeBps(runner: ContractRunner): Promise<bigint> {
-  const c: Contract = getPayPerView(runner);
-  return c.platformFeeBps() as Promise<bigint>;
 }
 
 /** Register a film with its price in wei (owner only). */
@@ -107,20 +97,6 @@ export async function setFilmPrice(
   });
 }
 
-/** Set the platform fee in basis points (owner only, ≤ 10000). */
-export async function setPlatformFeeBps(
-  signer: ContractRunner,
-  newFeeBps: number | bigint | string,
-  overrides?: WriteOverrides,
-): Promise<ContractTransactionResponse> {
-  const c: Contract = getPayPerView(signer);
-  const bps = reqUint(newFeeBps, 'newFeeBps');
-  if (bps > BigInt(10000)) {
-    throw new Error(`newFeeBps: basis points must be ≤ 10000 (100%), got ${bps}`);
-  }
-  return c.setPlatformFeeBps(bps, { ...(overrides ?? {}) });
-}
-
 export async function transferOwnership(
   signer: ContractRunner,
   newOwner: string,
@@ -128,23 +104,4 @@ export async function transferOwnership(
 ): Promise<ContractTransactionResponse> {
   const c: Contract = getPayPerView(signer);
   return c.transferOwnership(reqAddress(newOwner, 'newOwner'), { ...(overrides ?? {}) });
-}
-
-/** Withdraw accrued platform fees (owner only). */
-export async function withdrawPlatformFees(
-  signer: ContractRunner,
-  overrides?: WriteOverrides,
-): Promise<ContractTransactionResponse> {
-  const c: Contract = getPayPerView(signer);
-  return c.withdrawPlatformFees({ ...(overrides ?? {}) });
-}
-
-/** Withdraw a film's revenue to its filmmaker (owner only). */
-export async function withdrawRevenue(
-  signer: ContractRunner,
-  filmId: number | bigint | string,
-  overrides?: WriteOverrides,
-): Promise<ContractTransactionResponse> {
-  const c: Contract = getPayPerView(signer);
-  return c.withdrawRevenue(reqUint(filmId, 'filmId'), { ...(overrides ?? {}) });
 }

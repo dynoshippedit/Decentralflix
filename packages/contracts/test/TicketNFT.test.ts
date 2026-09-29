@@ -6,6 +6,9 @@ const FILM = 1n;
 const SB_FILM = 2n; // soulbound film
 const PRICE = ethers.parseEther("0.05");
 const URI = "ipfs://films";
+const FEE_BPS = 2500n; // immutable platform fee (25%); creator always gets 75% + remainder
+const ODD_FILM = 4n; // film registered with an odd-wei price in the split tests
+const ODD_PRICE = 7n; // odd wei: fee = floor(7 * 2500 / 10000) = 1, creator = 6
 
 async function deployFixture() {
   const [owner, filmmaker, buyer, buyer2, stranger] = await ethers.getSigners();
@@ -135,8 +138,11 @@ describe("TicketNFT", () => {
   });
 
   describe("mintTicket", () => {
-    it("mints, forwards full payment to filmmaker, emits TicketMinted", async () => {
-      const { ticketNFT, buyer, filmmaker } = await loadFixture(deployFixture as any);
+    it("mints, splits payment 75/25 at purchase, emits TicketMinted + RevenueSplit", async () => {
+      const { ticketNFT, owner, buyer, filmmaker } = await loadFixture(deployFixture as any);
+      const fee = (PRICE * FEE_BPS) / 10000n;
+      const creatorShare = PRICE - fee;
+
       await expect(ticketNFT.connect(buyer).mintTicket(FILM, { value: PRICE }))
         .to.emit(ticketNFT, "TicketMinted")
         .withArgs(1n, FILM, buyer.address, PRICE);
@@ -145,10 +151,21 @@ describe("TicketNFT", () => {
       expect(await ticketNFT.ticketFilm(1n)).to.equal(FILM);
       expect(await ticketNFT.hasValidTicket(buyer.address, FILM)).to.equal(true);
       expect(await ticketNFT.validTicketCount(buyer.address, FILM)).to.equal(1n);
+
+      // Second mint: exact 75/25 wei movement — filmmaker gets 75% + remainder,
+      // platform (owner) gets exactly 25%, nothing accrues in the contract.
       await expect(
         ticketNFT.connect(buyer).mintTicket(FILM, { value: PRICE })
-      ).to.changeEtherBalance(filmmaker, PRICE);
-      expect(await ticketNFT.nextTokenId()).to.equal(3n);
+      )
+        .to.emit(ticketNFT, "RevenueSplit")
+        .withArgs(filmmaker.address, creatorShare, fee);
+      await expect(
+        ticketNFT.connect(buyer).mintTicket(FILM, { value: PRICE })
+      ).to.changeEtherBalances(
+        [filmmaker, owner, ticketNFT],
+        [creatorShare, fee, 0n]
+      );
+      expect(await ticketNFT.nextTokenId()).to.equal(4n);
     });
 
     it("allows multiple tickets per holder", async () => {
@@ -191,6 +208,48 @@ describe("TicketNFT", () => {
         .to.emit(ticketNFT, "TicketMinted")
         .withArgs(1n, 3n, buyer.address, 0n);
       expect(await ticketNFT.hasValidTicket(buyer.address, 3n)).to.equal(true);
+    });
+  });
+
+  describe("immutable 75/25 split (df-cycle-13)", () => {
+    it("exposes the immutable 2500 bps split from the shared splitter", async () => {
+      const { ticketNFT } = await loadFixture(deployFixture as any);
+      expect(await ticketNFT.PLATFORM_FEE_BPS()).to.equal(FEE_BPS);
+    });
+
+    it("the owner cannot change the split — no fee setter exists", async () => {
+      const { ticketNFT } = await loadFixture(deployFixture as any);
+      for (const fn of ["setPlatformFee", "setPlatformFeeBps", "setFee", "updateFee"]) {
+        expect(ticketNFT.interface.hasFunction(fn), fn).to.equal(false);
+      }
+    });
+
+    it("there is no owner withdraw sweep — nothing accrues in the contract", async () => {
+      const { ticketNFT } = await loadFixture(deployFixture as any);
+      expect((ticketNFT as unknown as Record<string, unknown>).withdraw).to.equal(undefined);
+    });
+
+    it("the filmmaker cannot be redirected after registration — no payee setter exists", async () => {
+      const { ticketNFT } = await loadFixture(deployFixture as any);
+      for (const fn of ["setFilmmaker", "updateFilmmaker", "setPayee"]) {
+        expect(ticketNFT.interface.hasFunction(fn), fn).to.equal(false);
+      }
+    });
+
+    it("gives the filmmaker the rounding remainder on odd wei amounts", async () => {
+      const { ticketNFT, owner, filmmaker, buyer } = await loadFixture(deployFixture as any);
+      await ticketNFT.connect(owner).registerFilm(ODD_FILM, "Odd", ODD_PRICE, filmmaker.address, false, "");
+      // 7 wei: fee = floor(7 * 2500 / 10000) = 1, creator = 6. Never fee rounded up.
+      await expect(
+        ticketNFT.connect(buyer).mintTicket(ODD_FILM, { value: ODD_PRICE })
+      ).to.changeEtherBalances([filmmaker, owner, ticketNFT], [6n, 1n, 0n]);
+    });
+
+    it("reverts on a zero filmmaker at registration — the share is never redirected", async () => {
+      const { ticketNFT, owner } = await loadFixture(deployFixture as any);
+      await expect(
+        ticketNFT.connect(owner).registerFilm(9n, "No Payee", PRICE, ethers.ZeroAddress, false, "")
+      ).to.be.revertedWithCustomError(ticketNFT, "ZeroAddress");
     });
   });
 

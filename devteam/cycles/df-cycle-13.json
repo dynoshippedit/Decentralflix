@@ -1,0 +1,46 @@
+{
+  "cycle": "df-cycle-13",
+  "date": "2026-09-29",
+  "owner_decisions": [
+    "TicketNFT extended to 75/25 \u2014 no exceptions, no whitepaper carve-out (Dino 2026-09-29 ~03:25)",
+    "Frontend ABI + hooks refreshed now while the change is fresh (Dino 2026-09-29 ~03:25)",
+    "ABI-drift guard added so the frontend cannot drift from the compiled contracts again (Dino 2026-09-29 ~03:25)"
+  ],
+  "task1_ticketnft_75_25": {
+    "contract": "TicketNFT.sol now inherits RevenueSplitter (replacing Ownable; RevenueSplitter is Ownable). mintTicket splits 75/25 at purchase via _splitRevenue(film.filmmaker); exact payment still enforced; free mints skip transfers; PaymentFailed removed (unused).",
+    "tests": "37/37 TicketNFT hardhat tests. New immutable-75/25-split block (6 tests): PLATFORM_FEE_BPS=2500, no fee setter, no withdraw sweep, no filmmaker setter, odd-wei remainder (7 wei -> filmmaker 6, platform 1), zero-filmmaker registration reverts. Mint test now asserts RevenueSplit event args + exact ether balances.",
+    "falsification": "stashed contracts/TicketNFT.sol only, kept tests -> 3 failing; restored -> green.",
+    "notes": "payout-math.md (Path 4), flows/payout-withdrawal.md (Model B), notes/contracts.md (TicketNFT section) marked SUPERSEDED with 2026-09-29 owner-decision pointers; old text preserved.",
+    "questions": "Q-df12-001 RESOLVED with Dino's decision.",
+    "whitepaper": "WHITEPAPER.md 3.1 updated: no more implied 100%-to-filmmaker exception."
+  },
+  "task2_frontend_refresh": {
+    "abi": "regenerated via npm run export:abi from compiled artifacts (abis.generated.ts, 10 contracts).",
+    "wrappers": "payPerView.ts rewritten: removed maxPlatformFeeBps, accruedPlatformFees, filmRevenue, setPlatformFeeBps, withdrawPlatformFees, withdrawRevenue; platformFeeBps now reads immutable PLATFORM_FEE_BPS. payPerView.test.ts updated (11 tests).",
+    "hooks": "useMovieTicket.ts reads PLATFORM_FEE_BPS (was removed platformFeeBps); canonical fallback 2500. config.ts adds canonical PLATFORM_FEE_BPS/CREATOR_SHARE_BPS mirrors; SUBSCRIPTION_* kept as aliases. mint/page.tsx stale 30% default removed.",
+    "dangling_refs": "zero remaining references to setPlatformFee*/withdraw(/old constructor args in apps/frontend."
+  },
+  "task3_abi_drift_guard": {
+    "file": "apps/frontend/lib/contracts/abi-drift.test.ts",
+    "behavior": "per-contract deep equality between generated *_ABI_FULL consts and compiled artifacts; fails closed on missing artifact (clear 'run npx hardhat compile' message), missing const, or any added/removed/changed entry. Asserts SEEDER_CREDITS_ABI carries only the documented frontend-only submitMultiSourceReport entry. Asserts no removed fee-setter/withdraw functions linger in any generated ABI.",
+    "gate": "runs under `npm test` (vitest) in apps/frontend.",
+    "proven": "temporarily removed RevenueSplit from generated TicketNFT ABI -> 1 test failed (guard caught it); restored via npm run export:abi -> green."
+  },
+  "checks": {
+    "hardhat": "236/236 passing (230 + 6 new TicketNFT split tests)",
+    "frontend_vitest": "210/210 passing (197 + 13 new drift-guard tests)",
+    "tsc_noEmit": "clean",
+    "eslint": "4 errors / 6 warnings on touched files \u2014 identical at HEAD (pre-existing, not introduced)"
+  },
+  "safety": {
+    "deployment_check": "not re-run (no deploy tooling touched); no deployment, broadcast, funded key, or production payment occurred in this cycle.",
+    "contracts": "UNAUDITED",
+    "pushed": false,
+    "branch": "devteam/review-2026-09-29"
+  },
+  "follow_ups": [
+    "lifeboat test.sh not re-run (no TicketNFT usage in apps/lifeboat; contract ABI surface changed only by addition of RevenueSplitter members)",
+    "pre-existing eslint errors in useMovieTicket.ts / mint/page.tsx (setState-in-effect, missing deps, any) predate this cycle",
+    "packages/contracts/cache/solidity-files-cache.json modified by compile (tracked build cache)"
+  ]
+}

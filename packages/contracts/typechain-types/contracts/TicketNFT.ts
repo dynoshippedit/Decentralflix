@@ -56,6 +56,8 @@ export declare namespace TicketNFT {
 export interface TicketNFTInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "BPS_DENOMINATOR"
+      | "PLATFORM_FEE_BPS"
       | "approve"
       | "balanceOf"
       | "getApproved"
@@ -92,11 +94,20 @@ export interface TicketNFTInterface extends Interface {
       | "FilmRegistered"
       | "FilmStatusChanged"
       | "OwnershipTransferred"
+      | "RevenueSplit"
       | "TicketMinted"
       | "TicketRedeemed"
       | "Transfer"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "BPS_DENOMINATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "PLATFORM_FEE_BPS",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
@@ -193,6 +204,14 @@ export interface TicketNFTInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "BPS_DENOMINATOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "PLATFORM_FEE_BPS",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -385,6 +404,28 @@ export namespace OwnershipTransferredEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace RevenueSplitEvent {
+  export type InputTuple = [
+    creator: AddressLike,
+    creatorShare: BigNumberish,
+    platformFee: BigNumberish
+  ];
+  export type OutputTuple = [
+    creator: string,
+    creatorShare: bigint,
+    platformFee: bigint
+  ];
+  export interface OutputObject {
+    creator: string;
+    creatorShare: bigint;
+    platformFee: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace TicketMintedEvent {
   export type InputTuple = [
     tokenId: BigNumberish,
@@ -488,6 +529,10 @@ export interface TicketNFT extends BaseContract {
   removeAllListeners<TCEvent extends TypedContractEvent>(
     event?: TCEvent
   ): Promise<this>;
+
+  BPS_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
+
+  PLATFORM_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
 
   approve: TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
@@ -617,6 +662,12 @@ export interface TicketNFT extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "BPS_DENOMINATOR"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "PLATFORM_FEE_BPS"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
@@ -799,6 +850,13 @@ export interface TicketNFT extends BaseContract {
     OwnershipTransferredEvent.OutputObject
   >;
   getEvent(
+    key: "RevenueSplit"
+  ): TypedContractEvent<
+    RevenueSplitEvent.InputTuple,
+    RevenueSplitEvent.OutputTuple,
+    RevenueSplitEvent.OutputObject
+  >;
+  getEvent(
     key: "TicketMinted"
   ): TypedContractEvent<
     TicketMintedEvent.InputTuple,
@@ -885,6 +943,17 @@ export interface TicketNFT extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "RevenueSplit(address,uint256,uint256)": TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
+    >;
+    RevenueSplit: TypedContractEvent<
+      RevenueSplitEvent.InputTuple,
+      RevenueSplitEvent.OutputTuple,
+      RevenueSplitEvent.OutputObject
     >;
 
     "TicketMinted(uint256,uint256,address,uint256)": TypedContractEvent<

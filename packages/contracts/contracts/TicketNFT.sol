@@ -5,20 +5,22 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./RevenueSplitter.sol";
 
 /**
  * @title TicketNFT
  * @author Decentralflix — Phase 2
  * @notice ERC721 movie tickets. Each film is registered once by the platform owner;
- * buyers mint single tickets by paying the film's exact price, which is forwarded
- * directly to the filmmaker. Tickets are transferable by default, but a film can be
+ * buyers mint single tickets by paying the film's exact price, which is split
+ * 75/25 at purchase through the shared RevenueSplitter (75% + rounding remainder
+ * to the filmmaker, 25% to the platform). Tickets are transferable by default, but a film can be
  * flagged `soulbound` at registration to make its tickets non-transferable
  * (mint and burn still work). A ticket is single-use: `redeemTicket` burns it on
  * entry, after which `hasValidTicket` returns false.
  * @dev Utility/access tokens only. No investment contract, no promised returns.
  * Any mainnet deployment must be reviewed by licensed counsel first.
  */
-contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
+contract TicketNFT is ERC721, RevenueSplitter, ReentrancyGuard {
     using Strings for uint256;
 
     /// @notice Metadata for one registered film.
@@ -42,7 +44,6 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
     error IncorrectPayment(uint256 expected, uint256 received);
     error SoulboundTransferBlocked(uint256 tokenId);
     error NotTicketOwner(uint256 tokenId, address caller);
-    error PaymentFailed();
 
     // ── Events ────────────────────────────────────────────────────────────
     event FilmRegistered(
@@ -129,8 +130,9 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
 
     /**
      * @notice Mint one ticket for `filmId`. Requires exact payment of the film's
-     * current price; the full amount is forwarded to the filmmaker. No platform
-     * fee is taken here.
+     * current price; the payment is split 75/25 at purchase through the shared
+     * RevenueSplitter (75% + rounding remainder to the filmmaker, 25% platform).
+     * Reverts on a zero filmmaker — the filmmaker's share is NEVER redirected.
      * @return tokenId The newly minted ticket's token ID.
      */
     function mintTicket(uint256 filmId) external payable nonReentrant returns (uint256 tokenId) {
@@ -147,9 +149,11 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
 
         emit TicketMinted(tokenId, filmId, msg.sender, msg.value);
 
+        // Split the mint payment 75/25 through the shared RevenueSplitter.
+        // Exact payment is enforced above, so nothing can accrue in the contract.
+        // Free films (price 0) skip the transfers entirely.
         if (msg.value > 0) {
-            (bool ok, ) = film.filmmaker.call{value: msg.value}("");
-            if (!ok) revert PaymentFailed();
+            _splitRevenue(film.filmmaker);
         }
     }
 
